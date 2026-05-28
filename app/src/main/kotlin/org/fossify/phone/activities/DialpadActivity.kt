@@ -22,7 +22,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.beVisibleIf
-import org.fossify.commons.extensions.checkAppSideloading
 import org.fossify.commons.extensions.getColorStateList
 import org.fossify.commons.extensions.getColoredDrawableWithColor
 import org.fossify.commons.extensions.getContrastColor
@@ -102,9 +101,7 @@ class DialpadActivity : SimpleActivity() {
             setupMaterialScrollListener(binding.dialpadList, binding.dialpadAppbar)
         }
 
-        if (checkAppSideloading()) {
-            return
-        }
+
 
         binding.dialpadWrapper.apply {
             if (config.hideDialpadNumbers) {
