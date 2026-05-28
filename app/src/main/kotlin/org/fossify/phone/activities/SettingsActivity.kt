@@ -98,6 +98,7 @@ class SettingsActivity : SimpleActivity() {
         setupTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow)
 
         setupCustomizeColors()
+        setupPrimaryColor()
         setupSim1Color()
         setupSim2Color()
         setupUseEnglish()
@@ -164,6 +165,28 @@ class SettingsActivity : SimpleActivity() {
         binding.settingsColorCustomizationHolder.setOnClickListener {
             startCustomizationActivity()
         }
+    }
+
+    private fun setupPrimaryColor() {
+        binding.apply {
+            settingsPrimaryColorPreview.background.setTint(getProperPrimaryColor())
+            settingsPrimaryColorHolder.setOnClickListener {
+                ColorPickerDialog(this@SettingsActivity, getProperPrimaryColor()) { wasPositive, color ->
+                    if (wasPositive) {
+                        applyPrimaryColor(color)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun applyPrimaryColor(color: Int) {
+        // A custom primary color is incompatible with Material You, so leave the system theme –
+        // otherwise getProperPrimaryColor() keeps returning the dynamic color and the pick is ignored.
+        config.isSystemThemeEnabled = false
+        config.primaryColor = color
+        // re-theme Settings immediately; other screens re-read the color on their next launch
+        recreate()
     }
 
     private fun getSimDefaultColor(simId: Int): Int {
