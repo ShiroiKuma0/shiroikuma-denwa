@@ -12,7 +12,7 @@ import org.fossify.commons.helpers.*
 import org.fossify.commons.models.contacts.Contact
 import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
-import org.fossify.phone.extensions.getAvailableSIMCardLabels
+import org.fossify.phone.extensions.buildSIMAccountLookupMap
 import org.fossify.phone.models.RecentCall
 import org.fossify.phone.models.SIMAccount
 
@@ -144,13 +144,11 @@ class RecentsHelper(private val context: Context) {
             Calls.DURATION,
             Calls.TYPE,
             Calls.PHONE_ACCOUNT_ID,
+            Calls.PHONE_ACCOUNT_COMPONENT_NAME,
             Calls.NUMBER_PRESENTATION
         )
 
-        val accountIdToSimAccountMap = HashMap<String, SIMAccount>()
-        context.getAvailableSIMCardLabels().forEach {
-            accountIdToSimAccountMap[it.handle.id] = it
-        }
+        val accountIdToSimAccountMap = context.buildSIMAccountLookupMap()
 
         val cursor = if (isNougatPlus()) {
             // https://issuetracker.google.com/issues/175198972?pli=1#comment6

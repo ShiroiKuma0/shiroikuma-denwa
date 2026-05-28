@@ -3,13 +3,16 @@ package org.fossify.phone.extensions
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.KeyguardManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Context.KEYGUARD_SERVICE
 import android.content.Intent
 import android.media.AudioManager
 import android.net.Uri
 import android.os.PowerManager
+import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
+import android.telephony.SubscriptionManager
 import org.fossify.commons.extensions.launchActivityIntent
 import org.fossify.commons.extensions.telecomManager
 import org.fossify.commons.helpers.KEY_PHONE
@@ -59,11 +62,75 @@ fun Context.getAvailableSIMCardLabels(): List<SIMAccount> {
 
 @SuppressLint("MissingPermission")
 fun Context.areMultipleSIMsAvailable(): Boolean {
+    try {
+        if (telecomManager.callCapablePhoneAccounts.size > 1) {
+            return true
+        }
+    } catch (_: Exception) {
+    }
+
     return try {
-        telecomManager.callCapablePhoneAccounts.size > 1
-    } catch (ignored: Exception) {
+        val subscriptionManager = getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as? SubscriptionManager
+        (subscriptionManager?.activeSubscriptionInfoList?.size ?: 0) > 1
+    } catch (_: Exception) {
         false
     }
+}
+
+@SuppressLint("MissingPermission")
+fun Context.buildSIMAccountLookupMap(): HashMap<String, SIMAccount> {
+    val map = HashMap<String, SIMAccount>()
+
+    val simAccounts = getAvailableSIMCardLabels()
+    for (account in simAccounts) {
+        map[account.handle.id] = account
+    }
+
+    try {
+        val subscriptionManager = getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as? SubscriptionManager
+            ?: return map
+        val activeSubscriptions = subscriptionManager.activeSubscriptionInfoList ?: return map
+
+        for (subInfo in activeSubscriptions) {
+            val subId = subInfo.subscriptionId.toString()
+            val iccId = subInfo.iccId
+
+            // Try to find the matching TelecomManager-based SIMAccount by subscription ID or slot index
+            val matchingAccount = simAccounts.firstOrNull { it.handle.id == subId }
+                ?: simAccounts.getOrNull(subInfo.simSlotIndex)
+
+            if (matchingAccount != null) {
+                if (subId !in map) {
+                    map[subId] = matchingAccount
+                }
+                if (!iccId.isNullOrEmpty() && iccId !in map) {
+                    map[iccId] = matchingAccount
+                }
+            } else if (simAccounts.isEmpty()) {
+                // TelecomManager returned nothing; create accounts from SubscriptionManager
+                val fallbackAccount = SIMAccount(
+                    id = subInfo.simSlotIndex + 1,
+                    handle = PhoneAccountHandle(
+                        ComponentName(
+                            "com.android.phone",
+                            "com.android.services.telephony.TelephonyConnectionService"
+                        ),
+                        subId
+                    ),
+                    label = subInfo.displayName?.toString() ?: "SIM ${subInfo.simSlotIndex + 1}",
+                    phoneNumber = "",
+                    color = subInfo.iconTint
+                )
+                map[subId] = fallbackAccount
+                if (!iccId.isNullOrEmpty()) {
+                    map[iccId] = fallbackAccount
+                }
+            }
+        }
+    } catch (_: Exception) {
+    }
+
+    return map
 }
 
 fun Context.clearMissedCalls() {
