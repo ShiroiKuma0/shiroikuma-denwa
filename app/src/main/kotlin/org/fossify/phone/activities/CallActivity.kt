@@ -590,7 +590,13 @@ class CallActivity : SimpleActivity() {
             }
 
             callerAvatar.apply {
-                if (avatarUri.isNullOrEmpty()) {
+                if (name.isEmpty() || name == number) {
+                    // hidden caller, or a visible number not saved as a contact — show the icon as-is
+                    setBackgroundResource(0)
+                    clearColorFilter()
+                    setPadding(0)
+                    setImageResource(R.drawable.ic_unknown_contact)
+                } else if (avatarUri.isNullOrEmpty()) {
                     val bgColor = getProperPrimaryColor()
                     setBackgroundResource(R.drawable.circle_background)
                     setImageResource(R.drawable.ic_person_vector)

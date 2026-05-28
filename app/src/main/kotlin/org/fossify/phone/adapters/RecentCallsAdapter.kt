@@ -603,7 +603,12 @@ class RecentCallsAdapter(
                     itemRecentsSimId.text = call.simID.toString()
                 }
 
-                SimpleContactsHelper(root.context).loadContactImage(call.photoUri, itemRecentsImage, call.name)
+                if (call.isUnknownNumber || name == call.phoneNumber) {
+                    // hidden caller, or a visible number not saved as a contact
+                    itemRecentsImage.setImageResource(R.drawable.ic_unknown_contact)
+                } else {
+                    SimpleContactsHelper(root.context).loadContactImage(call.photoUri, itemRecentsImage, call.name)
+                }
 
                 itemRecentsImage.apply {
                     if (profileIconClick != null) {
