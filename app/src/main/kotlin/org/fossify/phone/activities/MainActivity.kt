@@ -180,12 +180,17 @@ class MainActivity : SimpleActivity() {
     }
 
     override fun onBackPressedCompat(): Boolean {
-        return if (binding.mainMenu.isSearchOpen) {
+        if (binding.mainMenu.isSearchOpen) {
             binding.mainMenu.closeSearch()
-            true
-        } else {
-            false
+            return true
         }
+
+        val recentsFragment = getRecentsFragment()
+        if (recentsFragment != null && getCurrentFragment() == recentsFragment && recentsFragment.clearFilterIfActive()) {
+            return true
+        }
+
+        return false
     }
 
     override fun onDestroy() {
