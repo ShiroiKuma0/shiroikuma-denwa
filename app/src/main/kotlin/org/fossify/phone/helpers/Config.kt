@@ -135,4 +135,12 @@ class Config(context: Context) : BaseConfig(context) {
     var alwaysShowFullscreen: Boolean
         get() = prefs.getBoolean(ALWAYS_SHOW_FULLSCREEN, false)
         set(alwaysShowFullscreen) = prefs.edit().putBoolean(ALWAYS_SHOW_FULLSCREEN, alwaysShowFullscreen).apply()
+
+    var sim1Color: Int
+        get() = prefs.getInt(SIM_1_COLOR, -1)
+        set(sim1Color) = prefs.edit().putInt(SIM_1_COLOR, sim1Color).apply()
+
+    var sim2Color: Int
+        get() = prefs.getInt(SIM_2_COLOR, -1)
+        set(sim2Color) = prefs.edit().putInt(SIM_2_COLOR, sim2Color).apply()
 }
