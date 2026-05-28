@@ -32,8 +32,12 @@ import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSim
+import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.getSimSwipeColors
+import org.fossify.phone.extensions.setupSwipeToCall
 import org.fossify.phone.extensions.startContactDetailsIntent
+import org.fossify.phone.helpers.SwipeToCallCallback
 import org.fossify.phone.interfaces.RefreshItemsListener
 import java.util.Collections
 
@@ -47,6 +51,7 @@ class ContactsAdapter(
     private val showDeleteButton: Boolean = true,
     private val enableDrag: Boolean = false,
     private val allowLongClick: Boolean = true,
+    private val enableSwipeToCall: Boolean = false,
     itemClick: (Any) -> Unit,
     val profileIconClick: ((Any) -> Unit)? = null
 ) : MyRecyclerViewAdapter(activity, recyclerView, itemClick),
@@ -77,6 +82,28 @@ class ContactsAdapter(
                 }
             }
         }
+
+        if (enableSwipeToCall && activity.config.swipeToCall && activity.areMultipleSIMsAvailable()) {
+            val (sim1Color, sim2Color) = activity.getSimSwipeColors()
+            recyclerView.setupSwipeToCall(
+                SwipeToCallCallback(
+                    activity = activity,
+                    sim1Color = sim1Color,
+                    sim2Color = sim2Color,
+                    canSwipe = { position ->
+                        viewType == VIEW_TYPE_LIST && selectedKeys.isEmpty() && contacts.getOrNull(position) != null
+                    },
+                    onSwipe = { position, useSim1 -> swipeCall(position, useSim1) }
+                )
+            )
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun swipeCall(position: Int, useSim1: Boolean) {
+        val contact = contacts.getOrNull(position) ?: return
+        val number = contact.getPrimaryNumber() ?: return
+        activity.callContactWithSimWithConfirmationCheck(number, contact.getNameToDisplay(), useSim1)
     }
 
     override fun getActionMenuId() = R.menu.cab_contacts

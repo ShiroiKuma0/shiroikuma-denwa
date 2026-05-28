@@ -420,6 +420,21 @@
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/settings_swipe_to_call_holder"
+                style="@style/SettingsHolderSwitchStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <org.fossify.commons.views.MyMaterialSwitch
+                    android:id="@+id/settings_swipe_to_call"
+                    style="@style/SettingsSwitchStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/swipe_to_call" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
                 android:id="@+id/settings_always_show_fullscreen_holder"
                 style="@style/SettingsHolderSwitchStyle"
                 android:layout_width="match_parent"

@@ -85,6 +85,7 @@
     <string name="import_call_history">Import call history</string>
     <string name="sim_1_color">SIM 1 color</string>
     <string name="sim_2_color">SIM 2 color</string>
+    <string name="swipe_to_call">Swipe a contact left to call with SIM 1, right to call with SIM 2</string>
     <string name="calling_accounts">Calling accounts</string>
 
     <!-- FAQ -->

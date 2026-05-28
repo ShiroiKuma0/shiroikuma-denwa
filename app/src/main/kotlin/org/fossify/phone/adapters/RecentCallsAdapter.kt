@@ -58,10 +58,13 @@ import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getDayCode
+import org.fossify.phone.extensions.getSimSwipeColors
+import org.fossify.phone.extensions.setupSwipeToCall
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
 import org.fossify.phone.helpers.RecentsHelper
+import org.fossify.phone.helpers.SwipeToCallCallback
 import org.fossify.phone.interfaces.RefreshItemsListener
 import org.fossify.phone.models.CallLogItem
 import org.fossify.phone.models.RecentCall
@@ -74,6 +77,7 @@ class RecentCallsAdapter(
     private val refreshItemsListener: RefreshItemsListener?,
     private val showOverflowMenu: Boolean,
     private val itemDelete: (List<RecentCall>) -> Unit = {},
+    private val enableSwipeToCall: Boolean = false,
     itemClick: (Any) -> Unit,
     val profileIconClick: ((Any) -> Unit)? = null
 ) : MyRecyclerViewListAdapter<CallLogItem>(activity, recyclerView, RecentCallsDiffCallback(), itemClick) {
@@ -96,6 +100,27 @@ class RecentCallsAdapter(
         setupDragListener(true)
         setHasStableIds(true)
         (recyclerView.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
+
+        if (enableSwipeToCall && activity.config.swipeToCall && areMultipleSIMsAvailable) {
+            val (sim1Color, sim2Color) = activity.getSimSwipeColors()
+            recyclerView.setupSwipeToCall(
+                SwipeToCallCallback(
+                    activity = activity,
+                    sim1Color = sim1Color,
+                    sim2Color = sim2Color,
+                    canSwipe = { position ->
+                        val call = currentList.getOrNull(position) as? RecentCall
+                        selectedKeys.isEmpty() && call != null && !call.isUnknownNumber
+                    },
+                    onSwipe = { position, useSim1 -> swipeCall(position, useSim1) }
+                )
+            )
+        }
+    }
+
+    private fun swipeCall(position: Int, useSim1: Boolean) {
+        val call = currentList.getOrNull(position) as? RecentCall ?: return
+        activity.callContactWithSimWithConfirmationCheck(call.phoneNumber, call.name, useSim1)
     }
 
     override fun getActionMenuId() = R.menu.cab_recent_calls
