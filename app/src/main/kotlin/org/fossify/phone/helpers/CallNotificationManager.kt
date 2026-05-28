@@ -87,6 +87,9 @@ class CallNotificationManager(private val context: Context) {
                         R.id.notification_thumbnail,
                         callContactAvatarHelper.getCircularBitmap(callContactAvatar)
                     )
+                } else if (callContact.name.isEmpty() || callContact.name == callContact.number) {
+                    // hidden caller, or a visible number not saved as a contact — show the icon as-is
+                    setImageViewResource(R.id.notification_thumbnail, R.drawable.ic_unknown_contact)
                 }
             }
 
