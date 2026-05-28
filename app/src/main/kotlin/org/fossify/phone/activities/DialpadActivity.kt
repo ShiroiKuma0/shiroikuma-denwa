@@ -101,8 +101,6 @@ class DialpadActivity : SimpleActivity() {
             setupMaterialScrollListener(binding.dialpadList, binding.dialpadAppbar)
         }
 
-
-
         binding.dialpadWrapper.apply {
             if (config.hideDialpadNumbers) {
                 dialpad1Holder.isVisible = false

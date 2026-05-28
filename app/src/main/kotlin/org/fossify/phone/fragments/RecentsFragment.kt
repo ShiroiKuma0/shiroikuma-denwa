@@ -40,6 +40,7 @@ class RecentsFragment(
     private var recentsAdapter: RecentCallsAdapter? = null
 
     private var searchQuery: String? = null
+    private var phoneNumberFilter: String? = null
     private var recentsHelper = RecentsHelper(context)
 
     override fun onFinishInflate() {
@@ -61,6 +62,10 @@ class RecentsFragment(
             setOnClickListener {
                 requestCallLogPermission()
             }
+        }
+
+        binding.filterBannerClose.setOnClickListener {
+            clearPhoneNumberFilter()
         }
     }
 
@@ -88,6 +93,7 @@ class RecentsFragment(
 
     override fun onSearchClosed() {
         searchQuery = null
+        clearPhoneNumberFilter()
         showOrHidePlaceholder(allRecentCalls.isEmpty())
         recentsAdapter?.updateItems(allRecentCalls)
     }
@@ -165,7 +171,11 @@ class RecentsFragment(
                     },
                     itemClick = {
                         val recentCall = it as RecentCall
-                        activity?.startCallWithConfirmationCheck(recentCall.phoneNumber, recentCall.name)
+                        if (searchQuery.isNullOrEmpty()) {
+                            applyPhoneNumberFilter(recentCall.phoneNumber, recentCall.name)
+                        } else {
+                            activity?.startCallWithConfirmationCheck(recentCall.phoneNumber, recentCall.name)
+                        }
                     },
                     profileIconClick = {
                         val recentCall = it as RecentCall
@@ -189,10 +199,12 @@ class RecentsFragment(
     private fun refreshCallLog(loadAll: Boolean = false, callback: (() -> Unit)? = null) {
         getRecentCalls(loadAll) {
             allRecentCalls = it
-            if (searchQuery.isNullOrEmpty()) {
-                activity?.runOnUiThread { gotRecents(it) }
-            } else {
+            if (!searchQuery.isNullOrEmpty()) {
                 updateSearchResult()
+            } else if (phoneNumberFilter != null) {
+                activity?.runOnUiThread { applyCurrentFilter() }
+            } else {
+                activity?.runOnUiThread { gotRecents(it) }
             }
 
             callback?.invoke()
@@ -301,5 +313,48 @@ class RecentsFragment(
 
     private fun findContactByCall(recentCall: RecentCall): Contact? {
         return (activity as MainActivity).cachedContacts.find { it.name == recentCall.name && it.doesHavePhoneNumber(recentCall.phoneNumber) }
+    }
+
+    private fun applyPhoneNumberFilter(phoneNumber: String, contactName: String) {
+        phoneNumberFilter = phoneNumber
+        binding.filterBannerLabel.text = context.getString(R.string.calls_with, contactName)
+        binding.filterBanner.beVisible()
+        applyCurrentFilter()
+    }
+
+    private fun applyCurrentFilter() {
+        val filter = phoneNumberFilter ?: return
+        ensureBackgroundThread {
+            val filtered = allRecentCalls
+                .filterIsInstance<RecentCall>()
+                .filter { it.doesContainPhoneNumber(filter) }
+
+            val grouped = groupCallsByDate(filtered)
+            activity?.runOnUiThread {
+                showOrHidePlaceholder(grouped.isEmpty())
+                recentsAdapter?.updateItems(grouped)
+            }
+        }
+    }
+
+    /** Clears an active contact filter, restoring the full call history. Returns true if a filter was cleared. */
+    fun clearFilterIfActive(): Boolean {
+        if (phoneNumberFilter == null) {
+            return false
+        }
+
+        clearPhoneNumberFilter()
+        return true
+    }
+
+    private fun clearPhoneNumberFilter() {
+        if (phoneNumberFilter == null) {
+            return
+        }
+
+        phoneNumberFilter = null
+        binding.filterBanner.beGone()
+        showOrHidePlaceholder(allRecentCalls.isEmpty())
+        recentsAdapter?.updateItems(allRecentCalls)
     }
 }
