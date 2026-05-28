@@ -164,6 +164,16 @@ tasks.register("buildFoss") {
                 fi
             """.trimIndent()).inheritIO().start().waitFor()
         }
+
+        // Auto-increment BUILD_NUMBER for next build
+        val propsFile = rootProject.file("gradle.properties")
+        val currentBuildNumber = project.property("BUILD_NUMBER").toString().toInt()
+        val nextBuildNumber = currentBuildNumber + 1
+        propsFile.writeText(propsFile.readText().replace(
+            "BUILD_NUMBER=$currentBuildNumber",
+            "BUILD_NUMBER=$nextBuildNumber"
+        ))
+        println("\u001b[1;36m>>> BUILD_NUMBER bumped to $nextBuildNumber\u001b[0m")
     }
 }
 
