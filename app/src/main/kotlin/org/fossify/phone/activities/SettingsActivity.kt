@@ -11,6 +11,7 @@ import org.fossify.commons.activities.ManageBlockedNumbersActivity
 import org.fossify.commons.dialogs.ChangeDateTimeFormatDialog
 import org.fossify.commons.dialogs.FeatureLockedDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
+import org.fossify.commons.dialogs.ColorPickerDialog
 import org.fossify.commons.extensions.addLockedLabelIfNeeded
 import org.fossify.commons.extensions.baseConfig
 import org.fossify.commons.extensions.beVisibleIf
@@ -40,8 +41,10 @@ import org.fossify.phone.R
 import org.fossify.phone.databinding.ActivitySettingsBinding
 import org.fossify.phone.dialogs.ExportCallHistoryDialog
 import org.fossify.phone.dialogs.ManageVisibleTabsDialog
+import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.canLaunchAccountsConfiguration
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.getAvailableSIMCardLabels
 import org.fossify.phone.extensions.launchAccountsConfiguration
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.models.RecentCall
@@ -95,6 +98,8 @@ class SettingsActivity : SimpleActivity() {
         setupTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow)
 
         setupCustomizeColors()
+        setupSim1Color()
+        setupSim2Color()
         setupUseEnglish()
         setupLanguage()
         setupManageBlockedNumbers()
@@ -157,6 +162,49 @@ class SettingsActivity : SimpleActivity() {
     private fun setupCustomizeColors() {
         binding.settingsColorCustomizationHolder.setOnClickListener {
             startCustomizationActivity()
+        }
+    }
+
+    private fun getSimDefaultColor(simId: Int): Int {
+        val simAccounts = getAvailableSIMCardLabels()
+        return simAccounts.firstOrNull { it.id == simId }?.color ?: getProperPrimaryColor()
+    }
+
+    private fun setupSim1Color() {
+        binding.apply {
+            settingsSim1ColorHolder.beVisibleIf(areMultipleSIMsAvailable())
+            val currentColor = if (config.sim1Color != -1) config.sim1Color else getSimDefaultColor(1)
+            settingsSim1ColorPreview.background.setTint(currentColor)
+            settingsSim1ColorHolder.setOnClickListener {
+                ColorPickerDialog(this@SettingsActivity, currentColor, addDefaultColorButton = true) { wasPositive, color ->
+                    if (wasPositive) {
+                        config.sim1Color = color
+                        settingsSim1ColorPreview.background.setTint(color)
+                    } else {
+                        config.sim1Color = -1
+                        settingsSim1ColorPreview.background.setTint(getSimDefaultColor(1))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun setupSim2Color() {
+        binding.apply {
+            settingsSim2ColorHolder.beVisibleIf(areMultipleSIMsAvailable())
+            val currentColor = if (config.sim2Color != -1) config.sim2Color else getSimDefaultColor(2)
+            settingsSim2ColorPreview.background.setTint(currentColor)
+            settingsSim2ColorHolder.setOnClickListener {
+                ColorPickerDialog(this@SettingsActivity, currentColor, addDefaultColorButton = true) { wasPositive, color ->
+                    if (wasPositive) {
+                        config.sim2Color = color
+                        settingsSim2ColorPreview.background.setTint(color)
+                    } else {
+                        config.sim2Color = -1
+                        settingsSim2ColorPreview.background.setTint(getSimDefaultColor(2))
+                    }
+                }
+            }
         }
     }
 

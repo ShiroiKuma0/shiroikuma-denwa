@@ -139,6 +139,19 @@ fun Context.buildSIMAccountLookupMap(): HashMap<String, SIMAccount> {
     } catch (_: Exception) {
     }
 
+    // Apply user-configured SIM color overrides
+    val sim1Color = config.sim1Color
+    val sim2Color = config.sim2Color
+    if (sim1Color != -1 || sim2Color != -1) {
+        for ((key, account) in map.entries.toList()) {
+            if (account.id == 1 && sim1Color != -1) {
+                map[key] = account.copy(color = sim1Color)
+            } else if (account.id == 2 && sim2Color != -1) {
+                map[key] = account.copy(color = sim2Color)
+            }
+        }
+    }
+
     return map
 }
 
