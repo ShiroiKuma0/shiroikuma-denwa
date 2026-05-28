@@ -106,6 +106,11 @@ fun Context.buildSIMAccountLookupMap(): HashMap<String, SIMAccount> {
                 if (!iccId.isNullOrEmpty() && iccId !in map) {
                     map[iccId] = matchingAccount
                 }
+                // Huawei stores slot index (0-based) as subscription_id in the call log
+                val slotKey = subInfo.simSlotIndex.toString()
+                if (slotKey !in map) {
+                    map[slotKey] = matchingAccount
+                }
             } else if (simAccounts.isEmpty()) {
                 // TelecomManager returned nothing; create accounts from SubscriptionManager
                 val fallbackAccount = SIMAccount(
@@ -124,6 +129,10 @@ fun Context.buildSIMAccountLookupMap(): HashMap<String, SIMAccount> {
                 map[subId] = fallbackAccount
                 if (!iccId.isNullOrEmpty()) {
                     map[iccId] = fallbackAccount
+                }
+                val slotKey = subInfo.simSlotIndex.toString()
+                if (slotKey !in map) {
+                    map[slotKey] = fallbackAccount
                 }
             }
         }

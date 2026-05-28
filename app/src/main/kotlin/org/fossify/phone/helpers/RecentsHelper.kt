@@ -145,7 +145,8 @@ class RecentsHelper(private val context: Context) {
             Calls.TYPE,
             Calls.PHONE_ACCOUNT_ID,
             Calls.PHONE_ACCOUNT_COMPONENT_NAME,
-            Calls.NUMBER_PRESENTATION
+            Calls.NUMBER_PRESENTATION,
+            "subscription_id" // Huawei-specific: stores SIM slot index instead of phone_account_id
         )
 
         val accountIdToSimAccountMap = context.buildSIMAccountLookupMap()
@@ -242,7 +243,14 @@ class RecentsHelper(private val context: Context) {
 
                 val duration = cursor.getIntValue(Calls.DURATION)
                 val type = cursor.getIntValue(Calls.TYPE)
-                val accountId = cursor.getStringValue(Calls.PHONE_ACCOUNT_ID)
+                var accountId = cursor.getStringValue(Calls.PHONE_ACCOUNT_ID)
+                if (accountId.isNullOrEmpty()) {
+                    // Huawei uses a non-standard column name for the SIM identifier
+                    val hwIndex = cursor.getColumnIndex("subscription_id")
+                    if (hwIndex >= 0) {
+                        accountId = cursor.getString(hwIndex)
+                    }
+                }
                 val simAccount = accountIdToSimAccountMap[accountId]
                 var specificNumber = ""
                 var specificType = ""
