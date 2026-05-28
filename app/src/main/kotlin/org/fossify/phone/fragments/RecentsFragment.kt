@@ -169,6 +169,7 @@ class RecentsFragment(
                     itemDelete = { deleted ->
                         allRecentCalls = allRecentCalls.filter { it !in deleted }
                     },
+                    enableSwipeToCall = true,
                     itemClick = {
                         val recentCall = it as RecentCall
                         if (searchQuery.isNullOrEmpty()) {

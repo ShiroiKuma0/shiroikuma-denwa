@@ -116,6 +116,7 @@ class SettingsActivity : SimpleActivity() {
         setupShowCallConfirmation()
         setupDisableProximitySensor()
         setupDisableSwipeToAnswer()
+        setupSwipeToCall()
         setupAlwaysShowFullscreen()
         setupCallsExport()
         setupCallsImport()
@@ -418,6 +419,17 @@ class SettingsActivity : SimpleActivity() {
             settingsDisableSwipeToAnswerHolder.setOnClickListener {
                 settingsDisableSwipeToAnswer.toggle()
                 config.disableSwipeToAnswer = settingsDisableSwipeToAnswer.isChecked
+            }
+        }
+    }
+
+    private fun setupSwipeToCall() {
+        binding.apply {
+            settingsSwipeToCallHolder.beVisibleIf(areMultipleSIMsAvailable())
+            settingsSwipeToCall.isChecked = config.swipeToCall
+            settingsSwipeToCallHolder.setOnClickListener {
+                settingsSwipeToCall.toggle()
+                config.swipeToCall = settingsSwipeToCall.isChecked
             }
         }
     }

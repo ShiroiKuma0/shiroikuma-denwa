@@ -126,6 +126,7 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) : MyViewPa
                 viewType = viewType,
                 showDeleteButton = false,
                 enableDrag = true,
+                enableSwipeToCall = true,
                 itemClick = {
                     activity?.handleGenericContactClick(it as Contact)
                 },

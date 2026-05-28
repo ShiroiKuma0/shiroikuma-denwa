@@ -143,4 +143,8 @@ class Config(context: Context) : BaseConfig(context) {
     var sim2Color: Int
         get() = prefs.getInt(SIM_2_COLOR, -1)
         set(sim2Color) = prefs.edit().putInt(SIM_2_COLOR, sim2Color).apply()
+
+    var swipeToCall: Boolean
+        get() = prefs.getBoolean(SWIPE_TO_CALL, true)
+        set(swipeToCall) = prefs.edit().putBoolean(SWIPE_TO_CALL, swipeToCall).apply()
 }

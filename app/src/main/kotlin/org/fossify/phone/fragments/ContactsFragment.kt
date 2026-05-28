@@ -127,6 +127,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
                     contacts = contacts,
                     recyclerView = binding.fragmentList,
                     refreshItemsListener = this,
+                    enableSwipeToCall = true,
                     itemClick = {
                         activity?.handleGenericContactClick(it as Contact)
                     },
