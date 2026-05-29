@@ -84,6 +84,14 @@
     <string name="theme_call_log_missed">不在着信</string>
     <string name="theme_call_log_incoming">着信アイコン</string>
     <string name="theme_call_log_outgoing">発信アイコン</string>
+    <string name="theme_group_dialpad">ダイヤルパッド</string>
+    <string name="theme_group_in_call">通話画面</string>
+    <string name="theme_dialpad_call_button">発信ボタン</string>
+    <string name="theme_dialpad_call_icon">発信ボタンのアイコン</string>
+    <string name="theme_call_accept">応答</string>
+    <string name="theme_call_decline">拒否</string>
+    <string name="theme_call_control_active">操作ボタン（オン）</string>
+    <string name="theme_call_control_inactive">操作ボタン（オフ）</string>
     <string name="open_dialpad_by_default">アプリを開いたときにデフォルトでダイヤルパッドを開く</string>
     <string name="disable_proximity_sensor">通話中に近接センサーを無効にする</string>
     <string name="disable_swipe_to_answer">着信に応答する際のスワイプ操作をタップ操作に置き換える</string>

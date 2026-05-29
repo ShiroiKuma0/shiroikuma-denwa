@@ -102,6 +102,14 @@
     <string name="theme_call_log_missed">Missed call</string>
     <string name="theme_call_log_incoming">Incoming call icon</string>
     <string name="theme_call_log_outgoing">Outgoing call icon</string>
+    <string name="theme_group_dialpad">Dialpad</string>
+    <string name="theme_group_in_call">In-call screen</string>
+    <string name="theme_dialpad_call_button">Call button</string>
+    <string name="theme_dialpad_call_icon">Call button icon</string>
+    <string name="theme_call_accept">Accept call</string>
+    <string name="theme_call_decline">Decline call</string>
+    <string name="theme_call_control_active">Control button (active)</string>
+    <string name="theme_call_control_inactive">Control button (inactive)</string>
     <string name="open_dialpad_by_default">Open the dialpad by default when the app opens</string>
     <string name="disable_proximity_sensor">Disable proximity sensor during calls</string>
     <string name="disable_swipe_to_answer">Replace swiping at responding to incoming calls with clicking</string>

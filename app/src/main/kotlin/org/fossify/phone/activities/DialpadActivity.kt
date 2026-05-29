@@ -50,6 +50,8 @@ import org.fossify.phone.extensions.addCharacter
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.boundingBox
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.disableKeyboard
 import org.fossify.phone.extensions.getKeyEvent
 import org.fossify.phone.extensions.setupWithContacts
@@ -202,10 +204,10 @@ class DialpadActivity : SimpleActivity() {
         binding.apply {
             val callIcon = resources.getColoredDrawableWithColor(
                 drawableId = R.drawable.ic_phone_vector,
-                color = properPrimaryColor.getContrastColor()
+                color = themeColor(ThemeSlot.DIALPAD_CALL_ICON)
             )
             dialpadCallButton.setImageDrawable(callIcon)
-            dialpadCallButton.background.applyColorFilter(properPrimaryColor)
+            dialpadCallButton.background.applyColorFilter(themeColor(ThemeSlot.DIALPAD_CALL_BUTTON))
 
             letterFastscroller.textColor = getProperTextColor().getColorStateList()
             letterFastscroller.pressedTextColor = properPrimaryColor
