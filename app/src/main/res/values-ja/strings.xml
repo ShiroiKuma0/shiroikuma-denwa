@@ -92,6 +92,12 @@
     <string name="theme_call_decline">拒否</string>
     <string name="theme_call_control_active">操作ボタン（オン）</string>
     <string name="theme_call_control_inactive">操作ボタン（オフ）</string>
+    <string name="theme_group_contacts">連絡先</string>
+    <string name="theme_group_favorites">お気に入り</string>
+    <string name="theme_contact_name">連絡先の名前</string>
+    <string name="theme_contact_fastscroller">索引バー</string>
+    <string name="theme_favorite_name">お気に入りの名前</string>
+    <string name="theme_favorite_fastscroller">索引バー</string>
     <string name="open_dialpad_by_default">アプリを開いたときにデフォルトでダイヤルパッドを開く</string>
     <string name="disable_proximity_sensor">通話中に近接センサーを無効にする</string>
     <string name="disable_swipe_to_answer">着信に応答する際のスワイプ操作をタップ操作に置き換える</string>

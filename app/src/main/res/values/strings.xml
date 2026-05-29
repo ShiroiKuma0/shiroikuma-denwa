@@ -110,6 +110,12 @@
     <string name="theme_call_decline">Decline call</string>
     <string name="theme_call_control_active">Control button (active)</string>
     <string name="theme_call_control_inactive">Control button (inactive)</string>
+    <string name="theme_group_contacts">Contacts</string>
+    <string name="theme_group_favorites">Favorites</string>
+    <string name="theme_contact_name">Contact name</string>
+    <string name="theme_contact_fastscroller">Fast-scroller</string>
+    <string name="theme_favorite_name">Favorite name</string>
+    <string name="theme_favorite_fastscroller">Fast-scroller</string>
     <string name="open_dialpad_by_default">Open the dialpad by default when the app opens</string>
     <string name="disable_proximity_sensor">Disable proximity sensor during calls</string>
     <string name="disable_swipe_to_answer">Replace swiping at responding to incoming calls with clicking</string>
