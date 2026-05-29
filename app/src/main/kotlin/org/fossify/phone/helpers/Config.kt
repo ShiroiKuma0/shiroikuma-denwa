@@ -147,4 +147,8 @@ class Config(context: Context) : BaseConfig(context) {
     var swipeToCall: Boolean
         get() = prefs.getBoolean(SWIPE_TO_CALL, true)
         set(swipeToCall) = prefs.edit().putBoolean(SWIPE_TO_CALL, swipeToCall).apply()
+
+    var useImperialDate: Boolean
+        get() = prefs.getBoolean(USE_IMPERIAL_DATE, false)
+        set(useImperialDate) = prefs.edit().putBoolean(USE_IMPERIAL_DATE, useImperialDate).apply()
 }
