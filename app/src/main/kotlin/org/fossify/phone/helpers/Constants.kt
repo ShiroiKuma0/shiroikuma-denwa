@@ -23,6 +23,12 @@ const val SIM_1_COLOR = "sim_1_color"
 const val SIM_2_COLOR = "sim_2_color"
 const val SWIPE_TO_CALL = "swipe_to_call"
 const val USE_IMPERIAL_DATE = "use_imperial_date"
+const val THEME_V1_SEEDED = "theme_v1_seeded"
+
+// Granular theming
+const val THEME_UNSET = Int.MIN_VALUE // a slot with this stored value follows its inherited default
+const val PALETTE_BLACK = 0xFF000000.toInt()
+const val PALETTE_YELLOW = 0xFFFFEB3B.toInt()
 
 const val ALL_TABS_MASK = TAB_CONTACTS or TAB_FAVORITES or TAB_CALL_HISTORY
 

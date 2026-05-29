@@ -63,6 +63,8 @@ import org.fossify.phone.extensions.setupSwipeToCall
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.toImperialDateString
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.helpers.SwipeToCallCallback
@@ -88,8 +90,13 @@ class RecentCallsAdapter(
     private lateinit var incomingMissedCallIcon: Drawable
     var fontSize: Float = activity.getTextSize()
     private val areMultipleSIMsAvailable = activity.areMultipleSIMsAvailable()
-    private var missedCallColor = resources.getColor(R.color.color_missed_call)
+    private var missedCallColor = activity.themeColor(ThemeSlot.CALL_LOG_MISSED)
     private var secondaryTextColor = textColor.adjustAlpha(0.6f)
+    private val nameColor = activity.themeColor(ThemeSlot.CALL_LOG_NAME)
+    private val subtitleColor = activity.themeColor(ThemeSlot.CALL_LOG_SUBTITLE)
+    private val dateColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE)
+    private val incomingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_INCOMING)
+    private val outgoingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_OUTGOING)
     private var textToHighlight = ""
     private var durationPadding = resources.getDimension(R.dimen.normal_margin).toInt()
     private var phoneNumberUtilInstance: PhoneNumberUtil = PhoneNumberUtil.getInstance()
@@ -231,14 +238,11 @@ class RecentCallsAdapter(
     }
 
     fun initDrawables() {
-        val theme = activity.theme
-        missedCallColor = resources.getColor(R.color.color_missed_call, theme)
+        missedCallColor = activity.themeColor(ThemeSlot.CALL_LOG_MISSED)
         secondaryTextColor = textColor.adjustAlpha(0.6f)
 
-        val outgoingCallColor = resources.getColor(R.color.color_outgoing_call, theme)
-        val incomingCallColor = resources.getColor(R.color.color_incoming_call, theme)
-        outgoingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_made_vector, outgoingCallColor)
-        incomingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_received_vector, incomingCallColor)
+        outgoingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_made_vector, outgoingIconColor)
+        incomingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_received_vector, incomingIconColor)
         incomingMissedCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_missed_vector, missedCallColor)
     }
 
@@ -535,7 +539,7 @@ class RecentCallsAdapter(
 
                 itemRecentsName.apply {
                     text = nameToShow
-                    setTextColor(textColor)
+                    setTextColor(nameColor)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
                     isSelected = true
                 }
@@ -551,20 +555,20 @@ class RecentCallsAdapter(
                         call.startTS.formatTime(activity)
                     }
 
-                    setTextColor(if (call.type == Calls.MISSED_TYPE) missedCallColor else secondaryTextColor)
+                    setTextColor(if (call.type == Calls.MISSED_TYPE) missedCallColor else dateColor)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
                 }
 
                 itemRecentsDateTimeDurationSeparator.apply {
                     text = "•"
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
-                    setTextColor(textColor)
+                    setTextColor(subtitleColor)
                     beVisibleIf(shouldShowDuration)
                 }
 
                 itemRecentsDuration.apply {
                     text = context.formatSecondsToShortTimeString(call.duration)
-                    setTextColor(textColor)
+                    setTextColor(subtitleColor)
                     beVisibleIf(shouldShowDuration)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
                     if (!showOverflowMenu) {
@@ -590,7 +594,7 @@ class RecentCallsAdapter(
                     }
 
                     text = location
-                    setTextColor(textColor)
+                    setTextColor(subtitleColor)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
                     beVisibleIf(
                         phoneNumber != null
@@ -663,7 +667,7 @@ class RecentCallsAdapter(
     private inner class RecentCallDateViewHolder(val binding: ItemRecentsDateBinding) : ViewHolder(binding.root) {
         fun bind(date: CallLogItem.Date) {
             binding.dateTextView.apply {
-                setTextColor(secondaryTextColor)
+                setTextColor(dateColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.76f)
 
                 val now = DateTime.now()
