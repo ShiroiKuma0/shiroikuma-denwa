@@ -77,6 +77,31 @@
     <!-- Settings -->
     <string name="group_subsequent_calls">Group subsequent calls with the same number at the call log</string>
     <string name="use_imperial_date">Show dates in the Japanese imperial era format (令和八年五月二十九日（金曜日）)</string>
+    <string name="shiroikuma_ui_category">白い熊 電話 UI</string>
+    <string name="theme_and_colors">Theme &amp; colors</string>
+    <!-- Theme screen -->
+    <string name="theme_group_foundation">Foundation</string>
+    <string name="theme_group_search">Search bar</string>
+    <string name="theme_group_tabs">Tabs</string>
+    <string name="theme_group_call_log">Call log</string>
+    <string name="theme_background">Background</string>
+    <string name="theme_primary">Primary / accent</string>
+    <string name="theme_text">Text</string>
+    <string name="theme_text_secondary">Secondary text</string>
+    <string name="theme_search_fill">Search bar fill</string>
+    <string name="theme_search_text">Search bar text</string>
+    <string name="theme_search_hint">Search bar hint</string>
+    <string name="theme_search_icon">Search bar icon</string>
+    <string name="theme_search_border">Search bar border</string>
+    <string name="theme_tab_background">Tab bar background</string>
+    <string name="theme_tab_selected">Selected tab</string>
+    <string name="theme_tab_unselected">Unselected tab</string>
+    <string name="theme_call_log_name">Contact name</string>
+    <string name="theme_call_log_subtitle">Number &amp; details</string>
+    <string name="theme_call_log_date">Date &amp; time</string>
+    <string name="theme_call_log_missed">Missed call</string>
+    <string name="theme_call_log_incoming">Incoming call icon</string>
+    <string name="theme_call_log_outgoing">Outgoing call icon</string>
     <string name="open_dialpad_by_default">Open the dialpad by default when the app opens</string>
     <string name="disable_proximity_sensor">Disable proximity sensor during calls</string>
     <string name="disable_swipe_to_answer">Replace swiping at responding to incoming calls with clicking</string>

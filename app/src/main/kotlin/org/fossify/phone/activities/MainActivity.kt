@@ -6,11 +6,14 @@ import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.content.res.Configuration
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Icon
 import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
+import android.view.View
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -33,8 +36,10 @@ import org.fossify.phone.databinding.ActivityMainBinding
 import org.fossify.phone.dialogs.ChangeSortingDialog
 import org.fossify.phone.dialogs.FilterContactSourcesDialog
 import org.fossify.phone.extensions.clearMissedCalls
+import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.handleFullScreenNotificationsPermission
+import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.launchCreateNewContactIntent
 import org.fossify.phone.fragments.ContactsFragment
 import org.fossify.phone.fragments.FavoritesFragment
@@ -217,10 +222,15 @@ class MainActivity : SimpleActivity() {
             toggleHideOnScroll(false)
             setupMenu()
 
+            onSearchOpenListener = {
+                post { styleSearchBar() }
+            }
+
             onSearchClosedListener = {
                 getAllFragments().forEach {
                     it?.onSearchQueryChanged("")
                 }
+                post { styleSearchBar() }
             }
 
             onSearchTextChangedListener = { text ->
@@ -270,6 +280,30 @@ class MainActivity : SimpleActivity() {
 
     private fun updateMenuColors() {
         binding.mainMenu.updateColors()
+        styleSearchBar()
+    }
+
+    // Apply the granular search-bar theme on top of the commons defaults (must run after updateColors).
+    private fun styleSearchBar() {
+        val menu = binding.mainMenu
+        val radiusPx = 16f * resources.displayMetrics.density
+        val strokePx = (2 * resources.displayMetrics.density).toInt()
+
+        menu.findViewById<View>(org.fossify.commons.R.id.toolbar_container)?.background =
+            GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = radiusPx
+                setColor(themeColor(ThemeSlot.SEARCH_FILL))
+                setStroke(strokePx, themeColor(ThemeSlot.SEARCH_BORDER))
+            }
+
+        menu.findViewById<EditText>(org.fossify.commons.R.id.top_toolbar_search)?.apply {
+            setTextColor(themeColor(ThemeSlot.SEARCH_TEXT))
+            setHintTextColor(themeColor(ThemeSlot.SEARCH_HINT))
+        }
+
+        menu.findViewById<ImageView>(org.fossify.commons.R.id.top_toolbar_search_icon)
+            ?.applyColorFilter(themeColor(ThemeSlot.SEARCH_ICON))
     }
 
     private fun checkContactPermissions() {
@@ -323,14 +357,20 @@ class MainActivity : SimpleActivity() {
     private fun setupTabColors() {
         val activeView = binding.mainTabsHolder.getTabAt(binding.viewPager.currentItem)?.customView
         updateBottomTabItemColors(activeView, true, getSelectedTabDrawableIds()[binding.viewPager.currentItem])
+        colorTabItem(activeView, themeColor(ThemeSlot.TAB_SELECTED))
 
         getInactiveTabIndexes(binding.viewPager.currentItem).forEach { index ->
             val inactiveView = binding.mainTabsHolder.getTabAt(index)?.customView
             updateBottomTabItemColors(inactiveView, false, getDeselectedTabDrawableIds()[index])
+            colorTabItem(inactiveView, themeColor(ThemeSlot.TAB_UNSELECTED))
         }
 
-        val bottomBarColor = getBottomNavigationBackgroundColor()
-        binding.mainTabsHolder.setBackgroundColor(bottomBarColor)
+        binding.mainTabsHolder.setBackgroundColor(themeColor(ThemeSlot.TAB_BACKGROUND))
+    }
+
+    private fun colorTabItem(view: View?, color: Int) {
+        view?.findViewById<ImageView>(org.fossify.commons.R.id.tab_item_icon)?.applyColorFilter(color)
+        view?.findViewById<TextView>(org.fossify.commons.R.id.tab_item_label)?.setTextColor(color)
     }
 
     private fun getInactiveTabIndexes(activeIndex: Int) = (0 until binding.mainTabsHolder.tabCount).filter { it != activeIndex }

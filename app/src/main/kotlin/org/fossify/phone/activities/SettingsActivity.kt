@@ -95,6 +95,7 @@ class SettingsActivity : SimpleActivity() {
         setupTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow)
 
         setupCustomizeColors()
+        setupThemeAndColors()
         setupPrimaryColor()
         setupSim1Color()
         setupSim2Color()
@@ -126,6 +127,7 @@ class SettingsActivity : SimpleActivity() {
 
         binding.apply {
             arrayOf(
+                settingsShiroikumaUiLabel,
                 settingsColorCustomizationSectionLabel,
                 settingsGeneralSettingsLabel,
                 settingsStartupLabel,
@@ -162,6 +164,12 @@ class SettingsActivity : SimpleActivity() {
     private fun setupCustomizeColors() {
         binding.settingsColorCustomizationHolder.setOnClickListener {
             startCustomizationActivity()
+        }
+    }
+
+    private fun setupThemeAndColors() {
+        binding.settingsThemeAndColorsHolder.setOnClickListener {
+            startActivity(Intent(this, ThemeActivity::class.java))
         }
     }
 

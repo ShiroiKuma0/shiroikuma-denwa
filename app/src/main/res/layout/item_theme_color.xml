@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/theme_color_holder"
+    style="@style/SettingsHolderTextViewOneLinerStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <org.fossify.commons.views.MyTextView
+        android:id="@+id/theme_color_label"
+        style="@style/SettingsTextLabelStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/theme_color_preview"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/theme_color_preview"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginEnd="14dp"
+        android:background="@drawable/circle_background"
+        android:importantForAccessibility="no"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
