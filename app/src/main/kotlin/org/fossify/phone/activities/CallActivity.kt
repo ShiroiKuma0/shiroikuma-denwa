@@ -34,6 +34,8 @@ import org.fossify.phone.R
 import org.fossify.phone.databinding.ActivityCallBinding
 import org.fossify.phone.dialogs.DynamicBottomSheetChooserDialog
 import org.fossify.phone.extensions.*
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.helpers.*
 import org.fossify.phone.models.AudioRoute
 import org.fossify.phone.models.CallContact
@@ -318,8 +320,8 @@ class CallActivity : SimpleActivity() {
                 callRightArrow.setImageResource(R.drawable.ic_chevron_left_vector)
             }
 
-            callLeftArrow.applyColorFilter(getColor(R.color.md_red_400))
-            callRightArrow.applyColorFilter(getColor(R.color.md_green_400))
+            callLeftArrow.applyColorFilter(themeColor(ThemeSlot.CALL_DECLINE))
+            callRightArrow.applyColorFilter(themeColor(ThemeSlot.CALL_ACCEPT))
 
             startArrowAnimation(callLeftArrow, initialLeftArrowX, initialLeftArrowScaleX, initialLeftArrowScaleY, leftArrowTranslation)
             startArrowAnimation(callRightArrow, initialRightArrowX, initialRightArrowScaleX, initialRightArrowScaleY, rightArrowTranslation)
@@ -890,9 +892,9 @@ class CallActivity : SimpleActivity() {
         }
     }
 
-    private fun getActiveButtonColor() = getProperPrimaryColor()
+    private fun getActiveButtonColor() = themeColor(ThemeSlot.CALL_CONTROL_ACTIVE)
 
-    private fun getInactiveButtonColor() = getProperTextColor().adjustAlpha(0.10f)
+    private fun getInactiveButtonColor() = themeColor(ThemeSlot.CALL_CONTROL_INACTIVE)
 
     private fun toggleButtonColor(view: ImageView, enabled: Boolean) {
         if (enabled) {

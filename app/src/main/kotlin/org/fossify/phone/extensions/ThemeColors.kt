@@ -3,6 +3,7 @@ package org.fossify.phone.extensions
 import android.content.Context
 import androidx.annotation.StringRes
 import org.fossify.commons.extensions.adjustAlpha
+import org.fossify.commons.extensions.getContrastColor
 import org.fossify.commons.extensions.getProperBackgroundColor
 import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.getProperTextColor
@@ -24,6 +25,8 @@ enum class ThemeGroup(@StringRes val labelRes: Int) {
     SEARCH(R.string.theme_group_search),
     TABS(R.string.theme_group_tabs),
     CALL_LOG(R.string.theme_group_call_log),
+    DIALPAD(R.string.theme_group_dialpad),
+    IN_CALL(R.string.theme_group_in_call),
 }
 
 enum class ThemeSlot(
@@ -57,6 +60,16 @@ enum class ThemeSlot(
     CALL_LOG_MISSED("theme_call_log_missed", ThemeGroup.CALL_LOG, R.string.theme_call_log_missed),
     CALL_LOG_INCOMING("theme_call_log_incoming", ThemeGroup.CALL_LOG, R.string.theme_call_log_incoming),
     CALL_LOG_OUTGOING("theme_call_log_outgoing", ThemeGroup.CALL_LOG, R.string.theme_call_log_outgoing),
+
+    // Dialpad
+    DIALPAD_CALL_BUTTON("theme_dialpad_call_button", ThemeGroup.DIALPAD, R.string.theme_dialpad_call_button),
+    DIALPAD_CALL_ICON("theme_dialpad_call_icon", ThemeGroup.DIALPAD, R.string.theme_dialpad_call_icon),
+
+    // In-call
+    CALL_ACCEPT("theme_call_accept", ThemeGroup.IN_CALL, R.string.theme_call_accept),
+    CALL_DECLINE("theme_call_decline", ThemeGroup.IN_CALL, R.string.theme_call_decline),
+    CALL_CONTROL_ACTIVE("theme_call_control_active", ThemeGroup.IN_CALL, R.string.theme_call_control_active),
+    CALL_CONTROL_INACTIVE("theme_call_control_inactive", ThemeGroup.IN_CALL, R.string.theme_call_control_inactive),
 }
 
 /** The effective color for a slot: the user's override if set, otherwise its inherited default. */
@@ -92,6 +105,16 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CALL_LOG_MISSED -> resources.getColor(R.color.color_missed_call, theme)
     ThemeSlot.CALL_LOG_INCOMING -> resources.getColor(R.color.color_incoming_call, theme)
     ThemeSlot.CALL_LOG_OUTGOING -> resources.getColor(R.color.color_outgoing_call, theme)
+
+    // Dialpad
+    ThemeSlot.DIALPAD_CALL_BUTTON -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.DIALPAD_CALL_ICON -> themeColor(ThemeSlot.DIALPAD_CALL_BUTTON).getContrastColor()
+
+    // In-call: accept/decline keep their semantic green/red; controls follow primary/text
+    ThemeSlot.CALL_ACCEPT -> resources.getColor(R.color.md_green_400, theme)
+    ThemeSlot.CALL_DECLINE -> resources.getColor(R.color.md_red_400, theme)
+    ThemeSlot.CALL_CONTROL_ACTIVE -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.CALL_CONTROL_INACTIVE -> themeColor(ThemeSlot.TEXT).adjustAlpha(0.10f)
 }
 
 /** Set an explicit override for a slot. Foundation slots write through to the stock commons colors. */
