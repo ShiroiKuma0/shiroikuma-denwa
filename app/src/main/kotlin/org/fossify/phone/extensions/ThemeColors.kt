@@ -27,6 +27,8 @@ enum class ThemeGroup(@StringRes val labelRes: Int) {
     CALL_LOG(R.string.theme_group_call_log),
     DIALPAD(R.string.theme_group_dialpad),
     IN_CALL(R.string.theme_group_in_call),
+    CONTACTS(R.string.theme_group_contacts),
+    FAVORITES(R.string.theme_group_favorites),
 }
 
 enum class ThemeSlot(
@@ -70,6 +72,14 @@ enum class ThemeSlot(
     CALL_DECLINE("theme_call_decline", ThemeGroup.IN_CALL, R.string.theme_call_decline),
     CALL_CONTROL_ACTIVE("theme_call_control_active", ThemeGroup.IN_CALL, R.string.theme_call_control_active),
     CALL_CONTROL_INACTIVE("theme_call_control_inactive", ThemeGroup.IN_CALL, R.string.theme_call_control_inactive),
+
+    // Contacts
+    CONTACT_NAME("theme_contact_name", ThemeGroup.CONTACTS, R.string.theme_contact_name),
+    CONTACT_FASTSCROLLER("theme_contact_fastscroller", ThemeGroup.CONTACTS, R.string.theme_contact_fastscroller),
+
+    // Favorites
+    FAVORITE_NAME("theme_favorite_name", ThemeGroup.FAVORITES, R.string.theme_favorite_name),
+    FAVORITE_FASTSCROLLER("theme_favorite_fastscroller", ThemeGroup.FAVORITES, R.string.theme_favorite_fastscroller),
 }
 
 /** The effective color for a slot: the user's override if set, otherwise its inherited default. */
@@ -115,6 +125,11 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CALL_DECLINE -> resources.getColor(R.color.md_red_400, theme)
     ThemeSlot.CALL_CONTROL_ACTIVE -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.CALL_CONTROL_INACTIVE -> themeColor(ThemeSlot.TEXT).adjustAlpha(0.10f)
+
+    ThemeSlot.CONTACT_NAME -> themeColor(ThemeSlot.TEXT)
+    ThemeSlot.CONTACT_FASTSCROLLER -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.FAVORITE_NAME -> themeColor(ThemeSlot.TEXT)
+    ThemeSlot.FAVORITE_FASTSCROLLER -> themeColor(ThemeSlot.PRIMARY)
 }
 
 /** Set an explicit override for a slot. Foundation slots write through to the stock commons colors. */
