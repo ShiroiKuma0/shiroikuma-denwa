@@ -104,6 +104,12 @@
     <string name="theme_call_log_outgoing">Outgoing call icon</string>
     <string name="theme_call_log_divider">Line between calls</string>
     <string name="theme_call_log_day_divider">Day divider line</string>
+    <string name="theme_call_log_date_underline">Date underline</string>
+    <string name="theme_call_log_divider_thickness">Line between calls thickness</string>
+    <string name="theme_call_log_day_divider_thickness">Day divider thickness</string>
+    <string name="theme_call_log_date_underline_thickness">Date underline thickness</string>
+    <string name="theme_dp_value">%1$d dp</string>
+    <string name="theme_dp_none">0 dp (no line)</string>
     <string name="theme_group_dialpad">Dialpad</string>
     <string name="theme_group_in_call">In-call screen</string>
     <string name="theme_dialpad_call_button">Call button</string>

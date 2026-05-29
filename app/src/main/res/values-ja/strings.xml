@@ -86,6 +86,12 @@
     <string name="theme_call_log_outgoing">発信アイコン</string>
     <string name="theme_call_log_divider">通話間の区切り線</string>
     <string name="theme_call_log_day_divider">日付の区切り線</string>
+    <string name="theme_call_log_date_underline">日付の下線</string>
+    <string name="theme_call_log_divider_thickness">通話間の線の太さ</string>
+    <string name="theme_call_log_day_divider_thickness">日付区切り線の太さ</string>
+    <string name="theme_call_log_date_underline_thickness">日付下線の太さ</string>
+    <string name="theme_dp_value">%1$d dp</string>
+    <string name="theme_dp_none">0 dp（線なし）</string>
     <string name="theme_group_dialpad">ダイヤルパッド</string>
     <string name="theme_group_in_call">通話画面</string>
     <string name="theme_dialpad_call_button">発信ボタン</string>

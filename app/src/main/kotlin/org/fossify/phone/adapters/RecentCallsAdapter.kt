@@ -26,6 +26,8 @@ import org.fossify.commons.extensions.adjustAlpha
 import org.fossify.commons.extensions.adjustForContrast
 import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.beVisibleIf
+import org.fossify.commons.extensions.beGone
+import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.copyToClipboard
 import org.fossify.commons.extensions.formatDateOrTime
 import org.fossify.commons.extensions.formatPhoneNumber
@@ -61,7 +63,9 @@ import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
 import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.ThemeDimen
 import org.fossify.phone.extensions.themeColor
+import org.fossify.phone.extensions.themeDimenDp
 import org.fossify.phone.extensions.toImperialDateString
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.helpers.SwipeToCallCallback
@@ -94,6 +98,10 @@ class RecentCallsAdapter(
     private val dateColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE)
     private val callDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DIVIDER)
     private val dayDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DAY_DIVIDER)
+    private val dateUnderlineColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE_UNDERLINE)
+    private val callDividerThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DIVIDER_THICKNESS)
+    private val dayDividerThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DAY_DIVIDER_THICKNESS)
+    private val dateUnderlineThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DATE_UNDERLINE_THICKNESS)
     private val incomingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_INCOMING)
     private val outgoingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_OUTGOING)
     private var textToHighlight = ""
@@ -491,7 +499,7 @@ class RecentCallsAdapter(
         ) { _, _ ->
             binding.apply {
                 root.setupViewBackground(activity)
-                itemRecentsDivider.setBackgroundColor(callDividerColor)
+                applyLine(itemRecentsDivider, callDividerColor, callDividerThicknessDp)
 
                 val currentFontSize = fontSize
                 itemRecentsHolder.isSelected = selectedKeys.contains(call.id)
@@ -650,6 +658,18 @@ class RecentCallsAdapter(
         }
     }
 
+    private fun applyLine(view: View, color: Int, thicknessDp: Int) {
+        if (thicknessDp <= 0) {
+            view.beGone()
+        } else {
+            view.beVisible()
+            view.setBackgroundColor(color)
+            val params = view.layoutParams
+            params.height = (thicknessDp * view.resources.displayMetrics.density).toInt()
+            view.layoutParams = params
+        }
+    }
+
     private fun getAdjustedSimColor(simColor: Int): Int {
         return cachedSimColors.getOrPut(simColor to backgroundColor) {
             simColor.adjustForContrast(backgroundColor)
@@ -658,7 +678,8 @@ class RecentCallsAdapter(
 
     private inner class RecentCallDateViewHolder(val binding: ItemRecentsDateBinding) : ViewHolder(binding.root) {
         fun bind(date: CallLogItem.Date) {
-            binding.dayDivider.setBackgroundColor(dayDividerColor)
+            applyLine(binding.dayDivider, dayDividerColor, dayDividerThicknessDp)
+            applyLine(binding.dateUnderline, dateUnderlineColor, dateUnderlineThicknessDp)
             binding.dateTextView.apply {
                 setTextColor(dateColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.76f)
