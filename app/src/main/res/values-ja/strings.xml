@@ -84,6 +84,8 @@
     <string name="theme_call_log_missed">不在着信</string>
     <string name="theme_call_log_incoming">着信アイコン</string>
     <string name="theme_call_log_outgoing">発信アイコン</string>
+    <string name="theme_call_log_divider">通話間の区切り線</string>
+    <string name="theme_call_log_day_divider">日付の区切り線</string>
     <string name="theme_group_dialpad">ダイヤルパッド</string>
     <string name="theme_group_in_call">通話画面</string>
     <string name="theme_dialpad_call_button">発信ボタン</string>
