@@ -162,4 +162,8 @@ class Config(context: Context) : BaseConfig(context) {
     fun setThemeOverride(key: String, color: Int) = prefs.edit().putInt(key, color).apply()
 
     fun clearThemeOverride(key: String) = prefs.edit().remove(key).apply()
+
+    fun getThemeDimen(key: String, default: Int): Int = prefs.getInt(key, default)
+
+    fun setThemeDimen(key: String, dp: Int) = prefs.edit().putInt(key, dp).apply()
 }

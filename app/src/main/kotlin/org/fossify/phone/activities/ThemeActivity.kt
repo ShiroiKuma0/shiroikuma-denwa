@@ -2,19 +2,27 @@ package org.fossify.phone.activities
 
 import android.os.Bundle
 import android.widget.ImageView
+import android.widget.TextView
 import org.fossify.commons.dialogs.ColorPickerDialog
+import org.fossify.commons.dialogs.RadioGroupDialog
 import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.viewBinding
 import org.fossify.commons.helpers.NavigationIcon
+import org.fossify.commons.models.RadioItem
 import org.fossify.phone.databinding.ActivityThemeBinding
 import org.fossify.phone.databinding.ItemThemeColorBinding
+import org.fossify.phone.databinding.ItemThemeDimenBinding
 import org.fossify.phone.databinding.ItemThemeSectionBinding
+import org.fossify.phone.R
 import org.fossify.phone.extensions.ThemeGroup
+import org.fossify.phone.extensions.ThemeDimen
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.resetThemeColor
 import org.fossify.phone.extensions.setThemeColor
 import org.fossify.phone.extensions.themeColor
+import org.fossify.phone.extensions.themeDimenDp
+import org.fossify.phone.extensions.setThemeDimenDp
 
 class ThemeActivity : SimpleActivity() {
     private val binding by viewBinding(ActivityThemeBinding::inflate)
@@ -55,6 +63,29 @@ class ThemeActivity : SimpleActivity() {
                 previews[slot] = row.themeColorPreview
                 binding.themeHolder.addView(row.root)
             }
+
+            ThemeDimen.entries.filter { it.group == group }.forEach { dimen ->
+                val dimenRow = ItemThemeDimenBinding.inflate(layoutInflater, binding.themeHolder, false)
+                dimenRow.themeDimenLabel.text = getString(dimen.labelRes)
+                dimenRow.themeDimenLabel.setTextColor(textColor)
+                dimenRow.themeDimenValue.setTextColor(textColor)
+                dimenRow.themeDimenValue.text = dpLabel(themeDimenDp(dimen))
+                dimenRow.root.setOnClickListener { openDimenPicker(dimen, dimenRow.themeDimenValue) }
+                binding.themeHolder.addView(dimenRow.root)
+            }
+        }
+    }
+
+    private fun dpLabel(dp: Int) =
+        if (dp <= 0) getString(R.string.theme_dp_none) else getString(R.string.theme_dp_value, dp)
+
+    private fun openDimenPicker(dimen: ThemeDimen, valueView: TextView) {
+        val options = intArrayOf(0, 1, 2, 3, 4, 5, 6, 8, 10, 12)
+        val items = ArrayList<RadioItem>()
+        options.forEach { items.add(RadioItem(it, dpLabel(it))) }
+        RadioGroupDialog(this, items, themeDimenDp(dimen)) {
+            setThemeDimenDp(dimen, it as Int)
+            valueView.text = dpLabel(themeDimenDp(dimen))
         }
     }
 

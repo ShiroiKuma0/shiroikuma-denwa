@@ -64,6 +64,7 @@ enum class ThemeSlot(
     CALL_LOG_OUTGOING("theme_call_log_outgoing", ThemeGroup.CALL_LOG, R.string.theme_call_log_outgoing),
     CALL_LOG_DIVIDER("theme_call_log_divider", ThemeGroup.CALL_LOG, R.string.theme_call_log_divider),
     CALL_LOG_DAY_DIVIDER("theme_call_log_day_divider", ThemeGroup.CALL_LOG, R.string.theme_call_log_day_divider),
+    CALL_LOG_DATE_UNDERLINE("theme_call_log_date_underline", ThemeGroup.CALL_LOG, R.string.theme_call_log_date_underline),
 
     // Dialpad
     DIALPAD_CALL_BUTTON("theme_dialpad_call_button", ThemeGroup.DIALPAD, R.string.theme_dialpad_call_button),
@@ -83,6 +84,23 @@ enum class ThemeSlot(
     FAVORITE_NAME("theme_favorite_name", ThemeGroup.FAVORITES, R.string.theme_favorite_name),
     FAVORITE_FASTSCROLLER("theme_favorite_fastscroller", ThemeGroup.FAVORITES, R.string.theme_favorite_fastscroller),
 }
+
+// A configurable line thickness (in dp), grouped alongside the color slots in the Theme screen.
+enum class ThemeDimen(
+    val key: String,
+    val group: ThemeGroup,
+    @StringRes val labelRes: Int,
+    val defaultDp: Int,
+) {
+    CALL_LOG_DIVIDER_THICKNESS("theme_call_log_divider_thickness", ThemeGroup.CALL_LOG, R.string.theme_call_log_divider_thickness, 1),
+    CALL_LOG_DAY_DIVIDER_THICKNESS("theme_call_log_day_divider_thickness", ThemeGroup.CALL_LOG, R.string.theme_call_log_day_divider_thickness, 4),
+    CALL_LOG_DATE_UNDERLINE_THICKNESS("theme_call_log_date_underline_thickness", ThemeGroup.CALL_LOG, R.string.theme_call_log_date_underline_thickness, 2),
+}
+
+/** The effective thickness (dp) for a dimen: the user override, otherwise its default. */
+fun Context.themeDimenDp(dimen: ThemeDimen): Int = config.getThemeDimen(dimen.key, dimen.defaultDp)
+
+fun Context.setThemeDimenDp(dimen: ThemeDimen, dp: Int) = config.setThemeDimen(dimen.key, dp)
 
 /** The effective color for a slot: the user's override if set, otherwise its inherited default. */
 fun Context.themeColor(slot: ThemeSlot): Int {
@@ -119,6 +137,7 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CALL_LOG_OUTGOING -> resources.getColor(R.color.color_outgoing_call, theme)
     ThemeSlot.CALL_LOG_DIVIDER -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.CALL_LOG_DAY_DIVIDER -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.CALL_LOG_DATE_UNDERLINE -> themeColor(ThemeSlot.PRIMARY)
 
     // Dialpad
     ThemeSlot.DIALPAD_CALL_BUTTON -> themeColor(ThemeSlot.PRIMARY)
