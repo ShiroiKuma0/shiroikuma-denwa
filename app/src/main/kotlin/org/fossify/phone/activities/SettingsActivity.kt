@@ -112,6 +112,7 @@ class SettingsActivity : SimpleActivity() {
         setupOnContactClick()
         setupDialPadOpen()
         setupGroupSubsequentCalls()
+        setupImperialDate()
         setupStartNameWithSurname()
         setupFormatPhoneNumbers()
         setupDialpadVibrations()
@@ -371,6 +372,16 @@ class SettingsActivity : SimpleActivity() {
             settingsGroupSubsequentCallsHolder.setOnClickListener {
                 settingsGroupSubsequentCalls.toggle()
                 config.groupSubsequentCalls = settingsGroupSubsequentCalls.isChecked
+            }
+        }
+    }
+
+    private fun setupImperialDate() {
+        binding.apply {
+            settingsUseImperialDate.isChecked = config.useImperialDate
+            settingsUseImperialDateHolder.setOnClickListener {
+                settingsUseImperialDate.toggle()
+                config.useImperialDate = settingsUseImperialDate.isChecked
             }
         }
     }

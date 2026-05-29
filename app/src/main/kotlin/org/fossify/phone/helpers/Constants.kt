@@ -22,6 +22,7 @@ const val ALWAYS_SHOW_FULLSCREEN = "always_show_fullscreen"
 const val SIM_1_COLOR = "sim_1_color"
 const val SIM_2_COLOR = "sim_2_color"
 const val SWIPE_TO_CALL = "swipe_to_call"
+const val USE_IMPERIAL_DATE = "use_imperial_date"
 
 const val ALL_TABS_MASK = TAB_CONTACTS or TAB_FAVORITES or TAB_CALL_HISTORY
 

@@ -63,6 +63,7 @@ import org.fossify.phone.extensions.setupSwipeToCall
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
+import org.fossify.phone.extensions.toImperialDateString
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.helpers.SwipeToCallCallback
 import org.fossify.phone.interfaces.RefreshItemsListener
@@ -541,7 +542,11 @@ class RecentCallsAdapter(
 
                 itemRecentsDateTime.apply {
                     text = if (refreshItemsListener == null) {
-                        call.startTS.formatDateOrTime(context, hideTimeOnOtherDays = false, showCurrentYear = false, hideTodaysDate = false)
+                        if (context.config.useImperialDate) {
+                            "${call.startTS.toImperialDateString()} ${call.startTS.formatTime(context)}"
+                        } else {
+                            call.startTS.formatDateOrTime(context, hideTimeOnOtherDays = false, showCurrentYear = false, hideTodaysDate = false)
+                        }
                     } else {
                         call.startTS.formatTime(activity)
                     }
@@ -665,11 +670,15 @@ class RecentCallsAdapter(
                 text = when (date.dayCode) {
                     now.millis.getDayCode() -> activity.getString(R.string.today)
                     now.minusDays(1).millis.getDayCode() -> activity.getString(R.string.yesterday)
-                    else -> date.timestamp.formatDateOrTime(
-                        context = activity,
-                        hideTimeOnOtherDays = true,
-                        showCurrentYear = false
-                    )
+                    else -> if (activity.config.useImperialDate) {
+                        date.timestamp.toImperialDateString()
+                    } else {
+                        date.timestamp.formatDateOrTime(
+                            context = activity,
+                            hideTimeOnOtherDays = true,
+                            showCurrentYear = false
+                        )
+                    }
                 }
             }
         }
