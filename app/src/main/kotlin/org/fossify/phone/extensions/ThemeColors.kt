@@ -62,6 +62,8 @@ enum class ThemeSlot(
     CALL_LOG_MISSED("theme_call_log_missed", ThemeGroup.CALL_LOG, R.string.theme_call_log_missed),
     CALL_LOG_INCOMING("theme_call_log_incoming", ThemeGroup.CALL_LOG, R.string.theme_call_log_incoming),
     CALL_LOG_OUTGOING("theme_call_log_outgoing", ThemeGroup.CALL_LOG, R.string.theme_call_log_outgoing),
+    CALL_LOG_DIVIDER("theme_call_log_divider", ThemeGroup.CALL_LOG, R.string.theme_call_log_divider),
+    CALL_LOG_DAY_DIVIDER("theme_call_log_day_divider", ThemeGroup.CALL_LOG, R.string.theme_call_log_day_divider),
 
     // Dialpad
     DIALPAD_CALL_BUTTON("theme_dialpad_call_button", ThemeGroup.DIALPAD, R.string.theme_dialpad_call_button),
@@ -115,6 +117,8 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CALL_LOG_MISSED -> resources.getColor(R.color.color_missed_call, theme)
     ThemeSlot.CALL_LOG_INCOMING -> resources.getColor(R.color.color_incoming_call, theme)
     ThemeSlot.CALL_LOG_OUTGOING -> resources.getColor(R.color.color_outgoing_call, theme)
+    ThemeSlot.CALL_LOG_DIVIDER -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.CALL_LOG_DAY_DIVIDER -> themeColor(ThemeSlot.PRIMARY)
 
     // Dialpad
     ThemeSlot.DIALPAD_CALL_BUTTON -> themeColor(ThemeSlot.PRIMARY)

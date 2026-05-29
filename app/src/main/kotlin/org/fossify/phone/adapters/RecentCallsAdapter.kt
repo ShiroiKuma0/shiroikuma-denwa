@@ -95,6 +95,8 @@ class RecentCallsAdapter(
     private val nameColor = activity.themeColor(ThemeSlot.CALL_LOG_NAME)
     private val subtitleColor = activity.themeColor(ThemeSlot.CALL_LOG_SUBTITLE)
     private val dateColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE)
+    private val callDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DIVIDER)
+    private val dayDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DAY_DIVIDER)
     private val incomingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_INCOMING)
     private val outgoingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_OUTGOING)
     private var textToHighlight = ""
@@ -500,6 +502,7 @@ class RecentCallsAdapter(
         ) { _, _ ->
             binding.apply {
                 root.setupViewBackground(activity)
+                itemRecentsDivider.setBackgroundColor(callDividerColor)
 
                 val currentFontSize = fontSize
                 itemRecentsHolder.isSelected = selectedKeys.contains(call.id)
@@ -666,6 +669,7 @@ class RecentCallsAdapter(
 
     private inner class RecentCallDateViewHolder(val binding: ItemRecentsDateBinding) : ViewHolder(binding.root) {
         fun bind(date: CallLogItem.Date) {
+            binding.dayDivider.setBackgroundColor(dayDividerColor)
             binding.dateTextView.apply {
                 setTextColor(dateColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.76f)

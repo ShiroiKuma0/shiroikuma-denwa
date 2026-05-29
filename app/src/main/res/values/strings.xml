@@ -102,6 +102,8 @@
     <string name="theme_call_log_missed">Missed call</string>
     <string name="theme_call_log_incoming">Incoming call icon</string>
     <string name="theme_call_log_outgoing">Outgoing call icon</string>
+    <string name="theme_call_log_divider">Line between calls</string>
+    <string name="theme_call_log_day_divider">Day divider line</string>
     <string name="theme_group_dialpad">Dialpad</string>
     <string name="theme_group_in_call">In-call screen</string>
     <string name="theme_dialpad_call_button">Call button</string>
