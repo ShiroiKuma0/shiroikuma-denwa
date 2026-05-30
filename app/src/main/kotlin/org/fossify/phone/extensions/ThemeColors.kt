@@ -58,6 +58,7 @@ enum class ThemeSlot(
     MENU_TEXT("theme_menu_text", ThemeGroup.CHROME, R.string.theme_menu_text),
     HEADER_TITLE("theme_header_title", ThemeGroup.CHROME, R.string.theme_header_title),
     HEADER_ARROW("theme_header_arrow", ThemeGroup.CHROME, R.string.theme_header_arrow),
+    SETTINGS_BUTTON("theme_settings_button", ThemeGroup.CHROME, R.string.theme_settings_button, hasFont = true),
 
     // Tabs
     TAB_BACKGROUND("theme_tab_background", ThemeGroup.TABS, R.string.theme_tab_background),
@@ -137,6 +138,8 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.MENU_TEXT -> themeColor(ThemeSlot.TEXT)
     ThemeSlot.HEADER_TITLE -> themeColor(ThemeSlot.PRIMARY).getContrastColor()
     ThemeSlot.HEADER_ARROW -> themeColor(ThemeSlot.PRIMARY).getContrastColor()
+    // The 設定 shortcut sits in the search bar, so it follows the accent like the other top-bar icons
+    ThemeSlot.SETTINGS_BUTTON -> themeColor(ThemeSlot.PRIMARY)
 
     // Tabs
     ThemeSlot.TAB_BACKGROUND -> themeColor(ThemeSlot.BACKGROUND)

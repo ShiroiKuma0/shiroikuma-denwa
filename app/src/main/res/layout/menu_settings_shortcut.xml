@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The 設定 shortcut shown in the search bar, just left of the overflow icon. The two characters
+     touch (no inner spacing) but are independent tap targets: 設 opens the UI page, 定 the Settings. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_marginEnd="@dimen/small_margin"
+    android:gravity="center"
+    android:orientation="horizontal">
+
+    <org.fossify.commons.views.MyTextView
+        android:id="@+id/settings_shortcut_left"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:paddingStart="@dimen/medium_margin"
+        android:paddingEnd="0dp"
+        android:text="@string/settings_shortcut_left"
+        android:textSize="@dimen/extra_big_text_size" />
+
+    <org.fossify.commons.views.MyTextView
+        android:id="@+id/settings_shortcut_right"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:paddingStart="0dp"
+        android:paddingEnd="@dimen/medium_margin"
+        android:text="@string/settings_shortcut_right"
+        android:textSize="@dimen/extra_big_text_size" />
+
+</LinearLayout>
