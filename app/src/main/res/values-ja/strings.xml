@@ -109,7 +109,14 @@
     <string name="theme_subgroup_call_log_text">文字</string>
     <string name="theme_subgroup_call_log_types">通話の種類</string>
     <string name="theme_subgroup_call_log_dividers">区切り線</string>
-    <string name="theme_subgroup_call_log_date_format">日付の表示形式</string>
+    <string name="theme_subgroup_call_log_date_format">日付と時刻</string>
+    <string name="call_time_format">通話時刻の表示形式</string>
+    <string name="call_duration_format">通話時間の表示形式</string>
+    <string name="call_format_japanese">日本語（漢字）</string>
+    <string name="call_time_system">システムの設定</string>
+    <string name="call_time_24h">24時間制（14:53）</string>
+    <string name="call_time_12h">12時間制（午後2:53）</string>
+    <string name="call_duration_digital">数字（6:43）</string>
     <string name="theme_group_sim">SIMカード</string>
     <string name="theme_group_chrome">トップバーとメニュー</string>
     <string name="theme_subgroup_chrome_menu">メニュー</string>

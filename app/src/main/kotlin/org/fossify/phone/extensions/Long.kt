@@ -6,6 +6,58 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
+// Sino-Japanese clock readings for the call log: e.g. 14:53 -> 午後二時五十三分, 9:30 -> 午前九時半.
+// :00 drops the minute part, :30 becomes 半; noon/midnight get the special words 正午 / 正子.
+fun Long.toJapaneseClockString(): String {
+    val time = Instant.ofEpochMilli(this).atZone(ZoneId.systemDefault())
+    val hour = time.hour
+    val minute = time.minute
+    when {
+        hour == 12 && minute == 0 -> return "正午"
+        hour == 12 && minute == 30 -> return "正午半"
+        hour == 0 && minute == 0 -> return "正子"
+        hour == 0 && minute == 30 -> return "正子半"
+    }
+    val period = if (hour < 12) "午前" else "午後"
+    val hour12 = when {
+        hour == 0 -> 12
+        hour <= 12 -> hour
+        else -> hour - 12
+    }
+    val minutePart = when (minute) {
+        0 -> ""
+        30 -> "半"
+        else -> "${minute.toKanjiNumeral()}分"
+    }
+    return "$period${hour12.toKanjiNumeral()}時$minutePart"
+}
+
+// A call duration in seconds as kanji wrapped in full-width parentheses: 6 -> （六秒）,
+// 210 -> （三分半）, 403 -> （六分四十三秒）. A trailing 30s/30m becomes 半 of the unit above it.
+fun Int.toJapaneseDurationString(): String {
+    val core = if (this <= 0) {
+        "零秒"
+    } else {
+        val hours = this / 3600
+        val minutes = this % 3600 / 60
+        val seconds = this % 60
+        buildString {
+            if (hours > 0) append("${hours.toKanjiNumeral()}時間")
+            if (hours > 0 && minutes == 30 && seconds == 0) {
+                append("半")
+            } else {
+                if (minutes > 0) append("${minutes.toKanjiNumeral()}分")
+                if (minutes > 0 && seconds == 30) {
+                    append("半")
+                } else if (seconds > 0) {
+                    append("${seconds.toKanjiNumeral()}秒")
+                }
+            }
+        }
+    }
+    return "（$core）"
+}
+
 fun Long.getDayCode(): String {
     return toDayCode("yyyy-MM-dd") // format helps with sorting in call log
 }
@@ -38,7 +90,7 @@ fun Long.toImperialDateString(): String {
 
 // Converts 1..99 to everyday kanji numerals (e.g. 29 -> 二十九). Covers all era
 // years (≤64), months (≤12) and days (≤31) that appear in a date.
-private fun Int.toKanjiNumeral(): String {
+internal fun Int.toKanjiNumeral(): String {
     if (this <= 0) return "〇"
     val digits = arrayOf("", "一", "二", "三", "四", "五", "六", "七", "八", "九")
     val tens = this / 10
