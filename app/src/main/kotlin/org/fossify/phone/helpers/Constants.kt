@@ -23,6 +23,8 @@ const val SIM_1_COLOR = "sim_1_color"
 const val SIM_2_COLOR = "sim_2_color"
 const val SWIPE_TO_CALL = "swipe_to_call"
 const val USE_IMPERIAL_DATE = "use_imperial_date"
+const val CALL_TIME_FORMAT = "call_time_format"
+const val CALL_DURATION_FORMAT = "call_duration_format"
 const val THEME_V1_SEEDED = "theme_v1_seeded"
 
 // Granular theming

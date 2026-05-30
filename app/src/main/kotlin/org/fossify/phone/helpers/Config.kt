@@ -152,6 +152,15 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(USE_IMPERIAL_DATE, false)
         set(useImperialDate) = prefs.edit().putBoolean(USE_IMPERIAL_DATE, useImperialDate).apply()
 
+    // Index into CallTimeFormat / CallDurationFormat; 0 (Japanese kanji) is the default.
+    var callTimeFormat: Int
+        get() = prefs.getInt(CALL_TIME_FORMAT, 0)
+        set(value) = prefs.edit().putInt(CALL_TIME_FORMAT, value).apply()
+
+    var callDurationFormat: Int
+        get() = prefs.getInt(CALL_DURATION_FORMAT, 0)
+        set(value) = prefs.edit().putInt(CALL_DURATION_FORMAT, value).apply()
+
     // Granular theming: one Int override per color slot, THEME_UNSET means "follow the default".
     var themeV1Seeded: Boolean
         get() = prefs.getBoolean(THEME_V1_SEEDED, false)

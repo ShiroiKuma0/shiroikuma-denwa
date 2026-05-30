@@ -19,10 +19,15 @@ import org.fossify.phone.databinding.ItemThemeDimenBinding
 import org.fossify.phone.databinding.ItemThemeSectionBinding
 import org.fossify.phone.databinding.ItemThemeSubgroupBinding
 import org.fossify.phone.databinding.ItemThemeSwitchBinding
+import org.fossify.phone.databinding.ItemThemeValueBinding
+import org.fossify.phone.extensions.CallDurationFormat
+import org.fossify.phone.extensions.CallTimeFormat
 import org.fossify.phone.extensions.ThemeDimen
 import org.fossify.phone.extensions.ThemeGroup
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
+import org.fossify.phone.extensions.callDurationFormatOf
+import org.fossify.phone.extensions.callTimeFormatOf
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getAvailableSIMCardLabels
 import org.fossify.phone.extensions.resetThemeColor
@@ -101,6 +106,20 @@ class ThemeActivity : SimpleActivity() {
         addDimenRow(ThemeDimen.CALL_LOG_DATE_UNDERLINE_THICKNESS, stepPx * 2)
         addSubgroup(R.string.theme_subgroup_call_log_date_format, primaryColor)
         addSwitchRow(R.string.use_imperial_date, config.useImperialDate, stepPx * 2) { config.useImperialDate = it }
+        addValueRow(R.string.call_time_format, getString(callTimeFormatOf(config.callTimeFormat).labelRes), stepPx * 2) { valueView ->
+            val items = ArrayList(CallTimeFormat.entries.map { RadioItem(it.ordinal, getString(it.labelRes)) })
+            RadioGroupDialog(this, items, config.callTimeFormat) {
+                config.callTimeFormat = it as Int
+                valueView.text = getString(callTimeFormatOf(config.callTimeFormat).labelRes)
+            }
+        }
+        addValueRow(R.string.call_duration_format, getString(callDurationFormatOf(config.callDurationFormat).labelRes), stepPx * 2) { valueView ->
+            val items = ArrayList(CallDurationFormat.entries.map { RadioItem(it.ordinal, getString(it.labelRes)) })
+            RadioGroupDialog(this, items, config.callDurationFormat) {
+                config.callDurationFormat = it as Int
+                valueView.text = getString(callDurationFormatOf(config.callDurationFormat).labelRes)
+            }
+        }
 
         // Dialpad
         addSection(R.string.theme_group_dialpad, primaryColor)
@@ -167,6 +186,17 @@ class ThemeActivity : SimpleActivity() {
         row.themeDimenValue.setTextColor(getProperTextColor())
         row.themeDimenValue.text = dpLabel(themeDimenDp(dimen))
         row.root.setOnClickListener { openDimenPicker(dimen, row.themeDimenValue) }
+        indentRow(row.root, indent)
+        binding.themeHolder.addView(row.root)
+    }
+
+    private fun addValueRow(@StringRes labelRes: Int, value: String, indent: Int, onClick: (TextView) -> Unit) {
+        val row = ItemThemeValueBinding.inflate(layoutInflater, binding.themeHolder, false)
+        row.themeValueLabel.text = getString(labelRes)
+        row.themeValueLabel.setTextColor(getProperTextColor())
+        row.themeValue.setTextColor(getProperTextColor())
+        row.themeValue.text = value
+        row.root.setOnClickListener { onClick(row.themeValue) }
         indentRow(row.root, indent)
         binding.themeHolder.addView(row.root)
     }

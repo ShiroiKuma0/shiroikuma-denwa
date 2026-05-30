@@ -33,8 +33,6 @@ import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.copyToClipboard
 import org.fossify.commons.extensions.formatDateOrTime
 import org.fossify.commons.extensions.formatPhoneNumber
-import org.fossify.commons.extensions.formatSecondsToShortTimeString
-import org.fossify.commons.extensions.formatTime
 import org.fossify.commons.extensions.getColoredDrawableWithColor
 import org.fossify.commons.extensions.getContrastColor
 import org.fossify.commons.extensions.getPopupMenuTheme
@@ -59,6 +57,8 @@ import org.fossify.phone.dialogs.ShowGroupedCallsDialog
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.formatCallDuration
+import org.fossify.phone.extensions.formatCallTime
 import org.fossify.phone.extensions.getDayCode
 import org.fossify.phone.extensions.getSimSwipeColors
 import org.fossify.phone.extensions.setupSwipeToCall
@@ -558,12 +558,12 @@ class RecentCallsAdapter(
                 itemRecentsDateTime.apply {
                     text = if (refreshItemsListener == null) {
                         if (context.config.useImperialDate) {
-                            "${call.startTS.toImperialDateString()} ${call.startTS.formatTime(context)}"
+                            "${call.startTS.toImperialDateString()} ${call.startTS.formatCallTime(context)}"
                         } else {
                             call.startTS.formatDateOrTime(context, hideTimeOnOtherDays = false, showCurrentYear = false, hideTodaysDate = false)
                         }
                     } else {
-                        call.startTS.formatTime(activity)
+                        call.startTS.formatCallTime(activity)
                     }
 
                     setTextColor(if (call.type == Calls.MISSED_TYPE) missedCallColor else dateColor)
@@ -578,7 +578,7 @@ class RecentCallsAdapter(
                 }
 
                 itemRecentsDuration.apply {
-                    text = context.formatSecondsToShortTimeString(call.duration)
+                    text = call.duration.formatCallDuration(context)
                     setTextColor(subtitleColor)
                     beVisibleIf(shouldShowDuration)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)

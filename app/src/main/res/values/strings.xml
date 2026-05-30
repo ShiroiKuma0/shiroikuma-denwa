@@ -127,7 +127,14 @@
     <string name="theme_subgroup_call_log_text">Text</string>
     <string name="theme_subgroup_call_log_types">Call types</string>
     <string name="theme_subgroup_call_log_dividers">Dividers &amp; lines</string>
-    <string name="theme_subgroup_call_log_date_format">Date format</string>
+    <string name="theme_subgroup_call_log_date_format">Date &amp; time</string>
+    <string name="call_time_format">Call time format</string>
+    <string name="call_duration_format">Call duration format</string>
+    <string name="call_format_japanese">Japanese (kanji)</string>
+    <string name="call_time_system">System default</string>
+    <string name="call_time_24h">24-hour (14:53)</string>
+    <string name="call_time_12h">12-hour (2:53 PM)</string>
+    <string name="call_duration_digital">Digital (6:43)</string>
     <string name="theme_group_sim">SIM cards</string>
     <string name="theme_group_chrome">Top bar &amp; menu</string>
     <string name="theme_subgroup_chrome_menu">Overflow menu</string>
