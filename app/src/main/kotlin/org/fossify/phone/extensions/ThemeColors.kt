@@ -69,6 +69,7 @@ enum class ThemeSlot(
     CALL_LOG_NAME("theme_call_log_name", ThemeGroup.CALL_LOG, R.string.theme_call_log_name, hasFont = true),
     CALL_LOG_SUBTITLE("theme_call_log_subtitle", ThemeGroup.CALL_LOG, R.string.theme_call_log_subtitle, hasFont = true),
     CALL_LOG_DATE("theme_call_log_date", ThemeGroup.CALL_LOG, R.string.theme_call_log_date, hasFont = true),
+    CALL_LOG_DAY_DATE("theme_call_log_day_date", ThemeGroup.CALL_LOG, R.string.theme_call_log_day_date, hasFont = true),
     CALL_LOG_MISSED("theme_call_log_missed", ThemeGroup.CALL_LOG, R.string.theme_call_log_missed),
     CALL_LOG_INCOMING("theme_call_log_incoming", ThemeGroup.CALL_LOG, R.string.theme_call_log_incoming),
     CALL_LOG_OUTGOING("theme_call_log_outgoing", ThemeGroup.CALL_LOG, R.string.theme_call_log_outgoing),
@@ -150,6 +151,7 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CALL_LOG_NAME -> themeColor(ThemeSlot.TEXT)
     ThemeSlot.CALL_LOG_SUBTITLE -> themeColor(ThemeSlot.TEXT_SECONDARY)
     ThemeSlot.CALL_LOG_DATE -> themeColor(ThemeSlot.TEXT_SECONDARY)
+    ThemeSlot.CALL_LOG_DAY_DATE -> themeColor(ThemeSlot.TEXT_SECONDARY)
     // Semantic call-type colors keep their meaning by default
     ThemeSlot.CALL_LOG_MISSED -> resources.getColor(R.color.color_missed_call, theme)
     ThemeSlot.CALL_LOG_INCOMING -> resources.getColor(R.color.color_incoming_call, theme)

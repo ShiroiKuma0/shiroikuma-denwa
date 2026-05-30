@@ -97,17 +97,18 @@ class RecentCallsAdapter(
     private val areMultipleSIMsAvailable = activity.areMultipleSIMsAvailable()
     private var missedCallColor = activity.themeColor(ThemeSlot.CALL_LOG_MISSED)
     private var secondaryTextColor = textColor.adjustAlpha(0.6f)
-    private val nameColor = activity.themeColor(ThemeSlot.CALL_LOG_NAME)
-    private val subtitleColor = activity.themeColor(ThemeSlot.CALL_LOG_SUBTITLE)
-    private val dateColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE)
-    private val callDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DIVIDER)
-    private val dayDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DAY_DIVIDER)
-    private val dateUnderlineColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE_UNDERLINE)
-    private val callDividerThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DIVIDER_THICKNESS)
-    private val dayDividerThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DAY_DIVIDER_THICKNESS)
-    private val dateUnderlineThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DATE_UNDERLINE_THICKNESS)
-    private val incomingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_INCOMING)
-    private val outgoingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_OUTGOING)
+    private var nameColor = activity.themeColor(ThemeSlot.CALL_LOG_NAME)
+    private var subtitleColor = activity.themeColor(ThemeSlot.CALL_LOG_SUBTITLE)
+    private var dateColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE)
+    private var dayDateColor = activity.themeColor(ThemeSlot.CALL_LOG_DAY_DATE)
+    private var callDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DIVIDER)
+    private var dayDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DAY_DIVIDER)
+    private var dateUnderlineColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE_UNDERLINE)
+    private var callDividerThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DIVIDER_THICKNESS)
+    private var dayDividerThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DAY_DIVIDER_THICKNESS)
+    private var dateUnderlineThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DATE_UNDERLINE_THICKNESS)
+    private var incomingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_INCOMING)
+    private var outgoingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_OUTGOING)
     private var textToHighlight = ""
     private var durationPadding = resources.getDimension(R.dimen.normal_margin).toInt()
     private var phoneNumberUtilInstance: PhoneNumberUtil = PhoneNumberUtil.getInstance()
@@ -249,8 +250,22 @@ class RecentCallsAdapter(
     }
 
     fun initDrawables() {
+        // Re-read every themed colour/thickness so a change in the UI page shows on the next bind
+        // (setupColors → initDrawables runs when we return from settings, before the list re-binds).
         missedCallColor = activity.themeColor(ThemeSlot.CALL_LOG_MISSED)
         secondaryTextColor = textColor.adjustAlpha(0.6f)
+        nameColor = activity.themeColor(ThemeSlot.CALL_LOG_NAME)
+        subtitleColor = activity.themeColor(ThemeSlot.CALL_LOG_SUBTITLE)
+        dateColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE)
+        dayDateColor = activity.themeColor(ThemeSlot.CALL_LOG_DAY_DATE)
+        callDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DIVIDER)
+        dayDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DAY_DIVIDER)
+        dateUnderlineColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE_UNDERLINE)
+        callDividerThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DIVIDER_THICKNESS)
+        dayDividerThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DAY_DIVIDER_THICKNESS)
+        dateUnderlineThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DATE_UNDERLINE_THICKNESS)
+        incomingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_INCOMING)
+        outgoingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_OUTGOING)
 
         outgoingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_made_vector, outgoingIconColor)
         incomingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_received_vector, incomingIconColor)
@@ -697,8 +712,9 @@ class RecentCallsAdapter(
             applyLine(binding.dayDivider, dayDividerColor, dayDividerThicknessDp)
             applyLine(binding.dateUnderline, dateUnderlineColor, dateUnderlineThicknessDp)
             binding.dateTextView.apply {
-                setTextColor(dateColor)
+                setTextColor(dayDateColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.76f)
+                applyThemeFont(ThemeSlot.CALL_LOG_DAY_DATE)
 
                 val now = DateTime.now()
                 text = when (date.dayCode) {

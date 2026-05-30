@@ -81,6 +81,7 @@
     <string name="theme_call_log_name">連絡先の名前</string>
     <string name="theme_call_log_subtitle">番号・詳細</string>
     <string name="theme_call_log_date">日時</string>
+    <string name="theme_call_log_day_date">日付の見出し</string>
     <string name="theme_call_log_missed">不在着信</string>
     <string name="theme_call_log_incoming">着信アイコン</string>
     <string name="theme_call_log_outgoing">発信アイコン</string>
