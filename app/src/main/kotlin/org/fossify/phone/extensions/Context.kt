@@ -18,6 +18,7 @@ import org.fossify.commons.extensions.telecomManager
 import org.fossify.commons.helpers.KEY_PHONE
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.phone.helpers.Config
+import org.fossify.phone.helpers.MissedCallNotifier
 import org.fossify.phone.models.SIMAccount
 
 val Context.config: Config get() = Config.newInstance(applicationContext)
@@ -158,8 +159,11 @@ fun Context.buildSIMAccountLookupMap(): HashMap<String, SIMAccount> {
 fun Context.clearMissedCalls() {
     ensureBackgroundThread {
         try {
-            // notification cancellation triggers MissedCallNotifier.clearMissedCalls() which, in turn,
-            // should update the database and reset the cached missed call count in MissedCallNotifier.java
+            // dismiss our own missed-call notification (posted by MissedCallNotifier)…
+            MissedCallNotifier(this).cancel()
+            // …and tell Telecom to clear its missed-call state. notification cancellation triggers
+            // MissedCallNotifier.clearMissedCalls() which, in turn, should update the database and
+            // reset the cached missed call count in MissedCallNotifier.java
             // https://android.googlesource.com/platform/packages/services/Telecomm/+/master/src/com/android/server/telecom/ui/MissedCallNotifierImpl.java#170
             telecomManager.cancelMissedCallsNotification()
         } catch (ignored: Exception) {
