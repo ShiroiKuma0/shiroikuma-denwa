@@ -23,6 +23,7 @@ import org.fossify.phone.helpers.THEME_UNSET
 enum class ThemeGroup(@StringRes val labelRes: Int) {
     FOUNDATION(R.string.theme_group_foundation),
     SEARCH(R.string.theme_group_search),
+    CHROME(R.string.theme_group_chrome),
     TABS(R.string.theme_group_tabs),
     CALL_LOG(R.string.theme_group_call_log),
     DIALPAD(R.string.theme_group_dialpad),
@@ -49,6 +50,12 @@ enum class ThemeSlot(
     SEARCH_HINT("theme_search_hint", ThemeGroup.SEARCH, R.string.theme_search_hint),
     SEARCH_ICON("theme_search_icon", ThemeGroup.SEARCH, R.string.theme_search_icon),
     SEARCH_BORDER("theme_search_border", ThemeGroup.SEARCH, R.string.theme_search_border),
+
+    // Top bar & overflow ("hamburger") menu
+    MENU_ICON("theme_menu_icon", ThemeGroup.CHROME, R.string.theme_menu_icon),
+    MENU_TEXT("theme_menu_text", ThemeGroup.CHROME, R.string.theme_menu_text),
+    HEADER_TITLE("theme_header_title", ThemeGroup.CHROME, R.string.theme_header_title),
+    HEADER_ARROW("theme_header_arrow", ThemeGroup.CHROME, R.string.theme_header_arrow),
 
     // Tabs
     TAB_BACKGROUND("theme_tab_background", ThemeGroup.TABS, R.string.theme_tab_background),
@@ -121,6 +128,13 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.SEARCH_HINT -> themeColor(ThemeSlot.PRIMARY).adjustAlpha(0.5f)
     ThemeSlot.SEARCH_ICON -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.SEARCH_BORDER -> themeColor(ThemeSlot.PRIMARY)
+
+    // Top bar & overflow menu: icons follow the accent; the Settings header title/arrow contrast the
+    // primary-coloured toolbar (matching commons' default), and the overflow menu text follows the text.
+    ThemeSlot.MENU_ICON -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.MENU_TEXT -> themeColor(ThemeSlot.TEXT)
+    ThemeSlot.HEADER_TITLE -> themeColor(ThemeSlot.PRIMARY).getContrastColor()
+    ThemeSlot.HEADER_ARROW -> themeColor(ThemeSlot.PRIMARY).getContrastColor()
 
     // Tabs
     ThemeSlot.TAB_BACKGROUND -> themeColor(ThemeSlot.BACKGROUND)

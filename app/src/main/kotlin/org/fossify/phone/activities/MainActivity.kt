@@ -12,6 +12,9 @@ import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
@@ -281,6 +284,25 @@ class MainActivity : SimpleActivity() {
     private fun updateMenuColors() {
         binding.mainMenu.updateColors()
         styleSearchBar()
+        styleTopBarMenu()
+    }
+
+    // Tint the top bar's action + overflow ("hamburger") icons, and colour the overflow-menu item text.
+    private fun styleTopBarMenu() {
+        val iconColor = themeColor(ThemeSlot.MENU_ICON)
+        val menuTextColor = themeColor(ThemeSlot.MENU_TEXT)
+        val toolbar = binding.mainMenu.requireToolbar()
+        toolbar.overflowIcon?.applyColorFilter(iconColor)
+        val toolbarMenu = toolbar.menu
+        for (i in 0 until toolbarMenu.size()) {
+            val item = toolbarMenu.getItem(i)
+            item.icon?.applyColorFilter(iconColor)
+            item.title?.let { title ->
+                item.title = SpannableString(title).apply {
+                    setSpan(ForegroundColorSpan(menuTextColor), 0, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+            }
+        }
     }
 
     // Apply the granular search-bar theme on top of the commons defaults (must run after updateColors).
