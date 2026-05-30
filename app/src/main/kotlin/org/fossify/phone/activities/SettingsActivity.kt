@@ -38,10 +38,8 @@ import org.fossify.phone.R
 import org.fossify.phone.databinding.ActivitySettingsBinding
 import org.fossify.phone.dialogs.ExportCallHistoryDialog
 import org.fossify.phone.dialogs.ManageVisibleTabsDialog
-import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.canLaunchAccountsConfiguration
 import org.fossify.phone.extensions.config
-import org.fossify.phone.extensions.getAvailableSIMCardLabels
 import org.fossify.phone.extensions.launchAccountsConfiguration
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.models.RecentCall
@@ -95,10 +93,8 @@ class SettingsActivity : SimpleActivity() {
         setupTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow)
 
         setupCustomizeColors()
-        setupThemeAndColors()
+        setupShiroikumaUi()
         setupPrimaryColor()
-        setupSim1Color()
-        setupSim2Color()
         setupUseEnglish()
         setupLanguage()
         setupManageBlockedNumbers()
@@ -110,7 +106,6 @@ class SettingsActivity : SimpleActivity() {
         setupOnContactClick()
         setupDialPadOpen()
         setupGroupSubsequentCalls()
-        setupImperialDate()
         setupStartNameWithSurname()
         setupFormatPhoneNumbers()
         setupDialpadVibrations()
@@ -119,7 +114,6 @@ class SettingsActivity : SimpleActivity() {
         setupShowCallConfirmation()
         setupDisableProximitySensor()
         setupDisableSwipeToAnswer()
-        setupSwipeToCall()
         setupAlwaysShowFullscreen()
         setupCallsExport()
         setupCallsImport()
@@ -127,7 +121,6 @@ class SettingsActivity : SimpleActivity() {
 
         binding.apply {
             arrayOf(
-                settingsShiroikumaUiLabel,
                 settingsColorCustomizationSectionLabel,
                 settingsGeneralSettingsLabel,
                 settingsStartupLabel,
@@ -167,8 +160,8 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
-    private fun setupThemeAndColors() {
-        binding.settingsThemeAndColorsHolder.setOnClickListener {
+    private fun setupShiroikumaUi() {
+        binding.settingsShiroikumaUiHolder.setOnClickListener {
             startActivity(Intent(this, ThemeActivity::class.java))
         }
     }
@@ -193,49 +186,6 @@ class SettingsActivity : SimpleActivity() {
         config.primaryColor = color
         // re-theme Settings immediately; other screens re-read the color on their next launch
         recreate()
-    }
-
-    private fun getSimDefaultColor(simId: Int): Int {
-        val simAccounts = getAvailableSIMCardLabels()
-        return simAccounts.firstOrNull { it.id == simId }?.color ?: getProperPrimaryColor()
-    }
-
-    private fun setupSim1Color() {
-        binding.apply {
-            settingsSim1ColorHolder.beVisibleIf(areMultipleSIMsAvailable())
-            val currentColor = if (config.sim1Color != -1) config.sim1Color else getSimDefaultColor(1)
-            settingsSim1ColorPreview.background.setTint(currentColor)
-            settingsSim1ColorHolder.setOnClickListener {
-                ColorPickerDialog(this@SettingsActivity, currentColor, addDefaultColorButton = true) { wasPositive, color ->
-                    if (wasPositive) {
-                        config.sim1Color = color
-                        settingsSim1ColorPreview.background.setTint(color)
-                    } else {
-                        config.sim1Color = -1
-                        settingsSim1ColorPreview.background.setTint(getSimDefaultColor(1))
-                    }
-                }
-            }
-        }
-    }
-
-    private fun setupSim2Color() {
-        binding.apply {
-            settingsSim2ColorHolder.beVisibleIf(areMultipleSIMsAvailable())
-            val currentColor = if (config.sim2Color != -1) config.sim2Color else getSimDefaultColor(2)
-            settingsSim2ColorPreview.background.setTint(currentColor)
-            settingsSim2ColorHolder.setOnClickListener {
-                ColorPickerDialog(this@SettingsActivity, currentColor, addDefaultColorButton = true) { wasPositive, color ->
-                    if (wasPositive) {
-                        config.sim2Color = color
-                        settingsSim2ColorPreview.background.setTint(color)
-                    } else {
-                        config.sim2Color = -1
-                        settingsSim2ColorPreview.background.setTint(getSimDefaultColor(2))
-                    }
-                }
-            }
-        }
     }
 
     private fun setupUseEnglish() {
@@ -377,16 +327,6 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
-    private fun setupImperialDate() {
-        binding.apply {
-            settingsUseImperialDate.isChecked = config.useImperialDate
-            settingsUseImperialDateHolder.setOnClickListener {
-                settingsUseImperialDate.toggle()
-                config.useImperialDate = settingsUseImperialDate.isChecked
-            }
-        }
-    }
-
     private fun setupStartNameWithSurname() {
         binding.apply {
             settingsStartNameWithSurname.isChecked = config.startNameWithSurname
@@ -461,17 +401,6 @@ class SettingsActivity : SimpleActivity() {
             settingsDisableSwipeToAnswerHolder.setOnClickListener {
                 settingsDisableSwipeToAnswer.toggle()
                 config.disableSwipeToAnswer = settingsDisableSwipeToAnswer.isChecked
-            }
-        }
-    }
-
-    private fun setupSwipeToCall() {
-        binding.apply {
-            settingsSwipeToCallHolder.beVisibleIf(areMultipleSIMsAvailable())
-            settingsSwipeToCall.isChecked = config.swipeToCall
-            settingsSwipeToCallHolder.setOnClickListener {
-                settingsSwipeToCall.toggle()
-                config.swipeToCall = settingsSwipeToCall.isChecked
             }
         }
     }
