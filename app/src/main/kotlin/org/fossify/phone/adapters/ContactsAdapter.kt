@@ -29,6 +29,7 @@ import org.fossify.commons.models.contacts.Contact
 import org.fossify.commons.views.MyRecyclerView
 import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
+import org.fossify.phone.extensions.applyThemeFont
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSim
 import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
@@ -36,6 +37,7 @@ import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getSimSwipeColors
 import org.fossify.phone.extensions.setupSwipeToCall
 import org.fossify.phone.extensions.startContactDetailsIntent
+import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.helpers.SwipeToCallCallback
 import org.fossify.phone.interfaces.RefreshItemsListener
 import java.util.Collections
@@ -58,6 +60,9 @@ class ContactsAdapter(
 
     private var textToHighlight = highlightText
     var fontSize: Float = activity.getTextSize()
+
+    // Which font slot drives the name typeface — the Favorites tab overrides this with FAVORITE_NAME.
+    var nameFontSlot: ThemeSlot = ThemeSlot.CONTACT_NAME
     private var touchHelper: ItemTouchHelper? = null
     private var startReorderDragListener: StartReorderDragListener? = null
     var onDragEndListener: (() -> Unit)? = null
@@ -400,6 +405,7 @@ class ContactsAdapter(
             itemContactName.apply {
                 setTextColor(textColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
+                applyThemeFont(nameFontSlot)
 
                 val name = contact.getNameToDisplay()
                 text = if (textToHighlight.isEmpty()) {

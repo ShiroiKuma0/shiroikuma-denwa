@@ -40,6 +40,7 @@ import org.fossify.phone.dialogs.ChangeSortingDialog
 import org.fossify.phone.dialogs.FilterContactSourcesDialog
 import org.fossify.phone.extensions.clearMissedCalls
 import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.applyThemeFont
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.handleFullScreenNotificationsPermission
 import org.fossify.phone.extensions.themeColor
@@ -322,6 +323,7 @@ class MainActivity : SimpleActivity() {
         menu.findViewById<EditText>(org.fossify.commons.R.id.top_toolbar_search)?.apply {
             setTextColor(themeColor(ThemeSlot.SEARCH_TEXT))
             setHintTextColor(themeColor(ThemeSlot.SEARCH_HINT))
+            applyThemeFont(ThemeSlot.SEARCH_TEXT)
         }
 
         menu.findViewById<ImageView>(org.fossify.commons.R.id.top_toolbar_search_icon)

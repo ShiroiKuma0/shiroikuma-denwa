@@ -136,6 +136,7 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) : MyViewPa
                     activity?.startContactDetailsIntent(it as Contact)
                 }).apply {
                 binding.fragmentList.adapter = this
+                nameFontSlot = ThemeSlot.FAVORITE_NAME
 
                 onDragEndListener = {
                     val adapter = binding.fragmentList.adapter

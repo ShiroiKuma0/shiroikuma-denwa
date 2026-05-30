@@ -53,6 +53,7 @@ import org.fossify.phone.databinding.ItemRecentsDateBinding
 import org.fossify.phone.dialogs.ShowGroupedCallsDialog
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
+import org.fossify.phone.extensions.applyThemeFont
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.formatCallDuration
 import org.fossify.phone.extensions.formatCallTime
@@ -541,6 +542,7 @@ class RecentCallsAdapter(
                     text = nameToShow
                     setTextColor(nameColor)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
+                    applyThemeFont(ThemeSlot.CALL_LOG_NAME)
                     isSelected = true
                 }
 
@@ -557,6 +559,7 @@ class RecentCallsAdapter(
 
                     setTextColor(if (call.type == Calls.MISSED_TYPE) missedCallColor else dateColor)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
+                    applyThemeFont(ThemeSlot.CALL_LOG_DATE)
                 }
 
                 itemRecentsDateTimeDurationSeparator.apply {
@@ -571,6 +574,7 @@ class RecentCallsAdapter(
                     setTextColor(subtitleColor)
                     beVisibleIf(shouldShowDuration)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
+                    applyThemeFont(ThemeSlot.CALL_LOG_SUBTITLE)
                     if (!showOverflowMenu) {
                         itemRecentsDuration.setPadding(0, 0, durationPadding, 0)
                     }
@@ -596,6 +600,7 @@ class RecentCallsAdapter(
                     text = location
                     setTextColor(subtitleColor)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
+                    applyThemeFont(ThemeSlot.CALL_LOG_SUBTITLE)
                     beVisibleIf(
                         phoneNumber != null
                                 && phoneNumber.countryCodeSource != Phonenumber.PhoneNumber.CountryCodeSource.FROM_DEFAULT_COUNTRY

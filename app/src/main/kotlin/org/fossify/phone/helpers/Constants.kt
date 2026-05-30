@@ -26,6 +26,10 @@ const val USE_IMPERIAL_DATE = "use_imperial_date"
 const val CALL_TIME_FORMAT = "call_time_format"
 const val CALL_DURATION_FORMAT = "call_duration_format"
 const val THEME_V1_SEEDED = "theme_v1_seeded"
+const val FONT_FAMILY_PREFIX = "font_family_" // String, "" = system/global default
+const val FONT_WEIGHT_PREFIX = "font_weight_" // Int, 0 = default, else 100..900
+const val FONT_SIZE_PREFIX = "font_size_"     // Int sp, 0 = default
+const val MAX_FONT_SIZE_SP = 40
 
 // Granular theming
 const val THEME_UNSET = Int.MIN_VALUE // a slot with this stored value follows its inherited default

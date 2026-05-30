@@ -37,6 +37,8 @@ enum class ThemeSlot(
     val group: ThemeGroup,
     @StringRes val labelRes: Int,
     val isFoundation: Boolean = false,
+    // hasFont = true for concrete text views (family / weight / size are configurable per element)
+    val hasFont: Boolean = false,
 ) {
     // Foundation — reuse the stock commons colors (editing these repaints the whole app)
     BACKGROUND("theme_background", ThemeGroup.FOUNDATION, R.string.theme_background, isFoundation = true),
@@ -46,7 +48,7 @@ enum class ThemeSlot(
 
     // Search bar
     SEARCH_FILL("theme_search_fill", ThemeGroup.SEARCH, R.string.theme_search_fill),
-    SEARCH_TEXT("theme_search_text", ThemeGroup.SEARCH, R.string.theme_search_text),
+    SEARCH_TEXT("theme_search_text", ThemeGroup.SEARCH, R.string.theme_search_text, hasFont = true),
     SEARCH_HINT("theme_search_hint", ThemeGroup.SEARCH, R.string.theme_search_hint),
     SEARCH_ICON("theme_search_icon", ThemeGroup.SEARCH, R.string.theme_search_icon),
     SEARCH_BORDER("theme_search_border", ThemeGroup.SEARCH, R.string.theme_search_border),
@@ -63,9 +65,9 @@ enum class ThemeSlot(
     TAB_UNSELECTED("theme_tab_unselected", ThemeGroup.TABS, R.string.theme_tab_unselected),
 
     // Call log (Recents)
-    CALL_LOG_NAME("theme_call_log_name", ThemeGroup.CALL_LOG, R.string.theme_call_log_name),
-    CALL_LOG_SUBTITLE("theme_call_log_subtitle", ThemeGroup.CALL_LOG, R.string.theme_call_log_subtitle),
-    CALL_LOG_DATE("theme_call_log_date", ThemeGroup.CALL_LOG, R.string.theme_call_log_date),
+    CALL_LOG_NAME("theme_call_log_name", ThemeGroup.CALL_LOG, R.string.theme_call_log_name, hasFont = true),
+    CALL_LOG_SUBTITLE("theme_call_log_subtitle", ThemeGroup.CALL_LOG, R.string.theme_call_log_subtitle, hasFont = true),
+    CALL_LOG_DATE("theme_call_log_date", ThemeGroup.CALL_LOG, R.string.theme_call_log_date, hasFont = true),
     CALL_LOG_MISSED("theme_call_log_missed", ThemeGroup.CALL_LOG, R.string.theme_call_log_missed),
     CALL_LOG_INCOMING("theme_call_log_incoming", ThemeGroup.CALL_LOG, R.string.theme_call_log_incoming),
     CALL_LOG_OUTGOING("theme_call_log_outgoing", ThemeGroup.CALL_LOG, R.string.theme_call_log_outgoing),
@@ -84,11 +86,11 @@ enum class ThemeSlot(
     CALL_CONTROL_INACTIVE("theme_call_control_inactive", ThemeGroup.IN_CALL, R.string.theme_call_control_inactive),
 
     // Contacts
-    CONTACT_NAME("theme_contact_name", ThemeGroup.CONTACTS, R.string.theme_contact_name),
+    CONTACT_NAME("theme_contact_name", ThemeGroup.CONTACTS, R.string.theme_contact_name, hasFont = true),
     CONTACT_FASTSCROLLER("theme_contact_fastscroller", ThemeGroup.CONTACTS, R.string.theme_contact_fastscroller),
 
     // Favorites
-    FAVORITE_NAME("theme_favorite_name", ThemeGroup.FAVORITES, R.string.theme_favorite_name),
+    FAVORITE_NAME("theme_favorite_name", ThemeGroup.FAVORITES, R.string.theme_favorite_name, hasFont = true),
     FAVORITE_FASTSCROLLER("theme_favorite_fastscroller", ThemeGroup.FAVORITES, R.string.theme_favorite_fastscroller),
 }
 
