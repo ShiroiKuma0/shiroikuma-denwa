@@ -1,14 +1,17 @@
 package org.fossify.phone.activities
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
+import android.widget.SeekBar
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
-import org.fossify.commons.dialogs.ColorPickerDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
 import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.commons.extensions.toast
 import org.fossify.commons.extensions.viewBinding
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.models.RadioItem
@@ -19,9 +22,13 @@ import org.fossify.phone.databinding.ItemThemeDimenBinding
 import org.fossify.phone.databinding.ItemThemeSectionBinding
 import org.fossify.phone.databinding.ItemThemeSubgroupBinding
 import org.fossify.phone.databinding.ItemThemeSwitchBinding
+import org.fossify.phone.databinding.ItemThemeTextBinding
 import org.fossify.phone.databinding.ItemThemeValueBinding
+import org.fossify.phone.dialogs.AlphaColorPickerDialog
+import org.fossify.phone.dialogs.FontPickerDialog
 import org.fossify.phone.extensions.CallDurationFormat
 import org.fossify.phone.extensions.CallTimeFormat
+import org.fossify.phone.extensions.FontWeightOption
 import org.fossify.phone.extensions.ThemeDimen
 import org.fossify.phone.extensions.ThemeGroup
 import org.fossify.phone.extensions.ThemeSlot
@@ -29,12 +36,16 @@ import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callDurationFormatOf
 import org.fossify.phone.extensions.callTimeFormatOf
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.fontDisplayName
 import org.fossify.phone.extensions.getAvailableSIMCardLabels
+import org.fossify.phone.extensions.importFont
 import org.fossify.phone.extensions.resetThemeColor
 import org.fossify.phone.extensions.setThemeColor
 import org.fossify.phone.extensions.setThemeDimenDp
+import org.fossify.phone.extensions.showFontSample
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.themeDimenDp
+import org.fossify.phone.helpers.MAX_FONT_SIZE_SP
 
 // Every customizable setting for 白い熊 電話, laid out as a section > subgroup > controls cascade.
 // Each cascade level is indented one more step: a section's contents one step in, a subgroup's two.
@@ -45,6 +56,13 @@ class ThemeActivity : SimpleActivity() {
     private val binding by viewBinding(ActivityThemeBinding::inflate)
     private val previews = HashMap<ThemeSlot, ImageView>()
     private var stepPx = 0
+
+    private var pendingFontSlot: ThemeSlot? = null
+    private var pendingFontBinding: ItemThemeTextBinding? = null
+
+    private val fontImportLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        onFontImported(uri)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,11 +86,11 @@ class ThemeActivity : SimpleActivity() {
 
         // Foundation
         addSection(R.string.theme_group_foundation, primaryColor)
-        colorRowsFor(ThemeGroup.FOUNDATION, stepPx)
+        slotRowsFor(ThemeGroup.FOUNDATION, stepPx)
 
         // Search bar
         addSection(R.string.theme_group_search, primaryColor)
-        colorRowsFor(ThemeGroup.SEARCH, stepPx)
+        slotRowsFor(ThemeGroup.SEARCH, stepPx)
 
         // Top bar & overflow ("hamburger") menu
         addSection(R.string.theme_group_chrome, primaryColor)
@@ -85,14 +103,14 @@ class ThemeActivity : SimpleActivity() {
 
         // Tabs
         addSection(R.string.theme_group_tabs, primaryColor)
-        colorRowsFor(ThemeGroup.TABS, stepPx)
+        slotRowsFor(ThemeGroup.TABS, stepPx)
 
         // Call log — rich enough to warrant subgroups; each line's colour sits next to its thickness
         addSection(R.string.theme_group_call_log, primaryColor)
         addSubgroup(R.string.theme_subgroup_call_log_text, primaryColor)
-        addColorRow(ThemeSlot.CALL_LOG_NAME, stepPx * 2)
-        addColorRow(ThemeSlot.CALL_LOG_SUBTITLE, stepPx * 2)
-        addColorRow(ThemeSlot.CALL_LOG_DATE, stepPx * 2)
+        addSlotRow(ThemeSlot.CALL_LOG_NAME, stepPx * 2)
+        addSlotRow(ThemeSlot.CALL_LOG_SUBTITLE, stepPx * 2)
+        addSlotRow(ThemeSlot.CALL_LOG_DATE, stepPx * 2)
         addSubgroup(R.string.theme_subgroup_call_log_types, primaryColor)
         addColorRow(ThemeSlot.CALL_LOG_MISSED, stepPx * 2)
         addColorRow(ThemeSlot.CALL_LOG_INCOMING, stepPx * 2)
@@ -123,19 +141,19 @@ class ThemeActivity : SimpleActivity() {
 
         // Dialpad
         addSection(R.string.theme_group_dialpad, primaryColor)
-        colorRowsFor(ThemeGroup.DIALPAD, stepPx)
+        slotRowsFor(ThemeGroup.DIALPAD, stepPx)
 
         // In-call screen
         addSection(R.string.theme_group_in_call, primaryColor)
-        colorRowsFor(ThemeGroup.IN_CALL, stepPx)
+        slotRowsFor(ThemeGroup.IN_CALL, stepPx)
 
         // Contacts
         addSection(R.string.theme_group_contacts, primaryColor)
-        colorRowsFor(ThemeGroup.CONTACTS, stepPx)
+        slotRowsFor(ThemeGroup.CONTACTS, stepPx)
 
         // Favorites
         addSection(R.string.theme_group_favorites, primaryColor)
-        colorRowsFor(ThemeGroup.FAVORITES, stepPx)
+        slotRowsFor(ThemeGroup.FAVORITES, stepPx)
 
         // SIM cards — colours + swipe-to-dial only make sense with more than one SIM
         if (areMultipleSIMsAvailable()) {
@@ -146,8 +164,13 @@ class ThemeActivity : SimpleActivity() {
         }
     }
 
-    private fun colorRowsFor(group: ThemeGroup, indent: Int) {
-        ThemeSlot.entries.filter { it.group == group }.forEach { addColorRow(it, indent) }
+    private fun slotRowsFor(group: ThemeGroup, indent: Int) {
+        ThemeSlot.entries.filter { it.group == group }.forEach { addSlotRow(it, indent) }
+    }
+
+    // A text element gets the rich color+font+weight+size+sample block; everything else a colour swatch.
+    private fun addSlotRow(slot: ThemeSlot, indent: Int) {
+        if (slot.hasFont) addTextSlot(slot, indent) else addColorRow(slot, indent)
     }
 
     private fun addSection(@StringRes labelRes: Int, primaryColor: Int) {
@@ -177,6 +200,48 @@ class ThemeActivity : SimpleActivity() {
         indentRow(row.root, indent)
         previews[slot] = row.themeColorPreview
         binding.themeHolder.addView(row.root)
+    }
+
+    // A concrete text element: its colour, font family, weight, size and a live sample of all four.
+    @Suppress("EmptyFunctionBlock") // SeekBar's start/stop-tracking callbacks are intentionally no-ops
+    private fun addTextSlot(slot: ThemeSlot, indent: Int) {
+        val textColor = getProperTextColor()
+        val b = ItemThemeTextBinding.inflate(layoutInflater, binding.themeHolder, false)
+        b.themeTextLabel.text = getString(slot.labelRes)
+        listOf(
+            b.themeTextLabel, b.themeTextFontTitle, b.themeTextFontValue,
+            b.themeTextWeightTitle, b.themeTextWeightValue, b.themeTextSizeTitle, b.themeTextSizeValue
+        ).forEach { it.setTextColor(textColor) }
+
+        b.themeTextColorPreview.background.setTint(themeColor(slot))
+        b.themeTextFontValue.text = fontDisplayName(config.getFontFamily(slot.key))
+        b.themeTextWeightValue.text = getString(FontWeightOption.fromValue(config.getFontWeight(slot.key)).labelRes)
+        b.themeTextSizeSeekbar.max = MAX_FONT_SIZE_SP
+        b.themeTextSizeSeekbar.progress = config.getFontSize(slot.key)
+        b.themeTextSizeValue.text = sizeLabel(config.getFontSize(slot.key))
+        refreshSample(b, slot)
+
+        b.themeTextColorRow.setOnClickListener { openTextColorPicker(slot, b) }
+        b.themeTextFontRow.setOnClickListener { openFontPicker(slot, b) }
+        b.themeTextWeightRow.setOnClickListener { openWeightPicker(slot, b) }
+        b.themeTextSizeSeekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                config.setFontSize(slot.key, progress)
+                b.themeTextSizeValue.text = sizeLabel(progress)
+                refreshSample(b, slot)
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar) {}
+        })
+
+        indentRow(b.root, indent)
+        // the element's font / weight / size / sample sit one full step deeper than its label row
+        indentRow(b.themeTextFontRow, stepPx)
+        indentRow(b.themeTextWeightRow, stepPx)
+        indentRow(b.themeTextSizeRow, stepPx)
+        indentRow(b.themeTextSample, stepPx)
+        binding.themeHolder.addView(b.root)
     }
 
     private fun addDimenRow(dimen: ThemeDimen, indent: Int) {
@@ -221,7 +286,7 @@ class ThemeActivity : SimpleActivity() {
         row.themeColorLabel.setTextColor(getProperTextColor())
         row.themeColorPreview.background.setTint(simColor(simId))
         row.root.setOnClickListener {
-            ColorPickerDialog(this, simColor(simId), addDefaultColorButton = true) { wasPositive, color ->
+            AlphaColorPickerDialog(this, simColor(simId), addDefaultColorButton = true) { wasPositive, color ->
                 setSimColor(simId, if (wasPositive) color else -1)
                 row.themeColorPreview.background.setTint(simColor(simId))
             }
@@ -249,6 +314,17 @@ class ThemeActivity : SimpleActivity() {
         }
     }
 
+    private fun refreshSample(b: ItemThemeTextBinding, slot: ThemeSlot) {
+        b.themeTextSample.showFontSample(
+            config.getFontFamily(slot.key),
+            config.getFontWeight(slot.key),
+            config.getFontSize(slot.key),
+            themeColor(slot)
+        )
+    }
+
+    private fun sizeLabel(sp: Int) = if (sp > 0) "$sp sp" else getString(R.string.theme_size_default)
+
     private fun dpLabel(dp: Int) =
         if (dp <= 0) getString(R.string.theme_dp_none) else getString(R.string.theme_dp_value, dp)
 
@@ -263,7 +339,7 @@ class ThemeActivity : SimpleActivity() {
     }
 
     private fun openPicker(slot: ThemeSlot) {
-        ColorPickerDialog(this, themeColor(slot), addDefaultColorButton = true) { wasPositive, color ->
+        AlphaColorPickerDialog(this, themeColor(slot), addDefaultColorButton = true) { wasPositive, color ->
             if (wasPositive) {
                 setThemeColor(slot, color)
             } else {
@@ -276,6 +352,62 @@ class ThemeActivity : SimpleActivity() {
             } else {
                 previews[slot]?.background?.setTint(themeColor(slot))
             }
+        }
+    }
+
+    private fun openTextColorPicker(slot: ThemeSlot, b: ItemThemeTextBinding) {
+        AlphaColorPickerDialog(this, themeColor(slot), addDefaultColorButton = true) { wasPositive, color ->
+            if (wasPositive) setThemeColor(slot, color) else resetThemeColor(slot)
+            b.themeTextColorPreview.background.setTint(themeColor(slot))
+            refreshSample(b, slot)
+        }
+    }
+
+    private fun openFontPicker(slot: ThemeSlot, b: ItemThemeTextBinding) {
+        FontPickerDialog(
+            activity = this,
+            onAddFont = {
+                pendingFontSlot = slot
+                pendingFontBinding = b
+                fontImportLauncher.launch(arrayOf("*/*"))
+            },
+            onPick = { fileName ->
+                config.setFontFamily(slot.key, fileName)
+                b.themeTextFontValue.text = fontDisplayName(fileName)
+                refreshSample(b, slot)
+            }
+        )
+    }
+
+    private fun openWeightPicker(slot: ThemeSlot, b: ItemThemeTextBinding) {
+        val items = ArrayList(FontWeightOption.entries.map { RadioItem(it.value, getString(it.labelRes)) })
+        RadioGroupDialog(this, items, config.getFontWeight(slot.key)) {
+            val weight = it as Int
+            config.setFontWeight(slot.key, weight)
+            b.themeTextWeightValue.text = getString(FontWeightOption.fromValue(weight).labelRes)
+            refreshSample(b, slot)
+        }
+    }
+
+    private fun onFontImported(uri: Uri?) {
+        val slot = pendingFontSlot
+        val b = pendingFontBinding
+        pendingFontSlot = null
+        pendingFontBinding = null
+        if (uri == null || slot == null) {
+            return
+        }
+
+        val fileName = importFont(uri)
+        if (fileName == null) {
+            toast(R.string.font_invalid)
+            return
+        }
+
+        config.setFontFamily(slot.key, fileName)
+        b?.themeTextFontValue?.text = fontDisplayName(fileName)
+        if (b != null) {
+            refreshSample(b, slot)
         }
     }
 }

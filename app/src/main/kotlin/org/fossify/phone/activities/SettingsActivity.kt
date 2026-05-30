@@ -11,7 +11,7 @@ import org.fossify.commons.activities.ManageBlockedNumbersActivity
 import org.fossify.commons.dialogs.ChangeDateTimeFormatDialog
 import org.fossify.commons.dialogs.FeatureLockedDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
-import org.fossify.commons.dialogs.ColorPickerDialog
+import org.fossify.phone.dialogs.AlphaColorPickerDialog
 import org.fossify.commons.extensions.addLockedLabelIfNeeded
 import org.fossify.commons.extensions.baseConfig
 import org.fossify.commons.extensions.beVisibleIf
@@ -173,7 +173,7 @@ class SettingsActivity : SimpleActivity() {
         binding.apply {
             settingsPrimaryColorPreview.background.setTint(getProperPrimaryColor())
             settingsPrimaryColorHolder.setOnClickListener {
-                ColorPickerDialog(this@SettingsActivity, getProperPrimaryColor()) { wasPositive, color ->
+                AlphaColorPickerDialog(this@SettingsActivity, getProperPrimaryColor()) { wasPositive, color ->
                     if (wasPositive) {
                         applyPrimaryColor(color)
                     }
