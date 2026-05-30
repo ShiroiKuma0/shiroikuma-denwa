@@ -49,4 +49,9 @@
         android:icon="@drawable/ic_google_play_vector"
         android:title="@string/more_fossify_apps"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/settings_shortcut"
+        android:title="@string/settings"
+        app:actionLayout="@layout/menu_settings_shortcut"
+        app:showAsAction="always" />
 </menu>

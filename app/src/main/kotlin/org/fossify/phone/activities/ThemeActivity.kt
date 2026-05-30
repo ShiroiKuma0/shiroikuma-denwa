@@ -100,6 +100,8 @@ class ThemeActivity : SimpleActivity() {
         addSubgroup(R.string.theme_subgroup_chrome_header, primaryColor)
         addColorRow(ThemeSlot.HEADER_TITLE, stepPx * 2)
         addColorRow(ThemeSlot.HEADER_ARROW, stepPx * 2)
+        addSubgroup(R.string.theme_subgroup_chrome_settings, primaryColor)
+        addSlotRow(ThemeSlot.SETTINGS_BUTTON, stepPx * 2)
 
         // Tabs
         addSection(R.string.theme_group_tabs, primaryColor)
