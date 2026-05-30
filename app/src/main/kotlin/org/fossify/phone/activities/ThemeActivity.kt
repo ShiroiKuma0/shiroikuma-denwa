@@ -125,6 +125,7 @@ class ThemeActivity : SimpleActivity() {
         addColorRow(ThemeSlot.CALL_LOG_DATE_UNDERLINE, stepPx * 2)
         addDimenRow(ThemeDimen.CALL_LOG_DATE_UNDERLINE_THICKNESS, stepPx * 2)
         addSubgroup(R.string.theme_subgroup_call_log_date_format, primaryColor)
+        addSlotRow(ThemeSlot.CALL_LOG_DAY_DATE, stepPx * 2)
         addSwitchRow(R.string.use_imperial_date, config.useImperialDate, stepPx * 2) { config.useImperialDate = it }
         addValueRow(R.string.call_time_format, getString(callTimeFormatOf(config.callTimeFormat).labelRes), stepPx * 2) { valueView ->
             val items = ArrayList(CallTimeFormat.entries.map { RadioItem(it.ordinal, getString(it.labelRes)) })

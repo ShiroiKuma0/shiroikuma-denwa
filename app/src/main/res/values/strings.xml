@@ -99,6 +99,7 @@
     <string name="theme_call_log_name">Contact name</string>
     <string name="theme_call_log_subtitle">Number &amp; details</string>
     <string name="theme_call_log_date">Date &amp; time</string>
+    <string name="theme_call_log_day_date">Date header</string>
     <string name="theme_call_log_missed">Missed call</string>
     <string name="theme_call_log_incoming">Incoming call icon</string>
     <string name="theme_call_log_outgoing">Outgoing call icon</string>
