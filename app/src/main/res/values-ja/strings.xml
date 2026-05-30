@@ -117,6 +117,11 @@
     <string name="call_time_24h">24時間制（14:53）</string>
     <string name="call_time_12h">12時間制（午後2:53）</string>
     <string name="call_duration_digital">数字（6:43）</string>
+    <string name="notification_missed_call">不在着信</string>
+    <string name="notification_missed_calls">不在着信 %1$d 件</string>
+    <string name="notification_call_back">かけ直す</string>
+    <string name="notification_message">メッセージ</string>
+    <string name="notification_channel_missed_calls">不在着信</string>
     <string name="theme_group_sim">SIMカード</string>
     <string name="theme_group_chrome">トップバーとメニュー</string>
     <string name="theme_subgroup_chrome_menu">メニュー</string>

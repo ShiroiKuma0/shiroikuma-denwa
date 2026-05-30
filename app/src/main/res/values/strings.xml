@@ -135,6 +135,11 @@
     <string name="call_time_24h">24-hour (14:53)</string>
     <string name="call_time_12h">12-hour (2:53 PM)</string>
     <string name="call_duration_digital">Digital (6:43)</string>
+    <string name="notification_missed_call">Missed call</string>
+    <string name="notification_missed_calls">%1$d missed calls</string>
+    <string name="notification_call_back">Call back</string>
+    <string name="notification_message">Message</string>
+    <string name="notification_channel_missed_calls">Missed calls</string>
     <string name="theme_group_sim">SIM cards</string>
     <string name="theme_group_chrome">Top bar &amp; menu</string>
     <string name="theme_subgroup_chrome_menu">Overflow menu</string>
