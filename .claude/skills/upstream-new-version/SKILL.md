@@ -51,6 +51,9 @@ line's, keeping upgrades monotonic.
    - Resolve the `commons` pin conflict in favour of **our `-sk1` suffix at the new version**
      (`<newver>-sk1`), never the bare upstream value.
    If Commons is unchanged, keep the existing `<ver>-sk1` pin (re-publish only if `~/.m2` was cleared).
+   - If Commons changed, re-check whether the new `BaseSimpleActivity.launchCallIntent` still hard-codes
+     the `org.fossify.phone` package (it broke outgoing calls for our renamed app id — see CLAUDE.md).
+     Our in-app override in `extensions/CallExt.kt` must still mirror commons' current signature/logic.
 
 5. **Update versioning in `gradle.properties`:**
    - Set `VERSION_NAME` / `VERSION_CODE` to the **new upstream** values.
@@ -66,6 +69,7 @@ line's, keeping upgrades monotonic.
    | Patched Commons pin | `commons = "<ver>-sk1"` (from `mavenLocal`) | `gradle/libs.versions.toml` |
    | Fork version logic | `forkVersionName` / `forkVersionCode` + `buildFoss` task | `app/build.gradle.kts` |
    | `namespace = APP_NAMESPACE` | not `APP_ID` | `app/build.gradle.kts` |
+   | Call-intent package override | our own `launchCallIntent` (targets the real `packageName`), commons `launchCallIntent` import dropped | `extensions/CallExt.kt` |
 
    Sanity check: `JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :app:assembleFossRelease --dry-run`
    or a config-only task, to confirm the build script still evaluates.
