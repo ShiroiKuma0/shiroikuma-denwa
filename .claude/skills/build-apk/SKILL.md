@@ -34,14 +34,14 @@ Release signing is non-interactive: `app/build.gradle.kts` reads credentials fro
 
 ## Prerequisite — patched Commons in mavenLocal
 
-This app builds against our patched Fossify Commons (`commons = "6.1.6-sk1"` in
+This app builds against our patched Fossify Commons (`commons = "6.1.6-sk2"` in
 `gradle/libs.versions.toml`), resolved from `mavenLocal()` (`~/.m2`). On this machine it is already
 published, so `buildFoss` just works. **On a fresh machine, or if `~/.m2` was cleared**, the build fails
-with `Could not resolve org.fossify:commons:6.1.6-sk1` — publish it first:
+with `Could not resolve org.fossify:commons:6.1.6-sk2` — publish it first:
 
 ```bash
 cd ~/git/shiroikuma-commons && JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 \
-  ./gradlew :commons:publishToMavenLocal -PVERSION=6.1.6-sk1
+  ./gradlew :commons:publishToMavenLocal -PVERSION=6.1.6-sk2
 ```
 
 See the `shiroikuma-commons` repo's CLAUDE.md for the patch details.
