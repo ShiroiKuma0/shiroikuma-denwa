@@ -31,3 +31,17 @@ The `buildFoss` task (`app/build.gradle.kts`) has an interactive `read -p "Push 
 ## Signing
 
 Release signing is non-interactive: `app/build.gradle.kts` reads credentials from `keystore.properties` (falling back to `SIGNING_*` env vars). If neither is present the build is unsigned and the APK will not install.
+
+## Prerequisite — patched Commons in mavenLocal
+
+This app builds against our patched Fossify Commons (`commons = "6.1.6-sk1"` in
+`gradle/libs.versions.toml`), resolved from `mavenLocal()` (`~/.m2`). On this machine it is already
+published, so `buildFoss` just works. **On a fresh machine, or if `~/.m2` was cleared**, the build fails
+with `Could not resolve org.fossify:commons:6.1.6-sk1` — publish it first:
+
+```bash
+cd ~/git/shiroikuma-commons && JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 \
+  ./gradlew :commons:publishToMavenLocal -PVERSION=6.1.6-sk1
+```
+
+See the `shiroikuma-commons` repo's CLAUDE.md for the patch details.
