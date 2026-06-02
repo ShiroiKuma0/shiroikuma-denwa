@@ -89,8 +89,25 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
   Commons' anti-tamper "fake version" / sideloading checks out entirely.
 - **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk1"` in
   `gradle/libs.versions.toml` (`mavenLocal()` is already a repository in `settings.gradle.kts`).
-- Because Commons itself no longer nags, this app carries **no** in-app workaround — no `getPackageName`
-  spoof, no `SIDELOADING_FALSE`, no `res/raw/keep.xml`.
+- Because Commons itself no longer nags, this app carries **no** anti-tamper workaround — no
+  `getPackageName` spoof, no `SIDELOADING_FALSE`, no `res/raw/keep.xml`.
+
+### Commons hard-codes the `org.fossify.phone` package (call-intent fix)
+
+Commons assumes it runs inside the real Fossify Phone app and hard-codes that package name in places
+that break for our renamed app id (`shiroikuma.denwa`, namespace still `org.fossify.phone`). The one
+that bit us: `BaseSimpleActivity.launchCallIntent` (commons `extensions/Activity.kt`) pins every
+outgoing-call intent to `setClassName("org.fossify.phone[.debug]", "…activities.DialerActivity")` when
+`isDefaultDialer()` is true. That package isn't installed for us, so calls died with commons' "No valid
+app found" toast (`ActivityNotFoundException`). The old `getPackageName` spoof masked it until it was
+dropped.
+
+- **Fix (in-app, not in the Commons fork):** `app/src/main/kotlin/org/fossify/phone/extensions/CallExt.kt`
+  defines its own `BaseSimpleActivity.launchCallIntent` that mirrors commons but targets the real
+  `packageName`; the commons import is dropped so all call sites resolve to ours. Commons has no internal
+  caller, so this covers every call path.
+- **Watch on upstream bumps:** if commons changes `launchCallIntent`'s signature, keep our override in
+  sync; and other commons helpers may similarly hard-code `org.fossify.phone` for forks.
 
 **On a fresh machine, or after an upstream bump changes the Commons version — republish before building:**
 
