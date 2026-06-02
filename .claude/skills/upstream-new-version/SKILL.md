@@ -80,7 +80,7 @@ line's, keeping upgrades monotonic.
 7. **Build the new `+1`** via the **build-apk** skill
    (`JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew buildFoss < /dev/null`), then **ask** before
    any `adb push`. This is the first build of the new upstream line (`<newVersion>+1`). If the build can't
-   resolve `org.fossify:commons:<ver>-sk1`, publish the patched Commons first (step 4).
+   resolve `org.fossify:commons:<ver>-skN`, publish the patched Commons first (step 4).
 
 8. **Stop.** Let the user test. Commit/push only on their explicit **"Push"** (force-push may be needed
    for `custom` since rebasing rewrites history: `git push --force-with-lease origin custom`; `main` is a
