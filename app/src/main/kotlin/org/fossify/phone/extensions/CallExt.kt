@@ -2,6 +2,7 @@ package org.fossify.phone.extensions
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.telecom.PhoneAccount
 import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
@@ -15,16 +16,41 @@ import org.fossify.commons.extensions.getProperBackgroundColor
 import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.initiateCall
 import org.fossify.commons.extensions.isDefaultDialer
-import org.fossify.commons.extensions.launchCallIntent
+import org.fossify.commons.extensions.launchActivityIntent
 import org.fossify.commons.extensions.openFullScreenIntentSettings
 import org.fossify.commons.extensions.openNotificationSettings
 import org.fossify.commons.extensions.telecomManager
+import org.fossify.commons.helpers.PERMISSION_CALL_PHONE
 import org.fossify.commons.helpers.PERMISSION_READ_PHONE_STATE
 import org.fossify.commons.models.contacts.Contact
 import org.fossify.phone.BuildConfig
 import org.fossify.phone.activities.DialerActivity
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.dialogs.SelectSIMDialog
+
+// Commons' own launchCallIntent hard-codes the call intent's target package to
+// "org.fossify.phone[.debug]", which doesn't exist for our renamed app id
+// (shiroikuma.denwa) — so every call died with "No valid app found". This mirrors
+// commons but targets our real package. The DialerActivity class name is unchanged
+// because the code namespace is still org.fossify.phone.
+fun BaseSimpleActivity.launchCallIntent(recipient: String, handle: PhoneAccountHandle? = null) {
+    val appPackageName = packageName
+    handlePermission(PERMISSION_CALL_PHONE) { granted ->
+        val action = if (granted) Intent.ACTION_CALL else Intent.ACTION_DIAL
+        Intent(action).apply {
+            data = Uri.fromParts("tel", recipient, null)
+            if (handle != null) {
+                putExtra(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE, handle)
+            }
+
+            if (isDefaultDialer()) {
+                setClassName(appPackageName, "org.fossify.phone.activities.DialerActivity")
+            }
+
+            launchActivityIntent(this)
+        }
+    }
+}
 
 fun SimpleActivity.startCallIntent(
     recipient: String,
