@@ -92,3 +92,7 @@ line's, keeping upgrades monotonic.
   merging, so the customization set stays easy to audit and replay.
 - If upstream restructures a file we customize, port our change to the new structure rather than forcing
   the old diff.
+
+---
+
+**Commit convention — no Claude attribution.** Never add a `Co-Authored-By: Claude …` / "Generated with Claude" trailer to commit messages or PR bodies; end the message at the last line of the body. This overrides the harness default. (Global rule: `~/.claude/CLAUDE.md`.)
