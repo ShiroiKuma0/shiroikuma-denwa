@@ -8,6 +8,7 @@ import org.fossify.commons.extensions.getProperBackgroundColor
 import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.phone.R
+import org.fossify.phone.helpers.LEGACY_PALETTE_YELLOW
 import org.fossify.phone.helpers.PALETTE_BLACK
 import org.fossify.phone.helpers.PALETTE_YELLOW
 import org.fossify.phone.helpers.THEME_UNSET
@@ -219,4 +220,31 @@ fun Context.seedBlackYellowThemeIfNeeded() {
     config.primaryColor = PALETTE_YELLOW
     config.accentColor = PALETTE_YELLOW
     config.themeV1Seeded = true
+}
+
+/** One-time rewrite of every persisted legacy material-yellow color to pure [PALETTE_YELLOW]. */
+fun Context.migrateToPureYellowIfNeeded() {
+    if (config.pureYellowMigrated) {
+        return
+    }
+
+    // Stored colors can carry alpha (AlphaColorPickerDialog), so only the RGB part is compared and replaced.
+    fun fix(color: Int): Int = if (color and 0xFFFFFF == LEGACY_PALETTE_YELLOW and 0xFFFFFF) {
+        (color and 0xFF000000.toInt()) or (PALETTE_YELLOW and 0xFFFFFF)
+    } else {
+        color
+    }
+
+    config.apply {
+        backgroundColor = fix(backgroundColor)
+        textColor = fix(textColor)
+        primaryColor = fix(primaryColor)
+        accentColor = fix(accentColor)
+        sim1Color = fix(sim1Color)
+        sim2Color = fix(sim2Color)
+        ThemeSlot.entries
+            .filter { getThemeOverride(it.key) != THEME_UNSET }
+            .forEach { setThemeOverride(it.key, fix(getThemeOverride(it.key))) }
+        pureYellowMigrated = true
+    }
 }

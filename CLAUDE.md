@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Fossify Phone — an open-source, privacy-focused Android dialer and call management app. Part of the Fossify ecosystem. Written entirely in Kotlin targeting Android API 26–36.
 
+## 白い熊 UI default palette
+
+The 白い熊 電話 UI (granular theming in `ThemeActivity` / `extensions/ThemeColors.kt`) seeds and resets
+to black `#000000` + **pure yellow `#FFFF00`** (`PALETTE_BLACK` / `PALETTE_YELLOW` in
+`helpers/Constants.kt`). Never use material yellow `#FFEB3B` for fork UI defaults.
+
 ## Build Commands
 
 ```bash

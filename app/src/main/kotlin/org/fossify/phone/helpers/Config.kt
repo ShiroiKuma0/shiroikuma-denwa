@@ -166,6 +166,10 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(THEME_V1_SEEDED, false)
         set(value) = prefs.edit().putBoolean(THEME_V1_SEEDED, value).apply()
 
+    var pureYellowMigrated: Boolean
+        get() = prefs.getBoolean(PURE_YELLOW_MIGRATED, false)
+        set(value) = prefs.edit().putBoolean(PURE_YELLOW_MIGRATED, value).apply()
+
     fun getThemeOverride(key: String): Int = prefs.getInt(key, THEME_UNSET)
 
     fun setThemeOverride(key: String, color: Int) = prefs.edit().putInt(key, color).apply()
