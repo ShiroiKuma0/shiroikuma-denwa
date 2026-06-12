@@ -10,6 +10,7 @@ import org.fossify.commons.FossifyApp
 import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.phone.activities.MainActivity
 import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.migrateToPureYellowIfNeeded
 import org.fossify.phone.extensions.seedBlackYellowThemeIfNeeded
 import org.fossify.phone.extensions.themeColor
 
@@ -18,6 +19,8 @@ class App : FossifyApp() {
         super.onCreate()
         // Apply the default black/yellow look once, before any activity themes itself.
         seedBlackYellowThemeIfNeeded()
+        // Rewrite colors persisted with the legacy material yellow to pure yellow, once.
+        migrateToPureYellowIfNeeded()
         // Recolor every screen's top-bar foreground from the header slots, so it propagates even to
         // sub-screens we don't own (e.g. the commons Settings → About page).
         registerActivityLifecycleCallbacks(TopBarColorizer())
