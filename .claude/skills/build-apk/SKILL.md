@@ -5,6 +5,15 @@ description: Build the signed foss release APK with the buildFoss Gradle task, t
 
 # Build the foss release APK and optionally send to phone
 
+> **⚠️ CRITICAL — every build MUST have a unique, strictly-increasing `BUILD_NUMBER`.**
+> Never produce two builds with the same `BUILD_NUMBER`; never overwrite an APK already on the
+> phone. ALWAYS build with `./gradlew buildFoss < /dev/null` — it auto-increments `BUILD_NUMBER`
+> in `gradle.properties`, renames the APK, and copies it to `~/tmp/`. **NEVER run a bare
+> `assembleFossRelease` for a deliverable build** — it does NOT bump `BUILD_NUMBER`, so you get the
+> same filename and clobber the previous build on the phone (this mistake happened once). After
+> building, confirm the printed `BUILD_NUMBER` is higher than the last one pushed; clean any stale
+> `app/build/outputs/apk/foss/release/*.apk` first so the freshly-numbered APK is the one copied.
+
 ## Steps
 
 1. **Note the output filename.** Read the current version and build number:
@@ -30,14 +39,14 @@ Release signing is non-interactive: `app/build.gradle.kts` reads credentials fro
 
 ## Prerequisite — patched Commons in mavenLocal
 
-This app builds against our patched Fossify Commons (`commons = "6.1.6-sk2"` in
+This app builds against our patched Fossify Commons (`commons = "6.1.6-sk5"` in
 `gradle/libs.versions.toml`), resolved from `mavenLocal()` (`~/.m2`). On this machine it is already
 published, so `buildFoss` just works. **On a fresh machine, or if `~/.m2` was cleared**, the build fails
-with `Could not resolve org.fossify:commons:6.1.6-sk2` — publish it first:
+with `Could not resolve org.fossify:commons:6.1.6-sk5` — publish it first:
 
 ```bash
 cd ~/git/shiroikuma-commons && JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 \
-  ./gradlew :commons:publishToMavenLocal -PVERSION=6.1.6-sk2
+  ./gradlew :commons:publishToMavenLocal -PVERSION=6.1.6-sk5
 ```
 
 See the `shiroikuma-commons` repo's CLAUDE.md for the patch details.

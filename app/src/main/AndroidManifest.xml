@@ -24,6 +24,12 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
+    <!-- Read per-contact default SIM (and private contacts) from our Contacts fork (renrakusaki).
+         signature-level on renrakusaki's side; granted because both apps share a signing key.
+         Both release and debug authorities are listed so either renrakusaki build is readable. -->
+    <uses-permission android:name="shiroikuma.renrakusaki.permission.READ_PRIVATE_DATA" />
+    <uses-permission android:name="shiroikuma.renrakusaki.debug.permission.READ_PRIVATE_DATA" />
+
     <uses-permission
         android:name="android.permission.USE_FINGERPRINT"
         tools:node="remove" />
@@ -31,6 +37,8 @@
     <queries>
         <package android:name="org.fossify.contacts.debug" />
         <package android:name="org.fossify.contacts" />
+        <package android:name="shiroikuma.renrakusaki.debug" />
+        <package android:name="shiroikuma.renrakusaki" />
 
         <!-- Required for loading contact accounts -->
         <intent>
