@@ -171,6 +171,39 @@ fun Context.clearMissedCalls() {
     }
 }
 
+// Per-contact default SIM chosen in our Contacts fork (renrakusaki), read from its content provider.
+// Returns the SIM slot (1 or 2) saved for the given number, or 0 if none / unavailable. Reading is
+// gated by renrakusaki's signature-level permission, which we hold (both apps share a signing key).
+fun Context.getRenrakusakiSimSlot(number: String): Int {
+    if (number.isEmpty()) {
+        return 0
+    }
+
+    val authorities = arrayOf(
+        "shiroikuma.renrakusaki.contactsprovider",
+        "shiroikuma.renrakusaki.debug.contactsprovider"
+    )
+    for (authority in authorities) {
+        val slot = querySimSlotFromProvider(authority, number)
+        if (slot == 1 || slot == 2) {
+            return slot
+        }
+    }
+
+    return 0
+}
+
+private fun Context.querySimSlotFromProvider(authority: String, number: String): Int {
+    return try {
+        val uri = Uri.parse("content://$authority/sim_slot")
+        contentResolver.query(uri, null, null, arrayOf(number), null)?.use { cursor ->
+            if (cursor.moveToFirst()) cursor.getInt(0) else 0
+        } ?: 0
+    } catch (ignored: Exception) {
+        0
+    }
+}
+
 fun Context.canLaunchAccountsConfiguration(): Boolean {
     return Intent(TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS)
         .resolveActivity(packageManager) != null
