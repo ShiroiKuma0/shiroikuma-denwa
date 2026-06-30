@@ -1,34 +1,63 @@
-# Fossify Phone
-<img alt="Logo" src="graphics/icon.webp" width="120" />
-
-<a href='https://play.google.com/store/apps/details?id=org.fossify.phone'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png' height=80/></a> <a href="https://f-droid.org/packages/org.fossify.phone/"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on-en.svg" alt="Get it on F-Droid" height=80/></a> <a href="https://apt.izzysoft.de/fdroid/index/apk/org.fossify.phone"><img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png" alt="Get it on IzzyOnDroid" height=80/></a>
-
-Empower your calls, and safeguard your data. Fossify Phone redefines the mobile app experience with unmatched privacy and efficiency. Free from ads and intrusive permissions, it's designed for seamless and secure everyday communication.
-
-📱 **YOUR PRIVACY, OUR PRIORITY:**  
-Welcome to the Fossify Phone App, where your digital privacy is paramount. Switch to a mobile experience that respects your data, ensuring your personal information remains secure and private.
-
-🚀 **SEAMLESS PERFORMANCE:**  
-The Fossify Phone App offers a fluid and responsive mobile interface, enhancing your phone's performance while safeguarding your privacy. Experience a lag-free, smooth user experience, optimized for efficiency and speed.
-
-🌐 **OPEN-SOURCE ASSURANCE:**  
-With the Fossify Phone App, transparency is at your fingertips. Built on an open-source foundation, our app allows you to review our code on GitHub, fostering trust and a community committed to privacy.
-
-🖼️ **TAILOR-MADE CUSTOMIZATION:**  
-Customize your mobile experience with the Fossify Phone App. Adjust your app settings for a personalized interface, from thematic designs to functional preferences. Enjoy a user interface that's intuitive and uniquely yours.
-
-🔋 **EFFICIENT RESOURCE MANAGEMENT:**  
-The Fossify Phone App is designed for optimal resource usage, contributing to extended battery life. It's light on your phone's resources, ensuring your device runs efficiently with minimized battery drain.
-
-Download the Fossify Phone App now and step into a mobile world where privacy seamlessly blends with functionality. Your journey towards a safer, personalized mobile experience starts here.
-
-➡️ Explore more Fossify apps: https://www.fossify.org<br>
-➡️ Open-Source Code: https://www.github.com/FossifyOrg<br>
-➡️ Join the community on Reddit: https://www.reddit.com/r/Fossify<br>
-➡️ Connect on Telegram: https://t.me/Fossify
-
 <div align="center">
-<img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/1_en-US.png" width="30%">
-<img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/2_en-US.png" width="30%">
-<img alt="App image" src="fastlane/metadata/android/en-US/images/phoneScreenshots/3_en-US.png" width="30%">
+
+<img src="graphics/icon.webp" width="120" alt="白い熊 電話 icon" />
+
+# 白い熊 電話
+
+**A privacy‑friendly dialer, supercharged for dual‑SIM power users.**
+
+A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, and a deep hand‑off to our Contacts fork.
+
+Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
+
+**📥 Latest release: [`1.11.1+37`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+
 </div>
+
+---
+
+## 📶 Per‑contact SIM — even in Android Auto
+
+Give each contact a default SIM and outgoing calls go out on the right one automatically — **including calls placed from Android Auto**, which stock dual‑SIM dialers can't do. Instead of silently stalling on a SIM picker you can't reach in the car, the call just goes through: it uses the contact's chosen SIM, then your saved SIM, then SIM 2 as the default. (You set the per‑contact SIM in our Contacts fork — long‑press a contact → *Set default SIM*.)
+
+---
+
+## 🎨 Granular black & yellow theming
+
+A full theming page with **per‑slot colours** for the dialpad, in‑call screen, contacts, favourites and call log; **per‑element fonts** (family / weight / size with a live sample); an alpha colour picker; and SIM 1 / SIM 2 colour pickers. It seeds to pure black + pure **#FFFF00** yellow — and even the selection toolbar and pop‑up menus follow the theme.
+
+---
+
+## ↔️ Swipe to call on the right SIM
+
+Swipe a recent call **left for SIM 1, right for SIM 2** to dial instantly — the swipe backgrounds use your SIM colours.
+
+---
+
+## 🤝 Hands the Contacts & Favourites tabs to 連絡先
+
+With our Contacts fork (白い熊 連絡先) installed, tapping or swiping the Contacts/Favourites tabs opens it on the matching tab — one contacts experience shared across both apps.
+
+---
+
+## 🕓 A richer call log
+
+Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format.
+
+---
+
+## Built on Fossify Phone
+
+A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) (app id `shiroikuma.denwa`, so it coexists with the official build). Fossify Phone is a privacy‑focused, open‑source dialer free of ads and trackers — all upstream work and its mission belong to the Fossify team. The code remains under the **GNU GPL v3.0**.
+
+It builds against a lightly‑patched [Fossify Commons](https://github.com/ShiroiKuma0/shiroikuma-commons) (anti‑tamper checks removed so custom‑signed builds run, plus fork‑package fixes and the black/yellow toolbar & menus).
+
+## Building
+
+```bash
+git clone https://github.com/ShiroiKuma0/shiroikuma-denwa.git
+cd shiroikuma-denwa
+./gradlew assembleFossRelease   # a signed release needs keystore.properties
+```
+
+Builds resolve our patched Commons from `mavenLocal()` — see this repo's `CLAUDE.md` and the [commons fork](https://github.com/ShiroiKuma0/shiroikuma-commons) for publishing it.
