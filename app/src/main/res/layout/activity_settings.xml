@@ -304,6 +304,21 @@
             </RelativeLayout>
 
             <RelativeLayout
+                android:id="@+id/settings_open_contacts_app_holder"
+                style="@style/SettingsHolderSwitchStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <org.fossify.commons.views.MyMaterialSwitch
+                    android:id="@+id/settings_open_contacts_app"
+                    style="@style/SettingsSwitchStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/open_contacts_app_for_tab" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
                 android:id="@+id/settings_open_dialpad_at_launch_holder"
                 style="@style/SettingsHolderSwitchStyle"
                 android:layout_width="match_parent"

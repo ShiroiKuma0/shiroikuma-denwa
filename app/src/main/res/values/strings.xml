@@ -172,6 +172,7 @@
     <string name="settings_shortcut_left">設</string>
     <string name="settings_shortcut_right">定</string>
     <string name="open_dialpad_by_default">Open the dialpad by default when the app opens</string>
+    <string name="open_contacts_app_for_tab">Open the Contacts app from the Contacts and Favorites tabs</string>
     <string name="disable_proximity_sensor">Disable proximity sensor during calls</string>
     <string name="disable_swipe_to_answer">Replace swiping at responding to incoming calls with clicking</string>
     <string name="show_incoming_calls_full_screen">Always display incoming calls on full screen</string>

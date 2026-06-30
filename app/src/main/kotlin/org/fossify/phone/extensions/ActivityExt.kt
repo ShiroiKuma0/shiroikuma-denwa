@@ -1,6 +1,7 @@
 package org.fossify.phone.extensions
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
@@ -16,11 +17,28 @@ import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.models.contacts.Contact
 import org.fossify.phone.activities.SimpleActivity
+import org.fossify.phone.helpers.CONTACTS_APP_MAIN_ACTIVITY
+import org.fossify.phone.helpers.CONTACTS_APP_OPEN_TAB_EXTRA
+import org.fossify.phone.helpers.contactsAppPackages
 
 fun SimpleActivity.handleGenericContactClick(contact: Contact) {
     when (config.onContactClick) {
         ON_CLICK_CALL_CONTACT -> startCallWithConfirmationCheck(contact)
         ON_CLICK_VIEW_CONTACT -> startContactDetailsIntent(contact)
+    }
+}
+
+fun Context.getInstalledContactsAppPackage() = contactsAppPackages.firstOrNull { isPackageInstalled(it) }
+
+// Opens our Contacts fork on the given tab (a commons TAB_* mask). Targets its MainActivity directly:
+// the launcher intent would not deliver the extra when the app is already running.
+fun Activity.launchContactsApp(tab: Int) {
+    val contactsAppPackage = getInstalledContactsAppPackage() ?: return
+    Intent().apply {
+        setClassName(contactsAppPackage, CONTACTS_APP_MAIN_ACTIVITY)
+        putExtra(CONTACTS_APP_OPEN_TAB_EXTRA, tab)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        launchActivityIntent(this)
     }
 }
 
