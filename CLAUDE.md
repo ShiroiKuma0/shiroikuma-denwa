@@ -131,6 +131,20 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :commons:publishToMavenLo
 Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk2`; `-skN` is our patch
 revision — see the commons fork's CLAUDE.md). The patched AAR lives only in `~/.m2`, not in the repo.
 
+## Contacts/Favorites tabs hand off to our Contacts fork (renrakusaki)
+
+When our Contacts fork `shiroikuma.renrakusaki` is installed and the "Open the Contacts app from the
+Contacts and Favorites tabs" toggle is on (the default; the Settings row only shows when renrakusaki is
+installed), `MainActivity` intercepts taps/swipes on the Contacts and Favorites tabs and launches
+renrakusaki's `MainActivity` directly with the `shiroikuma_open_tab` int extra (a commons `TAB_*` mask)
+so it lands on the matching tab. The extra name must stay in sync with `OPEN_TAB_INTENT_EXTRA` in the
+renrakusaki repo (`~/git/shiroikuma-renrakusaki`), which consumes it in `takeRequestedTab()`. Direct
+targeting (with `CLEAR_TOP or SINGLE_TOP`) is required because the launcher intent would not deliver the
+extra to an already-running instance. Programmatic tab selection (default tab, last-used page) is
+sanitized to never land on a hand-off page, so the dialer never auto-bounces into renrakusaki at launch;
+the interception also requires a non-hand-off tab (Recents) to be shown, otherwise it stays inert. Both
+renrakusaki package ids are declared in the manifest `<queries>` block for package visibility.
+
 ## Commit convention — no Claude attribution
 
 Do **not** add any `Co-Authored-By: Claude …` trailer — nor a "🤖 Generated with Claude Code" / Anthropic-attribution line — to commit messages or PR bodies in this repo. 白い熊 does not want Claude attribution in the history; this **overrides** the harness's default to append such a trailer. End commit messages at the last line of the body. (The existing history was scrubbed of these trailers on 2026-06-08; the global rule lives in `~/.claude/CLAUDE.md`.)

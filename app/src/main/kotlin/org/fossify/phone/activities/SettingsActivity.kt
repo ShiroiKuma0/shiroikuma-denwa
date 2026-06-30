@@ -40,6 +40,7 @@ import org.fossify.phone.dialogs.ExportCallHistoryDialog
 import org.fossify.phone.dialogs.ManageVisibleTabsDialog
 import org.fossify.phone.extensions.canLaunchAccountsConfiguration
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.getInstalledContactsAppPackage
 import org.fossify.phone.extensions.launchAccountsConfiguration
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.models.RecentCall
@@ -104,6 +105,7 @@ class SettingsActivity : SimpleActivity() {
         setupManageShownTabs()
         setupDefaultTab()
         setupOnContactClick()
+        setupOpenContactsApp()
         setupDialPadOpen()
         setupGroupSubsequentCalls()
         setupStartNameWithSurname()
@@ -306,6 +308,17 @@ class SettingsActivity : SimpleActivity() {
             else -> org.fossify.commons.R.string.view_contact
         }
     )
+
+    private fun setupOpenContactsApp() {
+        binding.apply {
+            settingsOpenContactsAppHolder.beVisibleIf(getInstalledContactsAppPackage() != null)
+            settingsOpenContactsApp.isChecked = config.openContactsAppForTab
+            settingsOpenContactsAppHolder.setOnClickListener {
+                settingsOpenContactsApp.toggle()
+                config.openContactsAppForTab = settingsOpenContactsApp.isChecked
+            }
+        }
+    }
 
     private fun setupDialPadOpen() {
         binding.apply {

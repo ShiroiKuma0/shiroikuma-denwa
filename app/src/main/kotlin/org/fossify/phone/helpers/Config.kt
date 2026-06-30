@@ -108,6 +108,10 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(OPEN_DIAL_PAD_AT_LAUNCH, false)
         set(openDialPad) = prefs.edit().putBoolean(OPEN_DIAL_PAD_AT_LAUNCH, openDialPad).apply()
 
+    var openContactsAppForTab: Boolean
+        get() = prefs.getBoolean(OPEN_CONTACTS_APP_FOR_TAB, true)
+        set(openContactsAppForTab) = prefs.edit().putBoolean(OPEN_CONTACTS_APP_FOR_TAB, openContactsAppForTab).apply()
+
     var disableProximitySensor: Boolean
         get() = prefs.getBoolean(DISABLE_PROXIMITY_SENSOR, false)
         set(disableProximitySensor) = prefs.edit().putBoolean(DISABLE_PROXIMITY_SENSOR, disableProximitySensor).apply()

@@ -54,12 +54,16 @@ class SwipeToCallCallback(
             return
         }
 
-        if (canSwipe(position)) {
-            onSwipe(position, direction == ItemTouchHelper.LEFT)
-        }
-
         // we don't remove the row, so redraw it back into place
         viewHolder.bindingAdapter?.notifyItemChanged(position)
+
+        if (canSwipe(position)) {
+            val useSim1 = direction == ItemTouchHelper.LEFT
+            // Defer the call until ItemTouchHelper has settled this swipe. Launching the call screen
+            // synchronously from onSwiped() interrupts the spring-back (recover) animation, leaving the
+            // row frozen mid-swipe with the colored SIM background stuck on screen until the app is killed.
+            viewHolder.itemView.post { onSwipe(position, useSim1) }
+        }
     }
 
     override fun onChildDraw(

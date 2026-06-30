@@ -42,7 +42,9 @@ import org.fossify.phone.extensions.clearMissedCalls
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.applyThemeFont
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.getInstalledContactsAppPackage
 import org.fossify.phone.extensions.handleFullScreenNotificationsPermission
+import org.fossify.phone.extensions.launchContactsApp
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.launchCreateNewContactIntent
 import org.fossify.phone.fragments.ContactsFragment
@@ -151,6 +153,11 @@ class MainActivity : SimpleActivity() {
             getAllFragments().forEach {
                 it?.fontSizeChanged()
             }
+        }
+
+        // if the Contacts-app hand-off got enabled while we sat on a hand-off page, move off it
+        if (binding.viewPager.adapter != null && shouldOpenContactsAppForTab(binding.viewPager.currentItem)) {
+            binding.viewPager.currentItem = handOffTabCount()
         }
 
         checkShortcuts()
@@ -530,6 +537,15 @@ class MainActivity : SimpleActivity() {
                 updateBottomTabItemColors(it.customView, false, getDeselectedTabDrawableIds()[it.position])
             },
             tabSelectedAction = {
+                if (shouldOpenContactsAppForTab(it.position)) {
+                    launchContactsApp(tabMaskAt(it.position))
+                    // bounce the selection back to the page we are actually staying on
+                    Handler().post {
+                        binding.mainTabsHolder.getTabAt(sanitizeWantedTab(binding.viewPager.currentItem))?.select()
+                    }
+                    return@onTabSelectionChanged
+                }
+
                 getCurrentFragment()?.onSearchQueryChanged(binding.mainMenu.getCurrentQuery())
                 binding.viewPager.currentItem = it.position
                 updateBottomTabItemColors(it.customView, true, getSelectedTabDrawableIds()[it.position])
@@ -574,7 +590,7 @@ class MainActivity : SimpleActivity() {
         binding.apply {
             if (viewPager.adapter == null) {
                 viewPager.adapter = ViewPagerAdapter(this@MainActivity)
-                viewPager.currentItem = if (openLastTab) config.lastUsedViewPagerPage else getDefaultTab()
+                viewPager.currentItem = if (openLastTab) sanitizeWantedTab(config.lastUsedViewPagerPage) else getDefaultTab()
                 viewPager.onGlobalLayout {
                     refreshFragments()
                 }
@@ -624,9 +640,33 @@ class MainActivity : SimpleActivity() {
 
     private fun getRecentsFragment(): RecentsFragment? = findViewById(R.id.recents_fragment)
 
+    // Contacts and Favorites are always the first tabs, so the hand-off tabs occupy positions 0 until this count.
+    private fun handOffTabCount(): Int {
+        var count = 0
+        if (config.showTabs and TAB_CONTACTS != 0) count++
+        if (config.showTabs and TAB_FAVORITES != 0) count++
+        return count
+    }
+
+    // When on, tapping (or swiping to) the Contacts or Favorites tab opens the Contacts app on the matching
+    // tab instead of the built-in list. Requires a tab that stays in the dialer (i.e. Recents shown).
+    private fun shouldOpenContactsAppForTab(position: Int): Boolean {
+        return config.openContactsAppForTab
+                && position < handOffTabCount()
+                && binding.mainTabsHolder.tabCount > handOffTabCount()
+                && getInstalledContactsAppPackage() != null
+    }
+
+    // The TAB_* mask of the tab shown at the given position.
+    private fun tabMaskAt(position: Int) = tabsList.filter { config.showTabs and it != 0 }.getOrNull(position) ?: 0
+
+    // Programmatic selections (default tab, last used page) must not land on a hand-off page,
+    // otherwise the dialer would bounce into the Contacts app right at launch.
+    private fun sanitizeWantedTab(position: Int) = if (shouldOpenContactsAppForTab(position)) handOffTabCount() else position
+
     private fun getDefaultTab(): Int {
         val showTabsMask = config.showTabs
-        return when (config.defaultTab) {
+        val wantedTab = when (config.defaultTab) {
             TAB_LAST_USED -> if (config.lastUsedViewPagerPage < binding.mainTabsHolder.tabCount) config.lastUsedViewPagerPage else 0
             TAB_CONTACTS -> 0
             TAB_FAVORITES -> if (showTabsMask and TAB_CONTACTS > 0) 1 else 0
@@ -650,6 +690,8 @@ class MainActivity : SimpleActivity() {
                 }
             }
         }
+
+        return sanitizeWantedTab(wantedTab)
     }
 
     private fun launchSettings() {

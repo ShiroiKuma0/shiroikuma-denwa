@@ -27,6 +27,7 @@ const val CALL_TIME_FORMAT = "call_time_format"
 const val CALL_DURATION_FORMAT = "call_duration_format"
 const val THEME_V1_SEEDED = "theme_v1_seeded"
 const val PURE_YELLOW_MIGRATED = "pure_yellow_migrated"
+const val OPEN_CONTACTS_APP_FOR_TAB = "open_contacts_app_for_tab"
 const val FONT_FAMILY_PREFIX = "font_family_" // String, "" = system/global default
 const val FONT_WEIGHT_PREFIX = "font_weight_" // Int, 0 = default, else 100..900
 const val FONT_SIZE_PREFIX = "font_size_"     // Int sp, 0 = default
@@ -41,6 +42,14 @@ const val PALETTE_YELLOW = 0xFFFFFF00.toInt()
 const val LEGACY_PALETTE_YELLOW = 0xFFFFEB3B.toInt()
 
 const val ALL_TABS_MASK = TAB_CONTACTS or TAB_FAVORITES or TAB_CALL_HISTORY
+
+// Our Contacts fork (shiroikuma-renrakusaki); when installed, the Contacts and Favorites tabs hand off to it
+val contactsAppPackages = listOf("shiroikuma.renrakusaki", "shiroikuma.renrakusaki.debug")
+
+// Int extra (a commons TAB_* mask) telling renrakusaki's MainActivity which tab to open;
+// must match OPEN_TAB_INTENT_EXTRA in the renrakusaki repo
+const val CONTACTS_APP_OPEN_TAB_EXTRA = "shiroikuma_open_tab"
+const val CONTACTS_APP_MAIN_ACTIVITY = "org.fossify.contacts.activities.MainActivity"
 
 val tabsList = arrayListOf(TAB_CONTACTS, TAB_FAVORITES, TAB_CALL_HISTORY)
 
