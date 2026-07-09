@@ -223,6 +223,9 @@ class RecentCallsAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        // A holder can come back from an interrupted swipe-to-call still translated off-screen
+        // (the call screen cuts off ItemTouchHelper's cleanup) — never render a row displaced.
+        holder.itemView.translationX = 0f
         val callRecord = currentList[position]
         when (holder) {
             is RecentCallDateViewHolder -> holder.bind(callRecord as CallLogItem.Date)

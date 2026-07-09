@@ -25,6 +25,10 @@ class SwipeToCallCallback(
     private val onSwipe: (position: Int, useSim1: Boolean) -> Unit,
 ) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
 
+    // Set by setupSwipeToCall: detaches + re-attaches the ItemTouchHelper, forcing it to clearView()
+    // its pending recover animations (see onSwiped for why that can't be left to the normal cleanup).
+    var resetItemTouchHelper: (() -> Unit)? = null
+
     private val background = ColorDrawable()
     private val sim1Icon = activity.resources
         .getColoredDrawableWithColor(R.drawable.ic_phone_one_vector, sim1Color.getContrastColor())
@@ -54,6 +58,15 @@ class SwipeToCallCallback(
             return
         }
 
+        // At this point ItemTouchHelper has animated the row fully off-screen and keeps re-applying
+        // translationX = ±width on EVERY draw frame (via its ItemDecoration's recover-animation list)
+        // until a cleanup layout pass calls clearView() — a pass that never runs, because launching
+        // the call screen pauses the list first. Setting translationX back is therefore not enough;
+        // detach/re-attach the helper to force that cleanup now, or the reused holder renders as a
+        // blank row after the post-call refresh.
+        viewHolder.itemView.translationX = 0f
+        resetItemTouchHelper?.invoke()
+
         // we don't remove the row, so redraw it back into place
         viewHolder.bindingAdapter?.notifyItemChanged(position)
 
@@ -75,7 +88,11 @@ class SwipeToCallCallback(
         actionState: Int,
         isCurrentlyActive: Boolean,
     ) {
-        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && dX != 0f) {
+        // Draw the reveal only while the finger is actively dragging. Once released, skip it: otherwise
+        // the band keeps being drawn during the settle animation, and if the call screen launches and
+        // interrupts that animation, ItemTouchHelper is left mid-recover and the coloured band stays
+        // stuck on the row until it's recycled by scrolling.
+        if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE && dX != 0f && isCurrentlyActive) {
             val itemView = viewHolder.itemView
             // swiping left reveals the right edge (SIM1), swiping right reveals the left edge (SIM2)
             val swipingLeft = dX < 0
