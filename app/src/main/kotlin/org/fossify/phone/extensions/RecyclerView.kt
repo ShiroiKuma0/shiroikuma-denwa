@@ -7,7 +7,16 @@ import org.fossify.commons.views.MyRecyclerView
 import org.fossify.phone.helpers.SwipeToCallCallback
 
 fun MyRecyclerView.setupSwipeToCall(callback: SwipeToCallCallback) {
-    ItemTouchHelper(callback).attachToRecyclerView(this)
+    val itemTouchHelper = ItemTouchHelper(callback)
+    itemTouchHelper.attachToRecyclerView(this)
+
+    // Detaching forces ItemTouchHelper to clearView() every pending recover animation, dropping the
+    // per-frame off-screen translation it would otherwise keep re-applying to a swiped row; the
+    // callback triggers this right after a committed swipe, before the call screen pauses the list.
+    callback.resetItemTouchHelper = {
+        itemTouchHelper.attachToRecyclerView(null)
+        itemTouchHelper.attachToRecyclerView(this)
+    }
 
     // The list lives inside a horizontally-paging ViewPager. On touch-down over a swipeable row
     // we tell the parent not to intercept, so the row swipe wins instead of switching tabs.
