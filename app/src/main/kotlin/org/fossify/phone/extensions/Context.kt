@@ -204,6 +204,16 @@ private fun Context.querySimSlotFromProvider(authority: String, number: String):
     }
 }
 
+// The PhoneAccountHandle for a contact's renrakusaki-set SIM (slot 1/2), or null if none is set.
+fun Context.getRenrakusakiSimHandle(number: String): PhoneAccountHandle? {
+    val slot = getRenrakusakiSimSlot(number)
+    return if (slot == 1 || slot == 2) {
+        getAvailableSIMCardLabels().firstOrNull { it.id == slot }?.handle
+    } else {
+        null
+    }
+}
+
 fun Context.canLaunchAccountsConfiguration(): Boolean {
     return Intent(TelecomManager.ACTION_CHANGE_PHONE_ACCOUNTS)
         .resolveActivity(packageManager) != null

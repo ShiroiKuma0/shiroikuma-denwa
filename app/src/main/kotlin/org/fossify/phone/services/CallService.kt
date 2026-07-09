@@ -1,8 +1,5 @@
 package org.fossify.phone.services
 
-import android.app.UiModeManager
-import android.content.Context
-import android.content.res.Configuration
 import android.os.Handler
 import android.os.Looper
 import android.telecom.Call
@@ -141,8 +138,9 @@ class CallService : InCallService() {
     }
 
     // Resolution order: a per-contact SIM set in our Contacts fork (renrakusaki) ➜ a per-number SIM
-    // saved in this app ➜ (only when we can't prompt, i.e. car mode) the default SIM. The first two
-    // apply everywhere; the car fallback is what makes Android Auto calls go through.
+    // saved in this app ➜ the default SIM. A call only reaches STATE_SELECT_PHONE_ACCOUNT when it was
+    // placed without a SIM (Android Auto, external ACTION_CALL), where we can't show a picker — and AA
+    // does NOT set UI_MODE_TYPE_CAR — so always resolve to a concrete SIM rather than leaving it unpicked.
     private fun resolveSimHandle(number: String?): PhoneAccountHandle? {
         if (number != null) {
             val slot = getRenrakusakiSimSlot(number)
@@ -151,16 +149,11 @@ class CallService : InCallService() {
             }
             config.getCustomSIM(number)?.let { return it }
         }
-        return if (isInCarMode()) getDefaultSimHandle() else null
+        return getDefaultSimHandle()
     }
 
     private fun getSimHandleForSlot(slot: Int): PhoneAccountHandle? =
         getAvailableSIMCardLabels().firstOrNull { it.id == slot }?.handle
-
-    private fun isInCarMode(): Boolean {
-        val uiModeManager = getSystemService(Context.UI_MODE_SERVICE) as? UiModeManager
-        return uiModeManager?.currentModeType == Configuration.UI_MODE_TYPE_CAR
-    }
 
     // Prefer SIM 2 as the default when no per-number SIM is set; fall back to whatever SIM exists.
     private fun getDefaultSimHandle(): PhoneAccountHandle? {

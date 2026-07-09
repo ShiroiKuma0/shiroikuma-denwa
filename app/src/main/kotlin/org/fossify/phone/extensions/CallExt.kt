@@ -152,12 +152,14 @@ fun SimpleActivity.getHandleToUse(
                     callback(intent.getParcelableExtra(TelecomManager.EXTRA_PHONE_ACCOUNT_HANDLE)!!)
                 }
 
-                config.getCustomSIM(phoneNumber) != null -> {
-                    callback(config.getCustomSIM(phoneNumber))
+                else -> {
+                    // Honor a per-contact SIM set in our Contacts fork (renrakusaki), then this app's own
+                    // saved SIM, then the system default; only prompt if none of those resolve.
+                    val handle = getRenrakusakiSimHandle(phoneNumber)
+                        ?: config.getCustomSIM(phoneNumber)
+                        ?: defaultHandle
+                    if (handle != null) callback(handle) else showSelectSimDialog(phoneNumber, callback)
                 }
-
-                defaultHandle != null -> callback(defaultHandle)
-                else -> showSelectSimDialog(phoneNumber, callback)
             }
         }
     }
