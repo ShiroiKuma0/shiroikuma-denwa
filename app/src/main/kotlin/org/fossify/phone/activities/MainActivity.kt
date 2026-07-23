@@ -20,6 +20,7 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.ActionMenuView
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.snackbar.Snackbar
 import me.grantland.widget.AutofitHelper
@@ -295,6 +296,28 @@ class MainActivity : SimpleActivity() {
         binding.mainMenu.updateColors()
         styleSearchBar()
         styleTopBarMenu()
+        setupOverflowLongPress()
+    }
+
+    // Long-press on the overflow ("hamburger") button opens the 白い熊 UI settings page. The button is
+    // created lazily by the ActionMenuPresenter during layout, so attach via post; re-running each
+    // resume is harmless (the listener is simply replaced).
+    private fun setupOverflowLongPress() {
+        val toolbar = binding.mainMenu.requireToolbar()
+        toolbar.post {
+            val actionMenuView = (0 until toolbar.childCount)
+                .map { toolbar.getChildAt(it) }
+                .filterIsInstance<ActionMenuView>()
+                .firstOrNull() ?: return@post
+            val overflowButton = (0 until actionMenuView.childCount)
+                .map { actionMenuView.getChildAt(it) }
+                .filterIsInstance<ImageView>()
+                .firstOrNull() ?: return@post
+            overflowButton.setOnLongClickListener {
+                startActivity(Intent(this, ThemeActivity::class.java))
+                true
+            }
+        }
     }
 
     // Tint the top bar's action + overflow ("hamburger") icons, and colour the overflow-menu item text.
