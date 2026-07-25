@@ -6,11 +6,11 @@
 
 **A privacy‑friendly dialer, supercharged for dual‑SIM power users.**
 
-A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, and a deep hand‑off to our Contacts fork.
+A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, one‑zip backup & restore, and a deep hand‑off to our Contacts fork.
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+42`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+44`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -43,6 +43,20 @@ With our Contacts fork (白い熊 連絡先) installed, tapping or swiping the C
 ## 🕓 A richer call log
 
 Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format.
+
+---
+
+## 💾 Back up everything in one zip — and restore just the parts you want
+
+An **Export / Import** page at the top of the UI screen writes every setting the app has — behaviour, speed dial, the per‑contact SIM choices, and the whole black/yellow theme with your imported fonts — into a single dated `.zip`. Tick only what you want on the way back in: each category, and its sub‑parts, restore independently, and a backup taken by an older build still restores into a newer one.
+
+Pick a backup folder once and the page tells you, every time you open it, when this app was last saved.
+
+---
+
+## 🤖 One command backs up every 白い熊 app
+
+The dialer answers the family's **保存復元** automation contract, so 白い熊 自由作業盤 can back it up headlessly alongside every sister app in a single run — no screens, no taps. It reports real progress counts while it works and replies with the exact path and size it wrote. Off by default and gated by a per‑device token you copy with one tap.
 
 ---
 
