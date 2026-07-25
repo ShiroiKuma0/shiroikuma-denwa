@@ -24,6 +24,11 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
+    <!-- The 保存復元 automation contract lets a caller name an absolute backup directory (e.g. 白い熊's
+         archive folder); writing outside Download/ and Documents/ needs All-files access. Declared for
+         exactly that, and granted by hand — the in-app Export/Import panel uses a SAF folder instead. -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+
     <!-- Read per-contact default SIM (and private contacts) from our Contacts fork (renrakusaki).
          signature-level on renrakusaki's side; granted because both apps share a signing key.
          Both release and debug authorities are listed so either renrakusaki build is readable. -->
@@ -218,6 +223,21 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.telecom.action.SHOW_MISSED_CALLS_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 保存復元: the sister-app state-export contract. Deliberately no android:permission — the
+             caller (自由作業盤) cannot hold one, so the automation token is the gate. The actions are
+             namespaced on the installed application id, so debug and release each answer their own.
+             See receivers/StateExportReceiver. -->
+        <receiver
+            android:name=".receivers.StateExportReceiver"
+            android:enabled="true"
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
+            <intent-filter>
+                <action android:name="${applicationId}.action.EXPORT_STATE" />
+                <action android:name="${applicationId}.action.LIST_CATEGORIES" />
             </intent-filter>
         </receiver>
 

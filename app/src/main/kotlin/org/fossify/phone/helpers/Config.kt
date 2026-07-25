@@ -12,8 +12,11 @@ import org.fossify.phone.extensions.getPhoneAccountHandleModel
 import org.fossify.phone.extensions.putPhoneAccountHandle
 import org.fossify.phone.models.SpeedDial
 import androidx.core.content.edit
+import java.security.MessageDigest
+import java.security.SecureRandom
 import java.util.Locale
 
+@Suppress("TooManyFunctions") // a preferences wrapper: one accessor per setting, by design
 class Config(context: Context) : BaseConfig(context) {
     companion object {
         fun newInstance(context: Context) = Config(context)
@@ -199,4 +202,32 @@ class Config(context: Context) : BaseConfig(context) {
 
     fun setFontSize(slotKey: String, value: Int) =
         prefs.edit().putInt(FONT_SIZE_PREFIX + slotKey, value).apply()
+
+    // External-automation intent surface (receivers/StateExportReceiver): a master switch plus a shared
+    // secret every automation broadcast must carry. The same model the sister apps use — one token per
+    // app, never a second one. Both keys are device-local: SettingsExport never carries them in a backup.
+    var automationEnabled: Boolean
+        get() = prefs.getBoolean(AUTOMATION_ENABLED, false)
+        set(value) = prefs.edit().putBoolean(AUTOMATION_ENABLED, value).apply()
+
+    // The shared secret; generated on first read so the settings row always shows a value.
+    val automationToken: String
+        get() = prefs.getString(AUTOMATION_TOKEN, null)?.takeIf { it.isNotEmpty() } ?: regenerateAutomationToken()
+
+    fun regenerateAutomationToken(): String {
+        val bytes = ByteArray(AUTOMATION_TOKEN_BYTES).also { SecureRandom().nextBytes(it) }
+        val token = bytes.joinToString("") { "%02x".format(it) }
+        prefs.edit().putString(AUTOMATION_TOKEN, token).apply()
+        return token
+    }
+
+    // True when the caller's token matches the stored secret (constant-time — never `==` on a secret).
+    // The enabled check is kept separate so callers report "disabled" and "bad token" distinctly.
+    fun isAutomationTokenValid(token: String?): Boolean {
+        if (token.isNullOrEmpty()) return false
+        return MessageDigest.isEqual(token.toByteArray(), automationToken.toByteArray())
+    }
 }
+
+// 24 random bytes, hex-encoded — the sister-app convention.
+private const val AUTOMATION_TOKEN_BYTES = 24

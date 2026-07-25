@@ -1,28 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Section header: large accent title + full-width rule. -->
+<!-- Section header, in the kxkb settings house style: a thin full-width hairline marking the border
+     with the previous group (hidden on the first section, which has nothing above it), then a big bold
+     accent title with an underline exactly as wide as the words — the wrap_content column sizes to the
+     single-line text, so the match_parent rule inside it is that text's width. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/theme_section_holder"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingStart="@dimen/activity_margin"
-    android:paddingEnd="@dimen/activity_margin"
-    android:paddingTop="@dimen/medium_margin"
-    android:paddingBottom="@dimen/small_margin"
+    android:paddingTop="@dimen/normal_margin"
+    android:paddingBottom="@dimen/tiny_margin"
     tools:ignore="MissingDefaultResource">
 
-    <org.fossify.commons.views.MyTextView
-        android:id="@+id/theme_section_label"
+    <!-- 1px = the thinnest line the display can draw; a hairline, never a bar. -->
+    <View
+        android:id="@+id/theme_section_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1px" />
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/bigger_text_size"
-        android:textStyle="bold" />
+        android:orientation="vertical"
+        android:paddingStart="@dimen/theme_section_indent"
+        android:paddingEnd="@dimen/activity_margin"
+        android:paddingTop="@dimen/small_margin">
 
-    <View
-        android:id="@+id/theme_section_rule"
-        android:layout_width="match_parent"
-        android:layout_height="2dp"
-        android:layout_marginTop="@dimen/smaller_margin" />
+        <org.fossify.commons.views.MyTextView
+            android:id="@+id/theme_section_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/theme_section_text_size"
+            android:textStyle="bold" />
+
+        <View
+            android:id="@+id/theme_section_rule"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/theme_section_rule_height"
+            android:layout_marginTop="2dp" />
+
+    </LinearLayout>
 
 </LinearLayout>

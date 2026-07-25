@@ -3,6 +3,7 @@ package org.fossify.phone.helpers
 import org.fossify.commons.helpers.TAB_CALL_HISTORY
 import org.fossify.commons.helpers.TAB_CONTACTS
 import org.fossify.commons.helpers.TAB_FAVORITES
+import org.fossify.phone.BuildConfig
 
 // shared prefs
 const val SPEED_DIAL = "speed_dial"
@@ -56,5 +57,36 @@ val tabsList = arrayListOf(TAB_CONTACTS, TAB_FAVORITES, TAB_CALL_HISTORY)
 private const val PATH = "org.fossify.phone.action."
 const val ACCEPT_CALL = PATH + "ACCEPT_CALL"
 const val DECLINE_CALL = PATH + "DECLINE_CALL"
+
+// ---- 保存復元: the sister-app state-export automation contract (see receivers/StateExportReceiver) ----
+
+// The master switch (default OFF) and the shared secret every automation broadcast must carry. Both are
+// device-local: SettingsExport.PREFS_EXCLUDE keeps them out of every backup this app writes.
+const val AUTOMATION_ENABLED = "automation_enabled"
+const val AUTOMATION_TOKEN = "automation_token"
+
+// Namespaced on the INSTALLED package id (shiroikuma.denwa[.debug]), not on the code namespace the
+// app's other intents use, and derived from BuildConfig so they can never drift from the manifest's
+// ${applicationId} filters.
+val ACTION_EXPORT_STATE = "${BuildConfig.APPLICATION_ID}.action.EXPORT_STATE"
+val ACTION_LIST_CATEGORIES = "${BuildConfig.APPLICATION_ID}.action.LIST_CATEGORIES"
+
+// Contract extras — deliberately bare names, shared verbatim by every sister app.
+const val EXTRA_AUTOMATION_TOKEN = "token"
+const val EXTRA_BACKUP_PATH = "path"
+const val EXTRA_EXPORT_ITEMS = "items"
+const val EXTRA_PROGRESS_ACTION = "progress_action"
+const val EXTRA_REPLY_ACTION = "reply_action"
+const val EXTRA_REPLY_PACKAGE = "reply_package"
+const val EXTRA_REPLY_ID = "reply_id"
+const val EXTRA_REPLY_RESULT = "result"
+const val EXTRA_PROGRESS_APP = "app"
+const val EXTRA_PROGRESS_TEXT = "text"
+const val EXTRA_PROGRESS_CURRENT = "current"
+const val EXTRA_PROGRESS_TOTAL = "total"
+const val EXTRA_PROGRESS_UNIT = "unit"
+
+// At most one progress broadcast per this many ms; the final one is always sent.
+const val PROGRESS_THROTTLE_MS = 500L
 
 const val DIALPAD_TONE_LENGTH_MS = 150L // The length of DTMF tones in milliseconds
