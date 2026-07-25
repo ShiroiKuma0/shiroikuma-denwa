@@ -38,8 +38,7 @@
         android:id="@+id/theme_text_font_row"
         style="@style/SettingsHolderTextViewOneLinerStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/medium_margin">
+        android:layout_height="wrap_content">
 
         <org.fossify.commons.views.MyTextView
             android:id="@+id/theme_text_font_title"
@@ -66,8 +65,7 @@
         android:id="@+id/theme_text_weight_row"
         style="@style/SettingsHolderTextViewOneLinerStyle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/medium_margin">
+        android:layout_height="wrap_content">
 
         <org.fossify.commons.views.MyTextView
             android:id="@+id/theme_text_weight_title"
@@ -94,7 +92,6 @@
         android:id="@+id/theme_text_size_row"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/medium_margin"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="@dimen/activity_margin"
@@ -130,7 +127,6 @@
         android:id="@+id/theme_text_sample"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/medium_margin"
         android:paddingStart="@dimen/activity_margin"
         android:paddingEnd="@dimen/activity_margin"
         android:paddingBottom="@dimen/normal_margin" />

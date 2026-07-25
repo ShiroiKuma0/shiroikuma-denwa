@@ -184,6 +184,58 @@
     <string name="swipe_to_call">Swipe a contact left to call with SIM 1, right to call with SIM 2</string>
     <string name="calling_accounts">Calling accounts</string>
 
+    <!-- Export / Import (白い熊 電話 UI page) -->
+    <string name="eim_title">Export / Import</string>
+    <string name="eim_hint">Back up everything this phone app is set to — settings, speed dial, the per-contact SIM choices and the whole 白い熊 UI — into one dated .zip, or restore the ticked parts from one.</string>
+    <string name="eim_dir">Backup folder</string>
+    <string name="eim_dir_unset">Not set — tap to choose a folder</string>
+    <string name="eim_open">Export / Import…</string>
+    <string name="eim_last_no_dir">No backup folder set.</string>
+    <string name="eim_last_never">No backup in this folder yet.</string>
+    <string name="eim_last_at">Last backup: %s</string>
+    <string name="eim_select_all">Select all</string>
+    <string name="eim_export">Export</string>
+    <string name="eim_import">Import</string>
+    <string name="eim_none_selected">No categories selected.</string>
+    <string name="eim_exporting">Exporting…</string>
+    <string name="eim_importing">Importing…</string>
+    <string name="eim_export_done_title">Export finished</string>
+    <string name="eim_export_done">Written to %1$s\n\n%2$s</string>
+    <string name="eim_export_fail">Export failed: %s</string>
+    <string name="eim_import_done_title">Import finished</string>
+    <string name="eim_import_done">%s\n\nRestart the app to apply everything that was restored.</string>
+    <string name="eim_import_fail">Import failed: %s</string>
+    <string name="eim_import_none">This .zip holds nothing this app can restore.</string>
+    <string name="eim_restart_now">Restart now</string>
+    <string name="eim_restart_later">Later</string>
+    <!-- The unit counted in an automation progress line: "区分 3/5 — Appearance" -->
+    <string name="eim_progress_unit">区分</string>
+
+    <!-- Export / Import categories: the descriptive label, then the bare noun used in progress lines -->
+    <string name="eim_cat_settings">Settings (tabs, call log, dialpad, in-call)</string>
+    <string name="eim_cat_settings_short">Settings</string>
+    <string name="eim_cat_speed_dial">Speed dial</string>
+    <string name="eim_cat_speed_dial_short">Speed dial</string>
+    <string name="eim_cat_sim">Per-contact SIM choices</string>
+    <string name="eim_cat_sim_short">SIM choices</string>
+    <string name="eim_cat_appearance">白い熊 UI (colours, fonts, sizes)</string>
+    <string name="eim_cat_appearance_short">Appearance</string>
+    <string name="eim_cat_fonts">Imported font files</string>
+    <string name="eim_cat_fonts_short">Fonts</string>
+
+    <!-- 保存復元 automation -->
+    <string name="automation">Automation</string>
+    <string name="enable_automation">Automation export</string>
+    <string name="enable_automation_desc">Let a sister app\'s task run this export in the background, through a token-gated intent.</string>
+    <string name="automation_token">Automation token</string>
+    <string name="automation_token_copied">Token copied to the clipboard</string>
+    <string name="automation_token_regenerate">Regenerate</string>
+    <string name="automation_token_regenerate_warning">Generate a new token? Every place the old one was pasted stops working until it is updated.</string>
+    <string name="automation_token_regenerated">A new token was generated — update anywhere the old one was pasted.</string>
+    <string name="all_files_access">All-files access</string>
+    <string name="all_files_access_granted">Granted</string>
+    <string name="all_files_access_needed">Not granted — tap to allow writing to any backup folder</string>
+
     <!-- FAQ -->
     <string name="faq_1_title">I hear incoming calls, but the screen doesn\'t turn on. What can I do?</string>
     <string name="faq_1_text">Such issues can have many device and system specific reasons, hard to say in general. You should look around in your device settings and make sure that the app is allowed to pop up when in background and allow displaying over other apps.</string>

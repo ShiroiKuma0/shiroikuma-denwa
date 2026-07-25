@@ -18,4 +18,16 @@
     <!-- keep these 2 values in dp to avoid scaling -->
     <dimen name="dialpad_text_size">28dp</dimen>
     <dimen name="dialpad_letters_text_size">12dp</dimen>
+
+    <!-- 白い熊 電話 UI page — the kxkb settings house style. Headings are underlined only as wide as
+         their words, groups are parted by a 1px full-width hairline, and each cascade level steps in
+         18dp: section heading 36 > its rows 72 > subgroup heading 54 > its rows 90. -->
+    <dimen name="theme_section_text_size">20sp</dimen>
+    <dimen name="theme_subgroup_text_size">17sp</dimen>
+    <dimen name="theme_section_rule_height">2.5dp</dimen>
+    <dimen name="theme_subgroup_rule_height">1.5dp</dimen>
+    <dimen name="theme_section_indent">36dp</dimen>
+    <dimen name="theme_subgroup_indent">54dp</dimen>
+    <dimen name="theme_row_indent">72dp</dimen>
+    <dimen name="theme_row_indent_step">18dp</dimen>
 </resources>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Automation-token row (Export / Import section): the label and the abbreviated token on the left,
+     tapping anywhere on the row copies the FULL token; a Regenerate action sits on the right and
+     consumes its own taps, so it can never be hit by accident while copying. -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/theme_token_holder"
+    style="@style/SettingsHolderTextViewOneLinerStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <org.fossify.commons.views.MyTextView
+        android:id="@+id/theme_token_label"
+        style="@style/SettingsTextLabelStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toStartOf="@+id/theme_token_regenerate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <org.fossify.commons.views.MyTextView
+        android:id="@+id/theme_token_value"
+        style="@style/SettingsTextValueStyle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/tiny_margin"
+        android:fontFamily="monospace"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/theme_token_regenerate"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/theme_token_label"
+        tools:text="80922d8c…4c49a87c" />
+
+    <org.fossify.commons.views.MyTextView
+        android:id="@+id/theme_token_regenerate"
+        style="@style/SettingsTextLabelStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/normal_margin"
+        android:background="@drawable/ripple_background"
+        android:paddingHorizontal="@dimen/normal_margin"
+        android:paddingVertical="@dimen/small_margin"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

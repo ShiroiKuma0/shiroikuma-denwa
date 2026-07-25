@@ -12,6 +12,8 @@ eventbus = "3.3.1"
 commons = "6.1.6-sk5"  # shiroikuma: patched Commons (anti-tamper removed + fork-package fixes + black/yellow CAB & menus), from mavenLocal
 #Gradle
 gradlePlugins-agp = "9.2.0"
+#AndroidX
+documentFile = "1.1.0"
 #Other
 indicatorFastScroll = "c7873f7168"
 autofitTextView = "0.2.1"
@@ -27,6 +29,9 @@ app-build-kotlinJVMTarget = "17"
 compose-detekt = { module = "io.nlopez.compose.rules:detekt", version.ref = "detektCompose" }
 #Fossify
 fossify-commons = { module = "org.fossify:commons", version.ref = "commons" }
+#AndroidX
+# The Export/Import panel and the headless automation export both write into a persisted SAF tree.
+androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentFile" }
 #EventBus
 eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
 #Kotlin

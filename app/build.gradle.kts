@@ -179,6 +179,7 @@ tasks.register("buildFoss") {
 
 dependencies {
     implementation(libs.fossify.commons)
+    implementation(libs.androidx.documentfile)
     implementation(libs.indicator.fast.scroll)
     implementation(libs.autofit.text.view)
     implementation(libs.kotlinx.serialization.json)
