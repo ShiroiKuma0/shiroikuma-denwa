@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+44`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+45`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -57,6 +57,8 @@ Pick a backup folder once and the page tells you, every time you open it, when t
 ## 🤖 One command backs up every 白い熊 app
 
 The dialer answers the family's **保存復元** automation contract, so 白い熊 自由作業盤 can back it up headlessly alongside every sister app in a single run — no screens, no taps. It reports real progress counts while it works and replies with the exact path and size it wrote. Off by default and gated by a per‑device token you copy with one tap.
+
+It also **names the items it can save and says which should start ticked**, so the picker you see is the app's own answer rather than a guess — and a run in progress can be **stopped from outside**: the cancel unwinds the export at the next safe boundary and deletes what it had written, leaving your backup folder exactly as it found it.
 
 ---
 
