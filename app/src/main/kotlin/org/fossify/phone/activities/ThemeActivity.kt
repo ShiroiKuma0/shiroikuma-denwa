@@ -101,8 +101,9 @@ class ThemeActivity : SimpleActivity() {
     private var pendingFontBinding: ItemThemeTextBinding? = null
 
     // Export / Import: the ticked categories survive a buildRows() rebuild and the panel being reopened,
-    // so a choice made once is not silently forgotten. Everything starts selected.
-    private val eximSelected = SettingsExport.Item.entries.toMutableSet()
+    // so a choice made once is not silently forgotten. What starts ticked is each item's own declared
+    // default — the same answer LIST_CATEGORIES gives 自由作業盤, so both pickers open on one state.
+    private val eximSelected = SettingsExport.Item.defaultSelected.toMutableSet()
     private var eximPanel: ExportImportDialog? = null
 
     private val eximFolderPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->

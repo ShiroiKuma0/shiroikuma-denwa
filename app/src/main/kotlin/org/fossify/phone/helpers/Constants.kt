@@ -71,6 +71,10 @@ const val AUTOMATION_TOKEN = "automation_token"
 val ACTION_EXPORT_STATE = "${BuildConfig.APPLICATION_ID}.action.EXPORT_STATE"
 val ACTION_LIST_CATEGORIES = "${BuildConfig.APPLICATION_ID}.action.LIST_CATEGORIES"
 
+// Stops the export in flight. Fire-and-forget: token-gated like the others, but it never replies, and
+// it is a silent no-op when nothing is running.
+val ACTION_CANCEL_EXPORT = "${BuildConfig.APPLICATION_ID}.action.CANCEL_EXPORT"
+
 // Contract extras — deliberately bare names, shared verbatim by every sister app.
 const val EXTRA_AUTOMATION_TOKEN = "token"
 const val EXTRA_BACKUP_PATH = "path"

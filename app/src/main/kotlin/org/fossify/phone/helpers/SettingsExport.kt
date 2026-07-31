@@ -46,6 +46,13 @@ import java.util.zip.ZipOutputStream
 typealias ProgressReporter = (current: Long, total: Long, unit: String, text: String) -> Unit
 
 /**
+ * Thrown out of [SettingsExport.exportBlocking] when the caller's cancel signal has gone true — the
+ * export unwound at an entry boundary rather than finishing. The caller answers `ERROR:cancelled` and
+ * removes what was half-written.
+ */
+class ExportCancelledException : Exception("cancelled")
+
+/**
  * The category-based settings export/import — everything this app can be set to, in one ZIP.
  *
  * The archive holds plain JSON files, one per category, plus the imported fonts as real files under
@@ -83,12 +90,19 @@ object SettingsExport {
      * — selecting a parent WITHOUT its parts means that category's own data only. [labelRes] is the
      * descriptive label shown in the pickers (in-app and in 自由作業盤), [shortLabelRes] the bare noun
      * used in progress lines and summaries.
+     *
+     * [defaultOn] is the fourth `LIST_CATEGORIES` field: whether the item starts TICKED in a picker,
+     * and what an absent "items" extra therefore means. It is this app's answer to state rather than
+     * the picker's to guess — everything here is small and not re-creatable from anything else, so
+     * every item is `on`; the `off` case is for bulk data a restore could regenerate (downloaded media,
+     * a thumbnail cache), which this app has none of.
      */
     enum class Item(
         val id: String,
         val parentId: String?,
         @StringRes val labelRes: Int,
         @StringRes val shortLabelRes: Int,
+        val defaultOn: Boolean = true,
     ) {
         SETTINGS("settings", null, R.string.eim_cat_settings, R.string.eim_cat_settings_short),
         SETTINGS_SPEED_DIAL(
@@ -111,6 +125,12 @@ object SettingsExport {
 
             /** Parents first, each followed by its own parts — the order both pickers render. */
             val listed: List<Item> get() = entries.filter { it.isTopLevel }.flatMap { listOf(it) + it.children }
+
+            /**
+             * The set every picker starts on, and what an absent "items" extra means: each [defaultOn]
+             * item. Both the in-app panel and the automation reply seed from here, so the two agree.
+             */
+            val defaultSelected: Set<Item> get() = entries.filter { it.defaultOn }.toSet()
         }
     }
 
@@ -172,12 +192,17 @@ object SettingsExport {
      * categories, writes the ZIP into [out] and reports real counts through [onProgress] (unthrottled;
      * the caller decides how often to surface them). Blocking, so call it on a background thread, and it
      * throws on every failure so both callers get a single error path. Returns a short human summary.
+     *
+     * [isCancelled] is polled at every entry boundary — never mid-write — and unwinds the export with
+     * [ExportCancelledException] when it goes true. The caller owns what is left behind: the ZIP it was
+     * writing is short and must be deleted, never kept.
      */
     fun exportBlocking(
         context: Context,
         items: Set<Item>,
         out: OutputStream,
         onProgress: ProgressReporter = { _, _, _, _ -> },
+        isCancelled: () -> Boolean = { false },
     ): String {
         // Declaration order, not the caller's, so a ZIP's contents don't depend on how the set was built.
         val ordered = Item.listed.filter { it in items }
@@ -198,10 +223,11 @@ object SettingsExport {
             writeEntry(zip, "manifest.json", manifest.toString(2).toByteArray())
 
             ordered.forEachIndexed { index, item ->
+                if (isCancelled()) throw ExportCancelledException()
                 val done = index + 1L
                 onProgress(done, total, unit, "$unit $done/$total — ${context.getString(item.shortLabelRes)}")
                 val count = if (item == Item.APPEARANCE_FONTS) {
-                    exportFonts(context, zip)
+                    exportFonts(context, zip, isCancelled)
                 } else {
                     val slice = prefs.filterKeys { itemForKey(it) == item && it !in PREFS_EXCLUDE }
                     writeEntry(zip, item.entryName, encodePrefs(slice).toByteArray())
@@ -238,9 +264,11 @@ object SettingsExport {
         return obj.toString(2)
     }
 
-    private fun exportFonts(context: Context, zip: ZipOutputStream): Int {
+    // The one category with an unbounded number of entries, so it polls the cancel signal per file too.
+    private fun exportFonts(context: Context, zip: ZipOutputStream, isCancelled: () -> Boolean): Int {
         var count = 0
         FontHelper.getFontsDir(context).listFiles()?.forEach { f ->
+            if (isCancelled()) throw ExportCancelledException()
             if (f.isFile) {
                 writeEntry(zip, "fonts/${f.name}", f.readBytes())
                 count++
@@ -253,8 +281,18 @@ object SettingsExport {
     // HEADLESS DESTINATION (automation)
     // ---------------------------------------------------------------------------------------------
 
-    /** A resolved headless export destination: where to write, what to call it, and how big it ended up. */
-    class Target(val displayPath: String, val open: () -> OutputStream, val size: () -> Long)
+    /**
+     * A resolved headless export destination: where to write, what to call it, how big it ended up —
+     * and how to take it away again. [delete] removes the file this target names, which is how a
+     * cancelled or failed run leaves the backup directory exactly as it found it: this app writes
+     * straight to the final name rather than to a ".part", so the half-written archive IS that file.
+     */
+    class Target(
+        val displayPath: String,
+        val open: () -> OutputStream,
+        val size: () -> Long,
+        val delete: () -> Unit,
+    )
 
     /** The configured export folder (a persisted SAF tree), or null when none was ever picked. */
     fun configuredDir(context: Context): DocumentFile? =
@@ -296,6 +334,7 @@ object SettingsExport {
                 displayPath = file.absolutePath,
                 open = { openAbsolute(file) },
                 size = { file.length() },
+                delete = { file.delete() },
             )
         }
 
@@ -305,6 +344,7 @@ object SettingsExport {
             displayPath = displayPathOf(file.uri),
             open = { context.contentResolver.openOutputStream(file.uri) ?: error("cannot open ${file.uri}") },
             size = { file.length() },
+            delete = { file.delete() },
         )
     }
 

@@ -9,6 +9,7 @@ import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.helpers.isRPlus
 import org.fossify.phone.R
 import org.fossify.phone.extensions.config
+import org.fossify.phone.helpers.ACTION_CANCEL_EXPORT
 import org.fossify.phone.helpers.ACTION_EXPORT_STATE
 import org.fossify.phone.helpers.ACTION_LIST_CATEGORIES
 import org.fossify.phone.helpers.EXTRA_AUTOMATION_TOKEN
@@ -24,25 +25,36 @@ import org.fossify.phone.helpers.EXTRA_REPLY_ACTION
 import org.fossify.phone.helpers.EXTRA_REPLY_ID
 import org.fossify.phone.helpers.EXTRA_REPLY_PACKAGE
 import org.fossify.phone.helpers.EXTRA_REPLY_RESULT
+import org.fossify.phone.helpers.ExportCancelledException
 import org.fossify.phone.helpers.PROGRESS_THROTTLE_MS
 import org.fossify.phone.helpers.ProgressReporter
 import org.fossify.phone.helpers.SettingsExport
 import java.io.OutputStream
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * The 保存復元 state-export contract, for 白い熊 自由作業盤's one-run backup of every sister app.
  *
- * Two exported, token-gated actions:
- *  - [ACTION_LIST_CATEGORIES] — instant; replies "OK:" plus one `id<TAB>label` line per selectable
- *    item, a sub-option adding a third `parent-id` field after its parent's line ("appearance.fonts"
- *    under "appearance"), so the caller can render it indented and make it follow the parent's toggle.
+ * Three exported, token-gated actions:
+ *  - [ACTION_LIST_CATEGORIES] — instant; replies "OK:" plus one `id<TAB>label<TAB>parent<TAB>on|off`
+ *    line per selectable item. The third field is the parent id, empty for a top-level item, so a
+ *    sub-option ("appearance.fonts" under "appearance") can be rendered indented and follow its
+ *    parent's toggle; the fourth is whether the item starts ticked, which is this app's answer to
+ *    state rather than the caller's to guess.
  *  - [ACTION_EXPORT_STATE] — runs the same category ZIP export as the Export/Import panel, headlessly
  *    (no Activity, no interaction), and replies with the written path and its real size. Extras:
  *    "token", optional "path" (an absolute directory that OVERRIDES the configured export folder),
- *    optional "items" (comma-separated category ids; absent = everything), optional "progress_action",
- *    plus "reply_action"/"reply_package"/"reply_id".
+ *    optional "items" (comma-separated category ids; absent = the default set), optional
+ *    "progress_action", plus "reply_action"/"reply_package"/"reply_id".
+ *  - [ACTION_CANCEL_EXPORT] — stops the export in flight. Extras: "token" and an optional "reply_id"
+ *    (absent = whatever is running, which is unambiguous since two exports at once are forbidden). It
+ *    is fire-and-forget: it never replies, and it is a SILENT no-op when nothing is running or the
+ *    export already finished. The cancelled run answers its own request with "ERROR:cancelled" and
+ *    deletes the half-written archive, so a cancelled export leaves the backup directory exactly as it
+ *    found it. It is routed through this receiver rather than a service precisely because a
+ *    third-party caller can reach an exported receiver and cannot start a private service.
  *
  * Directory precedence: the "path" extra → the app's configured export folder → ERROR:no-directory.
  *
@@ -61,12 +73,25 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 // Every catch here is deliberately broad: a request from another app must always be answered with a
 // single ERROR line rather than take the receiver down, and a reply or progress broadcast that the
-// system refuses must never abort the export it is reporting on.
-@Suppress("TooGenericExceptionCaught")
+// system refuses must never abort the export it is reporting on. The function count is one small named
+// step per stage of a request — parse, answer, run, cancel, clean up, format — which is what makes the
+// contract readable against the document it implements.
+@Suppress("TooGenericExceptionCaught", "TooManyFunctions")
 class StateExportReceiver : BroadcastReceiver() {
     companion object {
         const val TAG = "DenwaStateExport"
         private const val KILO = 1024.0
+
+        // The export in flight, if any. Process-static because a cancel arrives on a FRESH receiver
+        // instance and must find the run some earlier instance started; at most one is ever meaningful,
+        // since the contract forbids two exports at once.
+        private val running = AtomicReference<RunningExport?>(null)
+    }
+
+    /** One in-flight export: the request it answers, and the flag that unwinds it at an entry boundary. */
+    private class RunningExport(val replyId: String) {
+        @Volatile
+        var cancelled = false
     }
 
     /** What a parsed request turned out to be: already answerable, or an export to run. */
@@ -77,7 +102,14 @@ class StateExportReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val action = intent.action
-        if (action != ACTION_EXPORT_STATE && action != ACTION_LIST_CATEGORIES) {
+        if (action != ACTION_EXPORT_STATE && action != ACTION_LIST_CATEGORIES && action != ACTION_CANCEL_EXPORT) {
+            return
+        }
+
+        // The cancel action answers nothing at all — no reply, no result data, so it never touches the
+        // reply machinery below and is handled before any of it is set up.
+        if (action == ACTION_CANCEL_EXPORT) {
+            cancelExport(context.applicationContext, intent)
             return
         }
 
@@ -126,11 +158,52 @@ class StateExportReceiver : BroadcastReceiver() {
             is Request.Done -> finishWith(request.result)
             is Request.Export -> {
                 val progress = throttledProgress(appContext, progressAction, replyPackage, replyId)
+                val run = RunningExport(replyId)
+                running.set(run)
                 ensureBackgroundThread {
-                    finishWith(export(appContext, request.cats, request.path, progress))
+                    try {
+                        finishWith(export(appContext, request.cats, request.path, progress, run))
+                    } finally {
+                        // Only if it is still ours: a later export owns the slot from the moment it starts.
+                        running.compareAndSet(run, null)
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * [ACTION_CANCEL_EXPORT] — stop the export in flight, if there is one. Gated exactly like the other
+     * actions, and deliberately silent: no reply of its own (the cancelled run sends the terminal
+     * "ERROR:cancelled" for the request it was answering), and arriving when nothing is running — or
+     * after the export already finished — is a no-op, never an error and never a crash.
+     *
+     * Cancelling is only ever a raised flag: the export unwinds itself at the next entry boundary, so
+     * no thread is interrupted mid-write and nothing kills the process.
+     */
+    private fun cancelExport(context: Context, intent: Intent) {
+        val config = context.config
+        val token = intent.getStringExtra(EXTRA_AUTOMATION_TOKEN)
+        val replyId = intent.getStringExtra(EXTRA_REPLY_ID)?.trim().orEmpty()
+        Log.i(
+            TAG,
+            "received $ACTION_CANCEL_EXPORT: enabled=${config.automationEnabled}, " +
+                "tokenLen=${token?.length ?: 0}, reply_id=$replyId"
+        )
+        if (!config.automationEnabled || !config.isAutomationTokenValid(token)) {
+            Log.i(TAG, "cancel refused by the automation gate")
+            return
+        }
+
+        // An absent reply_id means "whatever you are running"; a given one that names another request is
+        // not ours to stop.
+        val run = running.get()
+        if (run == null || (replyId.isNotEmpty() && replyId != run.replyId)) {
+            Log.i(TAG, "cancel: nothing to stop")
+            return
+        }
+        run.cancelled = true
+        Log.i(TAG, "cancel: signalled the export answering reply_id=${run.replyId}")
     }
 
     /**
@@ -163,23 +236,26 @@ class StateExportReceiver : BroadcastReceiver() {
     }
 
     /**
-     * "OK:" plus one `id<TAB>label` line per selectable item — the ids are exactly the ones "items"
-     * accepts. A sub-option adds a third `parent-id` field and follows its parent's line, so the caller
-     * can render it indented under the parent.
+     * "OK:" plus one `id<TAB>label<TAB>parent<TAB>on|off` line per selectable item — the ids are exactly
+     * the ones "items" accepts. The third field is the parent id and is EMPTY for a top-level item (the
+     * fields are positional), so a sub-option follows its parent's line and can be rendered indented
+     * under it; the fourth says whether the item starts ticked in the caller's picker.
      */
     private fun categoryList(context: Context): String =
         SettingsExport.Item.listed.joinToString(separator = "\n", prefix = "OK:") {
-            "${it.id}\t${context.getString(it.labelRes)}" + if (it.parentId != null) "\t${it.parentId}" else ""
+            val default = if (it.defaultOn) "on" else "off"
+            "${it.id}\t${context.getString(it.labelRes)}\t${it.parentId.orEmpty()}\t$default"
         }
 
     /**
      * The requested items, or null when [itemsRaw] names an id we do not export. Absent or empty means
-     * everything. A parent id on its own selects that category's own data only — its parts are separate
-     * ids, so they are included only when asked for.
+     * the default set — the items this app reports as starting ticked. A parent id on its own selects
+     * that category's own data only — its parts are separate ids, so they are included only when asked
+     * for.
      */
     private fun parseItems(itemsRaw: String): Set<SettingsExport.Item>? {
         val ids = itemsRaw.split(',').map { it.trim() }.filter { it.isNotEmpty() }
-        if (ids.isEmpty()) return SettingsExport.Item.entries.toSet()
+        if (ids.isEmpty()) return SettingsExport.Item.defaultSelected
         val items = ids.mapNotNull { SettingsExport.Item.byId(it) }.toSet()
         return items.takeIf { it.size == ids.distinct().size }
     }
@@ -190,6 +266,7 @@ class StateExportReceiver : BroadcastReceiver() {
         cats: Set<SettingsExport.Item>,
         path: String,
         progress: ThrottledProgress,
+        run: RunningExport,
     ): String {
         val target = try {
             SettingsExport.headlessTarget(context, path) ?: return "ERROR:no-directory"
@@ -201,12 +278,31 @@ class StateExportReceiver : BroadcastReceiver() {
             // The count is a fallback for a destination we cannot stat; it is final once exportBlocking
             // returns, which is after the ZIP's central directory has been flushed.
             val counting = CountingOutputStream(target.open())
-            counting.use { SettingsExport.exportBlocking(context, cats, it, progress.reporter) }
+            counting.use {
+                SettingsExport.exportBlocking(context, cats, it, progress.reporter) { run.cancelled }
+            }
             val bytes = target.size().takeIf { it > 0 } ?: counting.count
             progress.final(cats.size.toLong())
             "OK:${target.displayPath}|$bytes|${humanSize(bytes)}|${cats.size} categories"
+        } catch (ignored: ExportCancelledException) {
+            discard(target)
+            "ERROR:cancelled"
         } catch (e: Exception) {
+            discard(target)
             storageError(path, e)
+        }
+    }
+
+    /**
+     * Take away the archive a cancelled or failed run left half-written — the whole point of the cancel
+     * action is that the backup directory ends up exactly as it was found, with no short ZIP in it. This
+     * app writes straight to the final name, so that file IS the partial; there is never a stray ".part".
+     */
+    private fun discard(target: SettingsExport.Target) {
+        try {
+            target.delete()
+        } catch (e: Exception) {
+            Log.w(TAG, "could not delete the partial export: $e")
         }
     }
 
