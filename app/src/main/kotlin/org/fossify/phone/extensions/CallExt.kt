@@ -154,11 +154,17 @@ fun SimpleActivity.getHandleToUse(
 
                 else -> {
                     // Honor a per-contact SIM set in our Contacts fork (renrakusaki), then this app's own
-                    // saved SIM, then the system default; only prompt if none of those resolve.
-                    val handle = getRenrakusakiSimHandle(phoneNumber)
-                        ?: config.getCustomSIM(phoneNumber)
-                        ?: defaultHandle
-                    if (handle != null) callback(handle) else showSelectSimDialog(phoneNumber, callback)
+                    // saved SIM — and then ask, rather than falling through to the system default.
+                    // A default calling SIM now has to be set system-wide, because Android Auto refuses
+                    // to dial at all without one; deferring to it here would silently retire the picker
+                    // on the phone, where picking per call is the point. With a single SIM there is
+                    // nothing to ask about, so the default stands.
+                    val handle = getRenrakusakiSimHandle(phoneNumber) ?: config.getCustomSIM(phoneNumber)
+                    when {
+                        handle != null -> callback(handle)
+                        areMultipleSIMsAvailable() -> showSelectSimDialog(phoneNumber, callback)
+                        else -> callback(defaultHandle)
+                    }
                 }
             }
         }

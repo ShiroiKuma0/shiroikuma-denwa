@@ -3,6 +3,7 @@ package org.fossify.phone.activities
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.Menu
 import androidx.activity.result.contract.ActivityResultContracts
 import kotlinx.serialization.SerializationException
@@ -41,9 +42,12 @@ import org.fossify.phone.R
 import org.fossify.phone.databinding.ActivitySettingsBinding
 import org.fossify.phone.dialogs.ExportCallHistoryDialog
 import org.fossify.phone.dialogs.ManageVisibleTabsDialog
+import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.canLaunchAccountsConfiguration
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getInstalledContactsAppPackage
+import org.fossify.phone.extensions.getRequestCallRedirectionRoleIntent
+import org.fossify.phone.extensions.isCallRedirectionRoleHeld
 import org.fossify.phone.extensions.launchAccountsConfiguration
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.models.RecentCall
@@ -69,6 +73,15 @@ class SettingsActivity : SimpleActivity() {
                 toast(R.string.importing)
                 importCallHistory(uri)
             }
+        }
+
+    // The role dialog works out who is asking from getCallingPackage(), which the system only fills in
+    // for an activity started FOR A RESULT. Launched with a plain startActivity it reads null and
+    // PermissionController's RequestRoleActivity closes again immediately — no dialog, no error, just a
+    // row that looks dead. Hence a result launcher; its callback also refreshes the row on the way back.
+    private val requestCallRedirectionRole =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            setupSimRedirection()
         }
 
     private val saveDocument = registerForActivityResult(ActivityResultContracts.CreateDocument(CALL_HISTORY_FILE_TYPE)) { uri ->
@@ -102,6 +115,7 @@ class SettingsActivity : SimpleActivity() {
         setupUseEnglish()
         setupLanguage()
         setupManageBlockedNumbers()
+        setupSimRedirection()
         setupManageSpeedDial()
         setupChangeDateTimeFormat()
         setupFontSize()
@@ -228,6 +242,45 @@ class SettingsActivity : SimpleActivity() {
                     FeatureLockedDialog(this@SettingsActivity) { }
                 }
             }
+        }
+    }
+
+    // Android Auto only dials once a default calling SIM is set system-wide, and from then on its calls
+    // arrive with that SIM already chosen — so the per-contact SIM only survives if we hold the
+    // CALL_REDIRECTION role and services/SimRedirectionService swaps the account before dialing.
+    private fun setupSimRedirection() {
+        binding.apply {
+            settingsSimRedirectionHolder.beVisibleIf(isQPlus() && areMultipleSIMsAvailable())
+
+            val roleHeld = isCallRedirectionRoleHeld()
+            settingsSimRedirection.text = getString(
+                if (roleHeld) R.string.sim_redirection_on else R.string.sim_redirection_off
+            )
+
+            settingsSimRedirectionHolder.setOnClickListener {
+                launchSimRedirectionSettings(roleHeld)
+            }
+        }
+    }
+
+    // Granting is the system's role dialog; there is no revoke intent, so turning it back off means the
+    // default-apps screen. Either way onResume re-reads the role and refreshes the row on return.
+    private fun launchSimRedirectionSettings(roleHeld: Boolean) {
+        val intent = if (roleHeld) {
+            Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+        } else {
+            getRequestCallRedirectionRoleIntent()
+        }
+
+        if (intent == null) {
+            toast(R.string.sim_redirection_unavailable)
+            return
+        }
+
+        try {
+            requestCallRedirectionRole.launch(intent)
+        } catch (ignored: Exception) {
+            toast(R.string.sim_redirection_unavailable)
         }
     }
 
