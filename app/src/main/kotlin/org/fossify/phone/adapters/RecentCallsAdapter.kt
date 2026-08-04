@@ -35,7 +35,6 @@ import org.fossify.commons.extensions.formatDateOrTime
 import org.fossify.commons.extensions.formatPhoneNumber
 import org.fossify.commons.extensions.getColoredDrawableWithColor
 import org.fossify.commons.extensions.getContrastColor
-import org.fossify.commons.extensions.getPopupMenuTheme
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.extensions.highlightTextPart
@@ -57,6 +56,7 @@ import org.fossify.phone.dialogs.ShowGroupedCallsDialog
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
 import org.fossify.phone.extensions.applyThemeFont
+import org.fossify.phone.extensions.colorItemTitles
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.formatCallDuration
 import org.fossify.phone.extensions.formatCallTime
@@ -420,8 +420,9 @@ class RecentCallsAdapter(
 
     private fun showPopupMenu(view: View, call: RecentCall) {
         finishActMode()
-        val theme = activity.getPopupMenuTheme()
-        val contextTheme = ContextThemeWrapper(activity, theme)
+        // Our own popup theme, not commons' — see PopupMenuTheme in styles.xml. The surface is always
+        // the dark (black) one; the fork has no light look to switch to.
+        val contextTheme = ContextThemeWrapper(activity, R.style.PopupMenuTheme)
         val contact = findContactByCall(call)
         val selectedNumber = "tel:${call.phoneNumber}"
 
@@ -440,6 +441,7 @@ class RecentCallsAdapter(
                 findItem(R.id.cab_block_number).title = activity.addLockedLabelIfNeeded(R.string.block_number)
                 findItem(R.id.cab_block_number).isVisible = isNougatPlus() && !call.isUnknownNumber
                 findItem(R.id.cab_remove_default_sim).isVisible = (activity.config.getCustomSIM(selectedNumber) ?: "") != "" && !call.isUnknownNumber
+                colorItemTitles(activity.themeColor(ThemeSlot.MENU_TEXT))
             }
 
             setOnMenuItemClickListener { item ->

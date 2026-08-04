@@ -12,9 +12,6 @@ import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
@@ -42,6 +39,7 @@ import org.fossify.phone.dialogs.FilterContactSourcesDialog
 import org.fossify.phone.extensions.clearMissedCalls
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.applyThemeFont
+import org.fossify.phone.extensions.colorItemTitles
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getInstalledContactsAppPackage
 import org.fossify.phone.extensions.handleFullScreenNotificationsPermission
@@ -328,14 +326,9 @@ class MainActivity : SimpleActivity() {
         toolbar.overflowIcon?.applyColorFilter(iconColor)
         val toolbarMenu = toolbar.menu
         for (i in 0 until toolbarMenu.size()) {
-            val item = toolbarMenu.getItem(i)
-            item.icon?.applyColorFilter(iconColor)
-            item.title?.let { title ->
-                item.title = SpannableString(title).apply {
-                    setSpan(ForegroundColorSpan(menuTextColor), 0, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-            }
+            toolbarMenu.getItem(i).icon?.applyColorFilter(iconColor)
         }
+        toolbarMenu.colorItemTitles(menuTextColor)
         styleSettingsShortcut()
     }
 

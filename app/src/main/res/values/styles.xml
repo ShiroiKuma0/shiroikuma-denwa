@@ -1,6 +1,25 @@
 <resources>
 
-    <style name="AppTheme" parent="AppTheme.Base" />
+    <style name="AppTheme" parent="AppTheme.Base">
+        <!-- Give every popup menu in the app the black/accent surface below, not the platform's grey one -->
+        <item name="popupMenuStyle">@style/PopupMenuStyle</item>
+        <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
+    </style>
+
+    <!-- Item ("⋮") menus, styled like the top bar's overflow menu: pure black, 2dp yellow border.
+         Commons themes its dark popup by setting the framework attr `android:popupMenuStyle` only,
+         which an androidx PopupMenu ignores — those menus fell back to Material's grey surface with
+         white text. Both attrs are set here, over commons' own popup background drawable (the one
+         `TopPopupMenu.Overflow.Dark` uses), so item menus and the top-bar menu stay identical. -->
+    <style name="PopupMenuTheme" parent="ThemeOverlay.AppCompat.Dark">
+        <item name="popupMenuStyle">@style/PopupMenuStyle</item>
+        <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
+    </style>
+
+    <style name="PopupMenuStyle" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/top_popup_menu_bg_dark</item>
+        <item name="android:popupElevation">@dimen/popup_menu_elevation</item>
+    </style>
 
     <style name="DialpadButtonStyle">
         <item name="android:background">@drawable/pill_background</item>
