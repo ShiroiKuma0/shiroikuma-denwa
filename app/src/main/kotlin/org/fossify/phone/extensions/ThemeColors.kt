@@ -222,6 +222,28 @@ fun Context.seedBlackYellowThemeIfNeeded() {
     config.themeV1Seeded = true
 }
 
+// Fork: the accent frame commons draws around every dialog, in dp.
+private const val DIALOG_FRAME_WIDTH_DP = 2
+
+/**
+ * Keep commons' dialog frame in step with the accent. Dialogs are drawn on the same black as the app
+ * behind them, so without a frame they have no edge at all — commons (sk3+) reads these two values
+ * when a dialog is shown, and a 0 width means "no frame", which is what stock apps get.
+ *
+ * The accent can change at any time (our Theme screen, or commons' own "Customize colors"), so this
+ * runs on every activity resume rather than once at startup; it writes only on an actual change.
+ */
+fun Context.syncDialogFrame() {
+    val frameColor = themeColor(ThemeSlot.PRIMARY)
+    if (config.dialogBorderColor != frameColor) {
+        config.dialogBorderColor = frameColor
+    }
+
+    if (config.dialogBorderWidth != DIALOG_FRAME_WIDTH_DP) {
+        config.dialogBorderWidth = DIALOG_FRAME_WIDTH_DP
+    }
+}
+
 /** One-time rewrite of every persisted legacy material-yellow color to pure [PALETTE_YELLOW]. */
 fun Context.migrateToPureYellowIfNeeded() {
     if (config.pureYellowMigrated) {

@@ -12,6 +12,7 @@ import org.fossify.phone.activities.MainActivity
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.migrateToPureYellowIfNeeded
 import org.fossify.phone.extensions.seedBlackYellowThemeIfNeeded
+import org.fossify.phone.extensions.syncDialogFrame
 import org.fossify.phone.extensions.themeColor
 
 class App : FossifyApp() {
@@ -21,6 +22,8 @@ class App : FossifyApp() {
         seedBlackYellowThemeIfNeeded()
         // Rewrite colors persisted with the legacy material yellow to pure yellow, once.
         migrateToPureYellowIfNeeded()
+        // Frame dialogs in the accent, so they are not black-on-black with the screen behind them.
+        syncDialogFrame()
         // Recolor every screen's top-bar foreground from the header slots, so it propagates even to
         // sub-screens we don't own (e.g. the commons Settings → About page).
         registerActivityLifecycleCallbacks(TopBarColorizer())
@@ -31,6 +34,10 @@ class App : FossifyApp() {
 // slots after it resumes. The main screen is skipped — it paints its own search bar + overflow chrome.
 private class TopBarColorizer : Application.ActivityLifecycleCallbacks {
     override fun onActivityResumed(activity: Activity) {
+        // Any screen can open a dialog, and the accent may have changed since the last one — resync
+        // the frame here, before the screen is interactive.
+        activity.syncDialogFrame()
+
         if (activity is MainActivity) {
             return
         }

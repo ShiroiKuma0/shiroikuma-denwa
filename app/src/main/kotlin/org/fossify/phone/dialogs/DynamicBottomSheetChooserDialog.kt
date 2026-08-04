@@ -1,18 +1,44 @@
 package org.fossify.phone.dialogs
 
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.os.Bundle
+import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentManager
 import org.fossify.commons.adapters.SimpleListItemAdapter
 import org.fossify.commons.fragments.BaseBottomSheetDialogFragment
 import org.fossify.commons.models.SimpleListItem
 import org.fossify.phone.databinding.LayoutSimpleRecyclerViewBinding
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
+
+// The accent frame around the sheet, in dp — the dialog frame's counterpart (see syncDialogFrame).
+private const val SHEET_FRAME_WIDTH_DP = 2
 
 // same as BottomSheetChooserDialog but with dynamic updates
 class DynamicBottomSheetChooserDialog : BaseBottomSheetDialogFragment() {
     private lateinit var binding: LayoutSimpleRecyclerViewBinding
 
     var onItemClick: ((SimpleListItem) -> Unit)? = null
+
+    // Frame the sheet in the accent, for the same reason dialogs are framed: it is the same black as
+    // the call screen behind it, so its rounded top edge is the only thing that would show.
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val context = requireContext()
+        val strokePx = (SHEET_FRAME_WIDTH_DP * resources.displayMetrics.density).toInt()
+        val radius = resources.getDimension(org.fossify.commons.R.dimen.bottom_sheet_corner_radius)
+        val sheet = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
+            setColor(context.themeColor(ThemeSlot.BACKGROUND))
+            setStroke(strokePx, context.themeColor(ThemeSlot.PRIMARY))
+        }
+
+        // The sheet sits flush with the bottom of the screen, so push that edge of the frame off it.
+        view.background = LayerDrawable(arrayOf(sheet)).apply { setLayerInset(0, 0, 0, 0, -strokePx) }
+    }
 
     override fun setupContentView(parent: ViewGroup) {
         binding = LayoutSimpleRecyclerViewBinding.inflate(layoutInflater, parent, false)
