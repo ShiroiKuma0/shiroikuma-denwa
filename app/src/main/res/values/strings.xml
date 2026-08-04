@@ -236,6 +236,11 @@
     <string name="all_files_access_granted">Granted</string>
     <string name="all_files_access_needed">Not granted — tap to allow writing to any backup folder</string>
 
+    <string name="sim_redirection">Per-contact SIM for calls from other apps</string>
+    <string name="sim_redirection_on">On — Android Auto\'s calls follow the contact\'s SIM. Tap to turn off</string>
+    <string name="sim_redirection_off">Off — calls placed by other apps use the system default SIM. Tap to allow</string>
+    <string name="sim_redirection_unavailable">Could not open the system\'s call redirection settings</string>
+
     <!-- FAQ -->
     <string name="faq_1_title">I hear incoming calls, but the screen doesn\'t turn on. What can I do?</string>
     <string name="faq_1_text">Such issues can have many device and system specific reasons, hard to say in general. You should look around in your device settings and make sure that the app is allowed to pop up when in background and allow displaying over other apps.</string>

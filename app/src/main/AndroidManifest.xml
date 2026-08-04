@@ -212,6 +212,20 @@
             </intent-filter>
         </service>
 
+        <!-- Applies the per-contact SIM to calls placed by other apps (Android Auto above all), which
+             arrive with the system default SIM already attached and so never reach CallService's
+             STATE_SELECT_PHONE_ACCOUNT branch. Bound only while we hold the CALL_REDIRECTION role,
+             which is requested from Settings; the role itself only exists on Q+. -->
+        <service
+            android:name=".services.SimRedirectionService"
+            android:exported="true"
+            android:permission="android.permission.BIND_CALL_REDIRECTION_SERVICE"
+            tools:targetApi="q">
+            <intent-filter>
+                <action android:name="android.telecom.CallRedirectionService" />
+            </intent-filter>
+        </service>
+
         <receiver
             android:name=".receivers.CallActionReceiver"
             android:enabled="true"
