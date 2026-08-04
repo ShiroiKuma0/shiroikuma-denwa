@@ -94,10 +94,16 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
 - **Source:** the `shiroikuma-commons` fork (`~/git/shiroikuma-commons`, branch `custom`), which strips
   Commons' anti-tamper "fake version" / sideloading checks out entirely **and** carries fork-package
   fixes for spots where Commons hard-codes `org.fossify.*` (documented in that repo's CLAUDE.md).
-- **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk2"` in
+- **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk5"` in
   `gradle/libs.versions.toml` (`mavenLocal()` is already a repository in `settings.gradle.kts`).
 - Because Commons itself no longer nags, this app carries **no** anti-tamper workaround — no
   `getPackageName` spoof, no `SIDELOADING_FALSE`, no `res/raw/keep.xml`.
+- **Beyond the fork-package fixes, the pinned revisions also carry fork UI patches this app uses:**
+  `-sk3` adds the opt-in dialog accent frame (`BaseConfig.dialogBorderColor` / `dialogBorderWidth`,
+  0 = off for stock consumers; we opt in from `syncDialogFrame()` in `extensions/ThemeColors.kt`),
+  and `-sk4`/`-sk5` paint the contextual action bar in code and make the dark/You popup-menu
+  backgrounds black with a yellow border. Both are pure additions — a bump that drops them shows up
+  as edgeless dialogs and grey menus, not as a build failure.
 
 ### Commons hard-codes the `org.fossify.phone` package (call-intent fix)
 
@@ -128,7 +134,7 @@ git checkout <new-commons-tag>     # then re-apply all patches (anti-tamper stri
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :commons:publishToMavenLocal -PVERSION=<ver>-skN
 ```
 
-Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk2`; `-skN` is our patch
+Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk5`; `-skN` is our patch
 revision — see the commons fork's CLAUDE.md). The patched AAR lives only in `~/.m2`, not in the repo.
 
 ## Contacts/Favorites tabs hand off to our Contacts fork (renrakusaki)
