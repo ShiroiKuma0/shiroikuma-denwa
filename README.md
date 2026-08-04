@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+46`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+49`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -18,7 +18,11 @@ Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
 ## 📶 Per‑contact SIM — even in Android Auto
 
-Give each contact a default SIM and outgoing calls go out on the right one automatically — **including calls placed from Android Auto**, which stock dual‑SIM dialers can't do. Instead of silently stalling on a SIM picker you can't reach in the car, the call just goes through: it uses the contact's chosen SIM, then your saved SIM, then SIM 2 as the default. (You set the per‑contact SIM in our Contacts fork — long‑press a contact → *Set default SIM*.)
+Give each contact a default SIM and outgoing calls go out on the right one automatically — **including the calls Android Auto places from the car**, which is the one place a per‑contact SIM normally cannot survive.
+
+Android Auto will not dial at all until a **system‑wide** default calling SIM is set: its only way to resolve the SIM would be a prompt on the handset, which it refuses to raise while driving, so the tap dies silently before it ever reaches Telecom. And once that default *is* set, every call it places arrives with that one SIM already attached, decided long before any dialer gets a say.
+
+So this fork takes the `CALL_REDIRECTION` role and swaps the SIM back to the contact's own in the moment before the call goes out — the car obeys the same per‑contact choice the phone does, with no prompt and no stalling. On the phone itself the SIM picker still appears for contacts you haven't given a SIM to, rather than quietly deferring to that new device‑wide default. (You set the per‑contact SIM in our Contacts fork — long‑press a contact → *Set default SIM*.)
 
 ---
 
