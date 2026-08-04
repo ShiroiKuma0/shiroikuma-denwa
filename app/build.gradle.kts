@@ -22,7 +22,14 @@ fun hasSigningVars(): Boolean {
             && providers.environmentVariable("SIGNING_STORE_PASSWORD").orNull != null
 }
 
-val forkVersionName = "${project.property("VERSION_NAME")}+${project.property("BUILD_NUMBER")}"
+// The build counter is always written zero-padded to three digits (+001, +050). File lists sort
+// lexicographically, and an unpadded counter sorts wrongly — +10 lands before +3, burying the newest
+// build in the middle of ~/tmp, of the phone's file manager and of the release list. Padding is text
+// only: gradle.properties keeps BUILD_NUMBER a plain integer, and so does versionCode.
+// Everything named after a build — versionName, archivesName, the buildFoss APK, and the release tag
+// derived from it — comes from this one string, so they can never disagree.
+val forkBuildNumber = project.property("BUILD_NUMBER").toString().toInt()
+val forkVersionName = "${project.property("VERSION_NAME")}+${"%03d".format(forkBuildNumber)}"
 
 base {
     archivesName = "shiroikuma-denwa_${forkVersionName}_arm64-v8a"
