@@ -3,6 +3,31 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+058 — 2026-08-11
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **Silence the ringer without rejecting the call.** A **Silence** button on the incoming-call
+  screen — centred above Decline and Accept, the same 72 dp circle in the fork's own idiom: app
+  background fill, a 2 dp ring and a bell-off glyph in the theme's primary colour, "Silence"
+  underneath. It stops the ringtone and the ringing vibration through
+  `TelecomManager.silenceRinger()` while the call keeps ringing for the caller, so it can still be
+  answered or left to voicemail. Once used, the button dims to "Silenced".
+- **Either volume key silences a ringing call.** Which layer gets the key depends on the ROM — AOSP's
+  window manager silences the ringer itself and never delivers it, EMUI keeps it for its own volume
+  panel — so this is covered from both ends: `CallActivity.dispatchKeyEvent` handles a key that does
+  reach the app, and `CallService` watches the ring, notification and media volumes for a change
+  while a call is ringing, silences on one, and then **restores the volume it was ringing at**.
+- The button reflects a silence the app did not trigger: `CallService.onSilenceRinger()` feeds
+  Telecom's own callback back into `CallManager`, which owns the silenced flag and clears it per
+  call, so a second incoming call rings again.
+
+### Known limitation
+- On a phone where another app grabs the volume keys below the Android input framework (白い熊's
+  handset: 自由作業盤's Shizuku key grabber `EVIOCGRAB`s the volume nodes and consumes short presses
+  while the screen is on), no key event and no volume change ever escape, so only the on-screen
+  button works. That gate has to be opened in the grabbing app.
+
 ## 白い熊 電話 1.11.1+055 — 2026-08-11
 Built on Fossify Phone 1.11.1.
 
