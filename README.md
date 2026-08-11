@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+055`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+058`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -37,6 +37,12 @@ A full theming page with **per‑slot colours** for the dialpad, in‑call scree
 The keypad is a proper dial‑pad: **round keys ringed in your accent colour**, sized to the dial button and packed into a 3×4 block around the centre column, instead of pill‑shaped cells stretched across the whole screen. Both pads get it — the dialer and the one that slides up mid‑call.
 
 Behind it, the in‑call keys were **not reliably reaching automated menus**. Stock fires a fixed 150 ms tone burst regardless of how long you hold the key, and a second digit pressed too soon gets cut short by the first one's timer — which is exactly how a hotline menu ends up ignoring you. Now the tone lasts **as long as you hold the key**, never less than 250 ms, and digits pressed in quick succession are **queued and sent in full** rather than clobbering each other. The in‑call pad also **beeps** when you press a key, which it never did before.
+
+---
+
+## 🔕 Let it ring — quietly
+
+Not every call you want to take is one you want to hear. A **Silence** button sits on the incoming‑call screen, above Decline and Accept: it stops the ringtone and the vibration while the call **keeps ringing for the caller**, so you can still pick it up a moment later, or let it go to voicemail without ever declining it. Either **volume key** does the same thing, and the volume you were ringing at is put back afterwards — you asked for quiet, not for a quieter phone from now on.
 
 ---
 
