@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
 import android.graphics.drawable.RippleDrawable
 import android.media.AudioManager
@@ -66,6 +67,7 @@ class CallActivity : SimpleActivity() {
     private var viewsUnderDialpad = arrayListOf<Pair<View, Float>>()
     private var dialpadHeight = 0f
     private var toneGeneratorHelper: ToneGeneratorHelper? = null
+    private var consumedVolumeKeyDownTime = 0L
 
     private var audioRouteChooserDialog: DynamicBottomSheetChooserDialog? = null
 
@@ -247,6 +249,8 @@ class CallActivity : SimpleActivity() {
             it.applyColorFilter(bgColor.getContrastColor())
             it.background.applyColorFilter(inactiveColor)
         }
+
+        setupSilenceButton()
 
         arrayOf(
             callToggleMicrophone, callToggleSpeaker, callDialpad,
@@ -760,6 +764,86 @@ class CallActivity : SimpleActivity() {
         CallManager.accept()
     }
 
+    /**
+     * The silence button repeats the decline/accept form — the same circle, in the fork's own
+     * colors: app background fill, primary-color ring and glyph.
+     */
+    private fun setupSilenceButton() = binding.apply {
+        val ringColor = themeColor(ThemeSlot.PRIMARY)
+        val strokeWidth = resources.getDimensionPixelSize(R.dimen.silence_call_stroke_width)
+        callSilenceRinger.setOnClickListener {
+            silenceRinger()
+        }
+
+        callSilenceRinger.applyColorFilter(ringColor)
+        (callSilenceRinger.background as? RippleDrawable)
+            ?.findDrawableByLayerId(R.id.silence_call_background)
+            ?.let { it as? GradientDrawable }
+            ?.apply {
+                setColor(getProperBackgroundColor())
+                setStroke(strokeWidth, ringColor)
+            }
+
+        callSilenceRingerLabel.setTextColor(ringColor)
+    }
+
+    private fun silenceRinger() {
+        if (CallManager.isRingerSilenced() || CallManager.getState() != Call.STATE_RINGING) {
+            return
+        }
+
+        if (!CallManager.silenceRinger()) {
+            toast(R.string.unknown_error_occurred)
+        }
+    }
+
+    private fun updateRingerSilencedState() {
+        val silenced = CallManager.isRingerSilenced()
+        binding.callSilenceRinger.apply {
+            isEnabled = !silenced
+            alpha = if (silenced) LOWER_ALPHA else 1f
+            contentDescription = getString(if (silenced) R.string.ringer_silenced else R.string.silence_ringer)
+        }
+
+        binding.callSilenceRingerLabel.apply {
+            text = getString(if (silenced) R.string.silenced else R.string.silence)
+            alpha = if (silenced) LOWER_ALPHA else 1f
+        }
+    }
+
+    private fun isVolumeKey(keyCode: Int) = keyCode == KeyEvent.KEYCODE_VOLUME_UP
+        || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
+        || keyCode == KeyEvent.KEYCODE_VOLUME_MUTE
+
+    /**
+     * Either volume key silences a ringing call instead of changing the volume. Most ROMs never let
+     * the key get this far — the window manager either silences the ringer itself (AOSP) or keeps
+     * the key for its own volume panel (EMUI), which is why CallService also watches the ring volume
+     * for a change. This covers the ROMs that do deliver the key. Once silenced, the keys control
+     * the volume again.
+     */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        val isRinging = CallManager.getState() == Call.STATE_RINGING && !CallManager.isRingerSilenced()
+        if (isVolumeKey(event.keyCode) && isRinging) {
+            consumedVolumeKeyDownTime = event.downTime
+            if (event.action == KeyEvent.ACTION_DOWN) {
+                silenceRinger()
+            }
+            return true
+        }
+
+        // swallow the release of a press we already turned into "silence the ringer", otherwise the
+        // volume panel still pops up on the release alone
+        if (isVolumeKey(event.keyCode) && event.downTime == consumedVolumeKeyDownTime) {
+            if (event.action == KeyEvent.ACTION_UP) {
+                consumedVolumeKeyDownTime = 0L
+            }
+            return true
+        }
+
+        return super.dispatchKeyEvent(event)
+    }
+
     private fun initOutgoingCallUI() {
         enableProximitySensor()
         binding.incomingCallHolder.beGone()
@@ -769,6 +853,7 @@ class CallActivity : SimpleActivity() {
 
     private fun callRinging() {
         binding.incomingCallHolder.beVisible()
+        updateRingerSilencedState()
     }
 
     private fun callStarted() {
@@ -845,6 +930,12 @@ class CallActivity : SimpleActivity() {
             callDurationHandler.removeCallbacks(updateCallDurationTask)
             updateCallContactInfo(call)
             updateState()
+        }
+
+        override fun onRingerSilenced() {
+            runOnUiThread {
+                updateRingerSilencedState()
+            }
         }
     }
 

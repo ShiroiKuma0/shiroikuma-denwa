@@ -8,6 +8,7 @@ import android.telecom.Call
 import android.telecom.CallAudioState
 import android.telecom.InCallService
 import android.telecom.VideoProfile
+import org.fossify.commons.extensions.telecomManager
 import org.fossify.phone.extensions.getStateCompat
 import org.fossify.phone.extensions.hasCapability
 import org.fossify.phone.extensions.isConference
@@ -28,9 +29,14 @@ class CallManager {
         private var dtmfStartedAtMs: Long? = null
         private var isDtmfBusy = false
 
+        // the ringtone of the current incoming call was silenced (by us or by the system, e.g. the
+        // hardware volume keys) — the call itself keeps ringing for the caller
+        private var ringerSilenced = false
+
         fun onCallAdded(call: Call) {
             this.call = call
             calls.add(call)
+            ringerSilenced = false
             for (listener in listeners) {
                 listener.onPrimaryCallChanged(call)
             }
@@ -199,6 +205,46 @@ class CallManager {
             }
         }
 
+        fun isRingerSilenced() = ringerSilenced
+
+        /**
+         * Stops the ringtone and the ringing vibration of an incoming call without touching the
+         * call itself — it keeps ringing for the caller, so it can still be answered or left to
+         * voicemail. Telecom allows this for the default dialer, which we are, hence the
+         * suppressed permission. Returns false when Telecom refused, i.e. nothing was silenced.
+         */
+        @SuppressLint("MissingPermission")
+        fun silenceRinger(): Boolean {
+            if (ringerSilenced) {
+                return true
+            }
+
+            val service = inCallService ?: return false
+            return try {
+                service.telecomManager.silenceRinger()
+                onRingerSilenced()
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+
+        /**
+         * Telecom has stopped the ringtone of the incoming call — either because we asked it to, or
+         * because the system did it on its own (the volume keys are handled by the window manager
+         * before the app ever sees them, so this is our only signal in that case).
+         */
+        fun onRingerSilenced() {
+            if (ringerSilenced) {
+                return
+            }
+
+            ringerSilenced = true
+            for (listener in listeners) {
+                listener.onRingerSilenced()
+            }
+        }
+
         fun addListener(listener: CallManagerListener) {
             listeners.add(listener)
         }
@@ -275,6 +321,7 @@ interface CallManagerListener {
     fun onStateChanged()
     fun onAudioStateChanged(audioState: AudioRoute)
     fun onPrimaryCallChanged(call: Call)
+    fun onRingerSilenced() {}
 }
 
 sealed class PhoneState

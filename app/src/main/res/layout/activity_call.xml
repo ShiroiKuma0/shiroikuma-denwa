@@ -316,6 +316,30 @@
         tools:visibility="gone">
 
         <ImageView
+            android:id="@+id/call_silence_ringer"
+            android:layout_width="@dimen/incoming_call_button_size"
+            android:layout_height="@dimen/incoming_call_button_size"
+            android:layout_marginBottom="@dimen/normal_margin"
+            android:background="@drawable/ic_call_silence"
+            android:contentDescription="@string/silence_ringer"
+            android:padding="@dimen/bigger_margin"
+            android:src="@drawable/ic_bell_off_vector"
+            app:layout_constraintBottom_toTopOf="@+id/call_silence_ringer_label"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <org.fossify.commons.views.MyTextView
+            android:id="@+id/call_silence_ringer_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/big_margin"
+            android:text="@string/silence"
+            android:textSize="@dimen/bigger_text_size"
+            app:layout_constraintBottom_toTopOf="@+id/call_decline"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ImageView
             android:id="@+id/call_decline"
             android:layout_width="@dimen/incoming_call_button_size"
             android:layout_height="@dimen/incoming_call_button_size"
