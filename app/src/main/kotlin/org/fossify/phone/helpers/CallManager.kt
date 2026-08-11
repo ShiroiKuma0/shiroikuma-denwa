@@ -2,6 +2,8 @@ package org.fossify.phone.helpers
 
 import android.annotation.SuppressLint
 import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.telecom.Call
 import android.telecom.CallAudioState
 import android.telecom.InCallService
@@ -20,6 +22,11 @@ class CallManager {
         private var call: Call? = null
         private val calls = mutableListOf<Call>()
         private val listeners = CopyOnWriteArraySet<CallManagerListener>()
+
+        private val dtmfHandler = Handler(Looper.getMainLooper())
+        private val pendingDtmf = ArrayDeque<Char>()
+        private var dtmfStartedAtMs: Long? = null
+        private var isDtmfBusy = false
 
         fun onCallAdded(call: Call) {
             this.call = call
@@ -124,6 +131,7 @@ class CallManager {
             var notify = true
             if (primaryCall == null) {
                 call = null
+                resetDtmf()
             } else if (primaryCall != call) {
                 call = primaryCall
                 for (listener in listeners) {
@@ -201,12 +209,65 @@ class CallManager {
 
         fun getState() = getPrimaryCall()?.getStateCompat()
 
-        fun keypad(char: Char) {
-            call?.playDtmfTone(char)
-            Handler().postDelayed({
-                call?.stopDtmfTone()
-            }, DIALPAD_TONE_LENGTH_MS)
+        /**
+         * Starts transmitting [char] and keeps it on air until [releaseKeypad] is called, so a digit
+         * lasts as long as the key is held. A digit pressed while another one is still on air is
+         * queued rather than cutting it short — every digit gets at least [MIN_DTMF_TONE_LENGTH_MS].
+         */
+        fun pressKeypad(char: Char) {
+            if (!isDtmfChar(char)) {
+                return
+            }
+
+            if (isDtmfBusy) {
+                pendingDtmf.addLast(char)
+                releaseKeypad()
+            } else {
+                isDtmfBusy = true
+                startDtmfTone(char)
+            }
         }
+
+        fun releaseKeypad() {
+            // Queued digits release themselves once they go on air.
+            val startedAtMs = dtmfStartedAtMs ?: return
+            dtmfHandler.removeCallbacksAndMessages(null)
+            val remainingMs = MIN_DTMF_TONE_LENGTH_MS - (SystemClock.elapsedRealtime() - startedAtMs)
+            if (remainingMs > 0) {
+                dtmfHandler.postDelayed({ finishDtmfTone() }, remainingMs)
+            } else {
+                finishDtmfTone()
+            }
+        }
+
+        private fun startDtmfTone(char: Char) {
+            dtmfStartedAtMs = SystemClock.elapsedRealtime()
+            call?.playDtmfTone(char)
+        }
+
+        private fun finishDtmfTone() {
+            dtmfStartedAtMs = null
+            call?.stopDtmfTone()
+            val next = pendingDtmf.removeFirstOrNull()
+            if (next == null) {
+                isDtmfBusy = false
+                return
+            }
+
+            dtmfHandler.postDelayed({
+                startDtmfTone(next)
+                releaseKeypad()
+            }, DTMF_GAP_MS)
+        }
+
+        private fun resetDtmf() {
+            dtmfHandler.removeCallbacksAndMessages(null)
+            pendingDtmf.clear()
+            dtmfStartedAtMs = null
+            isDtmfBusy = false
+        }
+
+        private fun isDtmfChar(char: Char) = char in '0'..'9' || char == '*' || char == '#'
     }
 }
 

@@ -94,3 +94,11 @@ const val EXTRA_PROGRESS_UNIT = "unit"
 const val PROGRESS_THROTTLE_MS = 500L
 
 const val DIALPAD_TONE_LENGTH_MS = 150L // The length of DTMF tones in milliseconds
+
+// The shortest DTMF tone we transmit during a call. ITU-T Q.24 allows 40ms, but IVR gateways
+// routinely swallow bursts that short once the audio has been transcoded, so every digit stays
+// on air at least this long even if the key is only tapped.
+const val MIN_DTMF_TONE_LENGTH_MS = 250L
+
+// Silence between two consecutive transmitted DTMF digits, so the far end hears them as separate.
+const val DTMF_GAP_MS = 100L
