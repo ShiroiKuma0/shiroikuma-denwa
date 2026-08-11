@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+051`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+055`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -29,6 +29,14 @@ So this fork takes the `CALL_REDIRECTION` role and swaps the SIM back to the con
 ## 🎨 Granular black & yellow theming
 
 A full theming page with **per‑slot colours** for the dialpad, in‑call screen, contacts, favourites and call log; **per‑element fonts** (family / weight / size with a live sample); an alpha colour picker; and SIM 1 / SIM 2 colour pickers. It seeds to pure black + pure **#FFFF00** yellow — and it reaches the parts a theme usually can't: the selection toolbar, **every pop‑up menu** (one black surface with a yellow border, top bar and per‑call "⋮" alike), a **yellow frame around every dialog**, which is the only thing giving a dialog an edge against a black screen, and even the **toasts** — the little "Value copied to clipboard" flashes come up black‑on‑yellow instead of the system's white bubble.
+
+---
+
+## ☎️ A real dial‑pad — and tones the far end actually hears
+
+The keypad is a proper dial‑pad: **round keys ringed in your accent colour**, sized to the dial button and packed into a 3×4 block around the centre column, instead of pill‑shaped cells stretched across the whole screen. Both pads get it — the dialer and the one that slides up mid‑call.
+
+Behind it, the in‑call keys were **not reliably reaching automated menus**. Stock fires a fixed 150 ms tone burst regardless of how long you hold the key, and a second digit pressed too soon gets cut short by the first one's timer — which is exactly how a hotline menu ends up ignoring you. Now the tone lasts **as long as you hold the key**, never less than 250 ms, and digits pressed in quick succession are **queued and sent in full** rather than clobbering each other. The in‑call pad also **beeps** when you press a key, which it never did before.
 
 ---
 

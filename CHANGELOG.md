@@ -1,3 +1,86 @@
+# Changelog — 白い熊 電話
+
+This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
+**upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
+
+## 白い熊 電話 1.11.1+055 — 2026-08-11
+Built on Fossify Phone 1.11.1.
+
+### Fixed
+- **In-call DTMF tones now reach automated menus.** Digits were transmitted as a blind 150 ms burst
+  scheduled on a fresh handler per press: holding a key made no difference, and a digit pressed
+  within 150 ms of the previous one was cut short by the earlier press's timer, often below the
+  duration an IVR gateway will detect. The tone now starts on key-down and lasts until key-up, with
+  a 250 ms floor so a quick tap still transmits a solid digit.
+- Digits pressed while another is still on air are **queued and sent in full** after a 100 ms gap
+  instead of clobbering the one in flight; the pending stop is cancellable, and the DTMF state is
+  reset when the call ends so no stray stop can land on the next call.
+- Characters that are not DTMF digits are no longer handed to the framework to be silently dropped.
+
+### Added
+- The in-call keypad **plays a local tone** when a key is pressed, honouring the existing dialpad
+  beeps setting. Previously only the pre-call dialpad made any sound.
+
+### Changed
+- **The dial-pad is a real dial-pad.** Every key is a fixed 80 dp square painted as a circle ringed
+  in the theme's primary colour, and the 3×4 grid is packed around the centre column instead of
+  being stretched edge to edge. Digits and their letters are vertically centred in their circle.
+  Both the dialer and the in-call pad share the new layout.
+- The dial button sits 14 dp lower, and the pad's height is unchanged from the previous stretched
+  layout (key size and gap are tuned together to keep it 344 dp tall).
+- Long-pressing 0 during a call no longer appends a `+`: it is not a DTMF digit, and with
+  press-and-hold it would transmit a spurious 0 first. The pre-call dialpad keeps `+`.
+
+## 白い熊 電話 — fork baseline (releases up to 1.11.1+051)
+Everything this fork adds to stock Fossify Phone, as it stood before this changelog was started.
+
+### Major features
+- **Per-contact default SIM** for outgoing calls, read from our Contacts fork (白い熊 連絡先); the
+  dialer honours it and a SIM is always resolved for SIM-less calls.
+- **Android Auto obeys the per-contact SIM.** The app takes the `CALL_REDIRECTION` role and swaps
+  the SIM back to the contact's own just before the call goes out, so calls placed from the car use
+  the right SIM with no prompt.
+- **Swipe to dial per SIM** from the call log — left for SIM 1, right for SIM 2, with SIM-coloured
+  swipe backgrounds.
+- **Hand-off to 連絡先**: tapping or swiping the Contacts/Favourites tabs opens our Contacts fork on
+  the matching tab.
+- **One-zip backup & restore** via an Export/Import panel, plus the 保存復元 automation contract —
+  a cancellable export that reports a per-category default in `LIST_CATEGORIES`.
+- Tap a call-log entry to **filter recent calls to that contact**.
+
+### UI & theming
+- A **granular theming system** with per-slot colours for the foundation, search bar, top bar and
+  menus, tabs, call log, dialpad, in-call screen, contacts and favourites, seeded to black + pure
+  `#FFFF00`.
+- **Per-element fonts** (family / weight / size with a live sample) and an alpha colour picker.
+- Custom Primary colour picker and SIM 1 / SIM 2 colour pickers.
+- Call log: day line above the date, date underline, configurable thin-call and thick-day divider
+  thicknesses, themeable date header, and colours that refresh on return from settings.
+- Configurable call-log **time and duration formats** with Japanese kanji defaults, and optional
+  **和暦 (imperial-era) dates**.
+- Black/yellow pop-up menus (top bar and per-item "⋮" alike), a yellow **frame around every dialog**,
+  and themed toasts in place of the system's white bubble.
+- A 設定 shortcut in the search bar, and a long-press on the overflow button opens the UI page.
+- Custom launcher icon (black field, yellow-traced handset) and a custom icon for unknown callers.
+- Settings consolidated into one indented 白い熊 UI page, with reorganised sections.
+
+### Fixes & behaviour
+- Fixed outgoing calls failing with "No valid app found": Commons pins the call intent to
+  `org.fossify.phone`, which is not our app id — overridden in-app in `CallExt.kt`.
+- Fixed swipe-to-call leaving a stuck coloured band and ghost blank rows.
+- Fixed the SIM indicator on Huawei devices, and set a Japanese app label.
+- Missed calls post our own notification using the configurable time format.
+
+### Packaging
+- Forked as `shiroikuma.denwa`, installing side by side with Fossify Phone.
+- Builds against our **patched Fossify Commons** (`6.1.6-sk7`, from `mavenLocal`), which strips the
+  upstream anti-tamper "fake version" dialog and fixes the spots where Commons hard-codes
+  `org.fossify.*`; the app itself carries no sideloading workaround.
+- `BUILD_NUMBER` auto-increments on every `buildFoss` run, zero-padded to three digits so builds and
+  tags sort in order.
+
+---
+
 # Changelog
 All notable changes to this project will be documented in this file.
 
