@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Same 72dp circle as the decline/accept buttons, but in the fork's idiom: app background fill,
+     primary-color ring. Both colors are re-applied at runtime from the theme (CallActivity). -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/ripple_foreground">
+    <item android:id="@+id/silence_call_background">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/black" />
+            <stroke
+                android:width="@dimen/silence_call_stroke_width"
+                android:color="@android:color/white" />
+        </shape>
+    </item>
+</ripple>

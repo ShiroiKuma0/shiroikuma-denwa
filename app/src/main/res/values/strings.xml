@@ -32,6 +32,10 @@
     <string name="accept_call">Accept call</string>
     <string name="decline">Decline</string>
     <string name="decline_call">Decline call</string>
+    <string name="silence">Silence</string>
+    <string name="silenced">Silenced</string>
+    <string name="silence_ringer">Silence ringer</string>
+    <string name="ringer_silenced">Ringer silenced</string>
     <string name="unknown_caller">Unknown Caller</string>
     <string name="is_calling">Is Calling…</string>
     <string name="dialing">Dialing…</string>
