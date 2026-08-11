@@ -14,7 +14,6 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -37,7 +36,6 @@ import org.fossify.commons.extensions.value
 import org.fossify.commons.extensions.viewBinding
 import org.fossify.commons.helpers.ContactsHelper
 import org.fossify.commons.helpers.KeypadHelper
-import org.fossify.commons.helpers.LOWER_ALPHA_INT
 import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.REQUEST_CODE_SET_DEFAULT_DIALER
@@ -62,6 +60,7 @@ import org.fossify.phone.helpers.DIALPAD_TONE_LENGTH_MS
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.helpers.ToneGeneratorHelper
 import org.fossify.phone.models.SpeedDial
+import org.fossify.phone.views.applyDialpadKeyBackgrounds
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -118,25 +117,23 @@ class DialpadActivity : SimpleActivity() {
                 dialpad0Holder.visibility = View.INVISIBLE
             }
 
-            arrayOf(
-                dialpad0Holder,
-                dialpad1Holder,
-                dialpad2Holder,
-                dialpad3Holder,
-                dialpad4Holder,
-                dialpad5Holder,
-                dialpad6Holder,
-                dialpad7Holder,
-                dialpad8Holder,
-                dialpad9Holder,
-                dialpadPlusHolder,
-                dialpadAsteriskHolder,
-                dialpadHashtagHolder
-            ).forEach {
-                it.background =
-                    ResourcesCompat.getDrawable(resources, R.drawable.pill_background, theme)
-                it.background?.alpha = LOWER_ALPHA_INT
-            }
+            applyDialpadKeyBackgrounds(
+                arrayOf(
+                    dialpad0Holder,
+                    dialpad1Holder,
+                    dialpad2Holder,
+                    dialpad3Holder,
+                    dialpad4Holder,
+                    dialpad5Holder,
+                    dialpad6Holder,
+                    dialpad7Holder,
+                    dialpad8Holder,
+                    dialpad9Holder,
+                    dialpadPlusHolder,
+                    dialpadAsteriskHolder,
+                    dialpadHashtagHolder
+                )
+            )
         }
 
         setupOptionsMenu()

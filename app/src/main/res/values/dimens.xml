@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="dialpad_button_size">68dp</dimen>
+    <!-- The 3x4 grid is packed around the centre column. Key size and gap are tuned together to keep
+         the pad 344dp tall: 4 * key + 3 * gap. -->
+    <dimen name="dialpad_key_size">80dp</dimen>
+    <dimen name="dialpad_key_gap">8dp</dimen>
+    <dimen name="dialpad_key_border_width">2dp</dimen>
     <dimen name="dialpad_button_size_small">50dp</dimen>
     <dimen name="incoming_call_arrow_size">50dp</dimen>
     <dimen name="incoming_call_button_size">72dp</dimen>

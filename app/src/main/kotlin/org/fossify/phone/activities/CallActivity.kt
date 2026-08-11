@@ -20,7 +20,6 @@ import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
-import androidx.core.content.res.ResourcesCompat
 import androidx.core.os.postDelayed
 import androidx.core.view.children
 import androidx.core.view.setPadding
@@ -39,6 +38,7 @@ import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.helpers.*
 import org.fossify.phone.models.AudioRoute
 import org.fossify.phone.models.CallContact
+import org.fossify.phone.views.applyDialpadKeyBackgrounds
 import kotlin.math.max
 import kotlin.math.min
 
@@ -65,6 +65,7 @@ class CallActivity : SimpleActivity() {
     private var stopAnimation = false
     private var viewsUnderDialpad = arrayListOf<Pair<View, Float>>()
     private var dialpadHeight = 0f
+    private var toneGeneratorHelper: ToneGeneratorHelper? = null
 
     private var audioRouteChooserDialog: DynamicBottomSheetChooserDialog? = null
 
@@ -83,6 +84,7 @@ class CallActivity : SimpleActivity() {
         )
 
         updateTextColors(binding.callHolder)
+        toneGeneratorHelper = ToneGeneratorHelper(this, MIN_DTMF_TONE_LENGTH_MS)
         initButtons()
         audioManager.mode = AudioManager.MODE_IN_CALL
         addLockScreenFlags()
@@ -189,39 +191,37 @@ class CallActivity : SimpleActivity() {
         }
 
         dialpadInclude.apply {
-            dialpad0Holder.setOnClickListener { dialpadPressed('0') }
-            dialpad1Holder.setOnClickListener { dialpadPressed('1') }
-            dialpad2Holder.setOnClickListener { dialpadPressed('2') }
-            dialpad3Holder.setOnClickListener { dialpadPressed('3') }
-            dialpad4Holder.setOnClickListener { dialpadPressed('4') }
-            dialpad5Holder.setOnClickListener { dialpadPressed('5') }
-            dialpad6Holder.setOnClickListener { dialpadPressed('6') }
-            dialpad7Holder.setOnClickListener { dialpadPressed('7') }
-            dialpad8Holder.setOnClickListener { dialpadPressed('8') }
-            dialpad9Holder.setOnClickListener { dialpadPressed('9') }
+            setupDialpadKey(dialpad0Holder, '0')
+            setupDialpadKey(dialpad1Holder, '1')
+            setupDialpadKey(dialpad2Holder, '2')
+            setupDialpadKey(dialpad3Holder, '3')
+            setupDialpadKey(dialpad4Holder, '4')
+            setupDialpadKey(dialpad5Holder, '5')
+            setupDialpadKey(dialpad6Holder, '6')
+            setupDialpadKey(dialpad7Holder, '7')
+            setupDialpadKey(dialpad8Holder, '8')
+            setupDialpadKey(dialpad9Holder, '9')
+            setupDialpadKey(dialpadAsteriskHolder, '*')
+            setupDialpadKey(dialpadHashtagHolder, '#')
 
-            arrayOf(
-                dialpad0Holder,
-                dialpad1Holder,
-                dialpad2Holder,
-                dialpad3Holder,
-                dialpad4Holder,
-                dialpad5Holder,
-                dialpad6Holder,
-                dialpad7Holder,
-                dialpad8Holder,
-                dialpad9Holder,
-                dialpadPlusHolder,
-                dialpadAsteriskHolder,
-                dialpadHashtagHolder
-            ).forEach {
-                it.background = ResourcesCompat.getDrawable(resources, R.drawable.pill_background, theme)
-                it.background?.alpha = LOWER_ALPHA_INT
-            }
+            applyDialpadKeyBackgrounds(
+                arrayOf(
+                    dialpad0Holder,
+                    dialpad1Holder,
+                    dialpad2Holder,
+                    dialpad3Holder,
+                    dialpad4Holder,
+                    dialpad5Holder,
+                    dialpad6Holder,
+                    dialpad7Holder,
+                    dialpad8Holder,
+                    dialpad9Holder,
+                    dialpadPlusHolder,
+                    dialpadAsteriskHolder,
+                    dialpadHashtagHolder
+                )
+            )
 
-            dialpad0Holder.setOnLongClickListener { dialpadPressed('+'); true }
-            dialpadAsteriskHolder.setOnClickListener { dialpadPressed('*') }
-            dialpadHashtagHolder.setOnClickListener { dialpadPressed('#') }
             dialpadClearChar.setOnClickListener { clearChar(it) }
             dialpadClearChar.setOnLongClickListener { clearInput() }
         }
@@ -429,9 +429,32 @@ class CallActivity : SimpleActivity() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupDialpadKey(view: View, char: Char) {
+        // The key has to be clickable, otherwise it never receives anything past ACTION_DOWN.
+        view.isClickable = true
+        view.setOnTouchListener { _, event ->
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> dialpadPressed(char)
+                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> dialpadReleased()
+            }
+            false
+        }
+    }
+
     private fun dialpadPressed(char: Char) {
-        CallManager.keypad(char)
+        CallManager.pressKeypad(char)
         binding.dialpadInput.addCharacter(char)
+        if (config.dialpadBeeps) {
+            toneGeneratorHelper?.startTone(char)
+        }
+    }
+
+    private fun dialpadReleased() {
+        CallManager.releaseKeypad()
+        if (config.dialpadBeeps) {
+            toneGeneratorHelper?.stopTone()
+        }
     }
 
     private fun changeCallAudioRoute() {
