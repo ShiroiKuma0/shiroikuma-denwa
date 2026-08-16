@@ -38,6 +38,7 @@ import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getSimSwipeColors
 import org.fossify.phone.extensions.setupSwipeToCall
 import org.fossify.phone.extensions.startContactDetailsIntent
+import org.fossify.phone.extensions.styleContextualActionBar
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.helpers.SwipeToCallCallback
 import org.fossify.phone.interfaces.RefreshItemsListener
@@ -130,8 +131,12 @@ class ContactsAdapter(
             findItem(R.id.cab_block_unblock_contact).isVisible = isOneItemSelected && isNougatPlus()
             getCabBlockContactTitle { title ->
                 findItem(R.id.cab_block_unblock_contact).title = title
+                // that title arrives from a background lookup, long after the pass below
+                activity.styleContextualActionBar(actMode, menu)
             }
         }
+
+        activity.styleContextualActionBar(actMode, menu)
     }
 
     override fun actionItemPressed(id: Int) {

@@ -66,6 +66,7 @@ import org.fossify.phone.extensions.setupSwipeToCall
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
+import org.fossify.phone.extensions.styleContextualActionBar
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.ThemeDimen
 import org.fossify.phone.extensions.themeColor
@@ -163,6 +164,8 @@ class RecentCallsAdapter(
             findItem(R.id.cab_show_call_details).isVisible = isOneItemSelected
             findItem(R.id.cab_view_details).isVisible = isOneItemSelected && findContactByCall(selectedItems.first()) != null
         }
+
+        activity.styleContextualActionBar(actMode, menu)
     }
 
     override fun actionItemPressed(id: Int) {
