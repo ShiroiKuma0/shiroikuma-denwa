@@ -3,6 +3,26 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+059 — 2026-08-16
+Built on Fossify Phone 1.11.1.
+
+### Fixed
+- **The selection toolbar follows the theme everywhere.** Long-pressing a call raised the stock
+  dark-grey bar with a white "1 / N" counter and a grey back arrow. Commons paints that bar in code
+  for one of its two list adapters only, and the call log uses the other one, so Recents kept the
+  stock look while Contacts and Favourites were already black and yellow. Every contextual bar in
+  the app is now painted from the granular slots — counter from *Menu text*, action icons, back
+  arrow and overflow dots from *Menu icon*, the app background behind the bar — and repainted on
+  every selection change.
+- **Menu item text is no longer white.** "Call from SIM 1", "Block number", "Copy number to
+  clipboard", "Select all" and the rest were drawn in the platform theme's text colour on our black
+  popup surface, because a menu popup takes its title colour from the theme and no runtime theming
+  reaches it. Every contextual menu now carries the *Menu text* colour on its titles, as the top bar
+  and the per-call "⋮" menu already did.
+- The same applies to **the overflow menu on the other screens** — Settings' "Calling accounts" and
+  the sub-screens the fork does not own follow the *Menu text* colour too. Items shown in the bar
+  itself carry an icon and no text, so only the popup is affected.
+
 ## 白い熊 電話 1.11.1+058 — 2026-08-11
 Built on Fossify Phone 1.11.1.
 
