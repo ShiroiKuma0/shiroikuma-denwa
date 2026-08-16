@@ -5,7 +5,15 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
+import android.view.ActionMode
+import android.view.Menu
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
+import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.isPackageInstalled
+import org.fossify.commons.extensions.onGlobalLayout
 import org.fossify.commons.extensions.launchActivityIntent
 import org.fossify.commons.extensions.launchViewContactIntent
 import org.fossify.commons.helpers.CONTACT_ID
@@ -20,6 +28,53 @@ import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.helpers.CONTACTS_APP_MAIN_ACTIVITY
 import org.fossify.phone.helpers.CONTACTS_APP_OPEN_TAB_EXTRA
 import org.fossify.phone.helpers.contactsAppPackages
+
+/**
+ * Paint the contextual action bar — the "N / M" bar that takes over the top of the screen while items
+ * are selected — and its menu from our own slots: MENU_TEXT for the counter and the overflow item
+ * titles, MENU_ICON for the action icons, the back arrow and the overflow dots, BACKGROUND behind it.
+ *
+ * Commons paints this bar in code for `MyRecyclerViewAdapter` only; `MyRecyclerViewListAdapter` (the
+ * call log) still gets the stock dark-grey bar with a white counter and a grey back arrow. Neither of
+ * them touches the item titles, which the popup draws in the platform theme's text color — white. So
+ * every contextual bar in the app is repainted here instead.
+ *
+ * Call it at the end of `prepareActionMode`: that runs when the bar appears and again on every
+ * selection change, after the adapter has set its own item titles.
+ */
+fun Activity.styleContextualActionBar(actionMode: ActionMode?, menu: Menu) {
+    val iconColor = themeColor(ThemeSlot.MENU_ICON)
+    val textColor = themeColor(ThemeSlot.MENU_TEXT)
+    val barColor = themeColor(ThemeSlot.BACKGROUND)
+
+    menu.colorItemTitles(textColor)
+    for (index in 0 until menu.size()) {
+        menu.getItem(index).icon?.applyColorFilter(iconColor)
+    }
+
+    // commons builds the "N / M" counter as the action mode's custom view
+    val counter = actionMode?.customView
+    (counter as? TextView)?.setTextColor(textColor)
+
+    // The back arrow and the overflow button are only added to the bar as it lays itself out, so they
+    // cannot be tinted before that — and painting from the layout pass also lands after commons' own.
+    paintActionModeBar(barColor, iconColor)
+    counter?.onGlobalLayout { paintActionModeBar(barColor, iconColor) }
+}
+
+private fun Activity.paintActionModeBar(barColor: Int, iconColor: Int) {
+    val bar = findViewById<ViewGroup>(androidx.appcompat.R.id.action_mode_bar) ?: return
+    bar.setBackgroundColor(barColor)
+    bar.tintImageViews(iconColor)
+}
+
+// The back arrow and the overflow dots are plain image views, not menu items, so the whole bar is walked.
+private fun View.tintImageViews(color: Int) {
+    when (this) {
+        is ImageView -> applyColorFilter(color)
+        is ViewGroup -> for (index in 0 until childCount) getChildAt(index).tintImageViews(color)
+    }
+}
 
 fun SimpleActivity.handleGenericContactClick(contact: Contact) {
     when (config.onContactClick) {

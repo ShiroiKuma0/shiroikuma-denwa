@@ -7,6 +7,7 @@ import org.fossify.commons.views.MyRecyclerView
 import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.databinding.ItemSpeedDialBinding
+import org.fossify.phone.extensions.styleContextualActionBar
 import org.fossify.phone.interfaces.RemoveSpeedDialListener
 import org.fossify.phone.models.SpeedDial
 
@@ -20,7 +21,9 @@ class SpeedDialAdapter(
 
     override fun getActionMenuId() = R.menu.cab_delete_only
 
-    override fun prepareActionMode(menu: Menu) {}
+    override fun prepareActionMode(menu: Menu) {
+        activity.styleContextualActionBar(actMode, menu)
+    }
 
     override fun actionItemPressed(id: Int) {
         if (selectedKeys.isEmpty()) {

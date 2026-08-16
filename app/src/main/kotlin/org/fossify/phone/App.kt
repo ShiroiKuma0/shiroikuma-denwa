@@ -10,6 +10,7 @@ import org.fossify.commons.FossifyApp
 import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.phone.activities.MainActivity
 import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.colorItemTitles
 import org.fossify.phone.extensions.migrateToPureYellowIfNeeded
 import org.fossify.phone.extensions.seedBlackYellowThemeIfNeeded
 import org.fossify.phone.extensions.syncDialogFrame
@@ -31,7 +32,9 @@ class App : FossifyApp() {
 }
 
 // Tints a screen's toolbar title text, back arrow and overflow icon from the HEADER_TITLE / HEADER_ARROW
-// slots after it resumes. The main screen is skipped — it paints its own search bar + overflow chrome.
+// slots after it resumes, and its overflow-menu item text from MENU_TEXT — that menu is drawn on our
+// black popup surface, but its titles would otherwise come out in the platform's white. The main screen
+// is skipped — it paints its own search bar + overflow chrome.
 private class TopBarColorizer : Application.ActivityLifecycleCallbacks {
     override fun onActivityResumed(activity: Activity) {
         // Any screen can open a dialog, and the accent may have changed since the last one — resync
@@ -50,6 +53,8 @@ private class TopBarColorizer : Application.ActivityLifecycleCallbacks {
             toolbar.setTitleTextColor(titleColor)
             toolbar.navigationIcon?.applyColorFilter(arrowColor)
             toolbar.overflowIcon?.applyColorFilter(titleColor)
+            // Items shown in the bar itself carry an icon and no text, so this only paints the popup.
+            toolbar.menu.colorItemTitles(activity.themeColor(ThemeSlot.MENU_TEXT))
         }
     }
 
