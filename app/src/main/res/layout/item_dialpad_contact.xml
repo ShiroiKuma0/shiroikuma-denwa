@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  A contact that matches what has been typed on the dialpad but has no call in the log. Kept to the
+  same geometry as item_recent_call so the two read as one list when they sit under each other.
+-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/item_dialpad_contact_holder"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingTop="@dimen/medium_margin"
+    android:paddingBottom="@dimen/medium_margin">
+
+    <ImageView
+        android:id="@+id/item_dialpad_contact_image"
+        android:layout_width="@dimen/normal_icon_size"
+        android:layout_height="@dimen/normal_icon_size"
+        android:layout_marginStart="@dimen/normal_margin"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:contentDescription="@null"
+        android:padding="@dimen/small_margin"
+        android:src="@drawable/ic_person_vector"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/item_dialpad_contact_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/small_margin"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:ellipsize="end"
+        android:focusable="false"
+        android:singleLine="true"
+        android:textAlignment="viewStart"
+        android:textDirection="firstStrongLtr"
+        android:textSize="@dimen/bigger_text_size"
+        app:layout_constraintBottom_toTopOf="@+id/item_dialpad_contact_number"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/item_dialpad_contact_image"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="spread_inside"
+        tools:text="John Doe" />
+
+    <TextView
+        android:id="@+id/item_dialpad_contact_number"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/small_margin"
+        android:layout_marginEnd="@dimen/small_margin"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textAlignment="viewStart"
+        android:textDirection="firstStrongLtr"
+        android:textSize="@dimen/normal_text_size"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/item_dialpad_contact_image"
+        app:layout_constraintTop_toBottomOf="@+id/item_dialpad_contact_name"
+        tools:text="+420 725 256 333" />
+
+    <View
+        android:id="@+id/item_dialpad_contact_divider"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -50,6 +50,7 @@ import org.fossify.phone.fragments.ContactsFragment
 import org.fossify.phone.fragments.FavoritesFragment
 import org.fossify.phone.fragments.MyViewPagerFragment
 import org.fossify.phone.fragments.RecentsFragment
+import org.fossify.phone.helpers.DialpadPanel
 import org.fossify.phone.helpers.OPEN_DIAL_PAD_AT_LAUNCH
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.helpers.tabsList
@@ -64,6 +65,16 @@ class MainActivity : SimpleActivity() {
     private val binding by viewBinding(ActivityMainBinding::inflate)
 
     private var launchedDialer = false
+
+    private val dialpadPanel by lazy {
+        DialpadPanel(
+            activity = this,
+            binding = binding.dialpadPanel,
+            dialpadButton = binding.mainDialpadButton,
+            onQueryChanged = { getRecentsFragment()?.applyDialpadQuery(it) },
+            onNotDefaultDialer = { launchSetDefaultDialerIntent() }
+        )
+    }
     private var storedShowTabs = 0
     private var storedFontSize = 0
     private var storedStartNameWithSurname = false
@@ -195,6 +206,10 @@ class MainActivity : SimpleActivity() {
     }
 
     override fun onBackPressedCompat(): Boolean {
+        if (dialpadPanel.hide()) {
+            return true
+        }
+
         if (binding.mainMenu.isSearchOpen) {
             binding.mainMenu.closeSearch()
             return true
@@ -521,7 +536,11 @@ class MainActivity : SimpleActivity() {
         }
 
         binding.mainDialpadButton.setOnClickListener {
-            launchDialpad()
+            if (canShowDialpadPanel()) {
+                dialpadPanel.show()
+            } else {
+                launchDialpad()
+            }
         }
 
         binding.viewPager.onGlobalLayout {
@@ -562,6 +581,7 @@ class MainActivity : SimpleActivity() {
                     return@onTabSelectionChanged
                 }
 
+                dialpadPanel.hide()
                 getCurrentFragment()?.onSearchQueryChanged(binding.mainMenu.getCurrentQuery())
                 binding.viewPager.currentItem = it.position
                 updateBottomTabItemColors(it.customView, true, getSelectedTabDrawableIds()[it.position])
@@ -620,6 +640,14 @@ class MainActivity : SimpleActivity() {
         Intent(applicationContext, DialpadActivity::class.java).apply {
             startActivity(this)
         }
+    }
+
+    // The keypad only makes sense over the call log, which is what it filters. Anywhere else — and
+    // that is only reachable with the Contacts-app hand-off turned off — the separate screen opens.
+    private fun canShowDialpadPanel(): Boolean {
+        return getRecentsFragment() != null &&
+                config.showTabs and TAB_CALL_HISTORY > 0 &&
+                binding.viewPager.currentItem == binding.mainTabsHolder.tabCount - 1
     }
 
     fun refreshFragments() {
@@ -794,4 +822,5 @@ class MainActivity : SimpleActivity() {
     fun refreshCallLog(event: Events.RefreshCallLog) {
         getRecentsFragment()?.refreshItems()
     }
+
 }
