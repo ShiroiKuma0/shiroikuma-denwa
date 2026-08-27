@@ -31,6 +31,7 @@ import org.fossify.commons.extensions.isDefaultDialer
 import org.fossify.commons.extensions.normalizeString
 import org.fossify.commons.extensions.onTextChangeListener
 import org.fossify.commons.extensions.performHapticFeedback
+import org.fossify.commons.extensions.toast
 import org.fossify.commons.extensions.updateTextColors
 import org.fossify.commons.extensions.value
 import org.fossify.commons.extensions.viewBinding
@@ -287,20 +288,7 @@ class DialpadActivity : SimpleActivity() {
     }
 
     private fun dialpadValueChanged(text: String) {
-        val len = text.length
-        if (len > 8 && text.startsWith("*#*#") && text.endsWith("#*#*")) {
-            val secretCode = text.substring(4, text.length - 4)
-            if (isOreoPlus()) {
-                if (isDefaultDialer()) {
-                    getSystemService(TelephonyManager::class.java)?.sendDialerSpecialCode(secretCode)
-                } else {
-                    launchSetDefaultDialerIntent()
-                }
-            } else {
-                val intent =
-                    Intent(SECRET_CODE_ACTION, "android_secret_code://$secretCode".toUri())
-                sendBroadcast(intent)
-            }
+        if (maybeHandleSecretCode(text)) {
             return
         }
 
@@ -353,7 +341,47 @@ class DialpadActivity : SimpleActivity() {
         }
     }
 
+    // Secret codes (*#*#<code>#*#*) are actions, not phone numbers — dialling one only ever earns an
+    // operator's "this number does not exist". Telephony broadcasts them to whatever app registered
+    // the code (microG's check-in, a vendor engineering menu…) and only the default dialer may ask it
+    // to. We fire them from the text watcher the moment the code is complete, like the stock dialer,
+    // and again from the call button, so pressing it can never turn a code into a real call.
+    private fun maybeHandleSecretCode(text: String): Boolean {
+        val secretCode = secretCodeOf(text) ?: return false
+
+        if (isOreoPlus()) {
+            if (!isDefaultDialer()) {
+                launchSetDefaultDialerIntent()
+                return true
+            }
+
+            getSystemService(TelephonyManager::class.java)?.sendDialerSpecialCode(secretCode)
+        } else {
+            sendBroadcast(Intent(SECRET_CODE_ACTION, "android_secret_code://$secretCode".toUri()))
+        }
+
+        // Nothing about a secret code is visible on its own — whether anything acts on it is entirely
+        // the receiver's business — so confirm that it went out, then empty the field so the call
+        // button is left with nothing to dial.
+        toast(getString(R.string.secret_code_sent, secretCode))
+        clearInputWithDelay()
+        return true
+    }
+
+    // The *#*# … #*#* wrapper is 8 characters, so anything longer than that carries a code.
+    private fun secretCodeOf(text: String): String? {
+        return if (text.length > 8 && text.startsWith("*#*#") && text.endsWith("#*#*")) {
+            text.substring(4, text.length - 4)
+        } else {
+            null
+        }
+    }
+
     private fun initCall(number: String = binding.dialpadInput.value, name: String? = null) {
+        if (maybeHandleSecretCode(number)) {
+            return
+        }
+
         if (number.isNotEmpty()) {
             startCallWithConfirmationCheck(number, name ?: number)
             clearInputWithDelay()
@@ -371,6 +399,10 @@ class DialpadActivity : SimpleActivity() {
 
     private fun initCallWithSimSelector(): Boolean {
         val number = binding.dialpadInput.value
+        if (maybeHandleSecretCode(number)) {
+            return true
+        }
+
         return if (areMultipleSIMsAvailable() && number.isNotEmpty()) {
             startCallWithConfirmationCheck(
                 recipient = number,

@@ -145,6 +145,7 @@
     <string name="notification_call_back">Call back</string>
     <string name="notification_message">Message</string>
     <string name="notification_channel_missed_calls">Missed calls</string>
+    <string name="secret_code_sent">Secret code %1$s sent</string>
     <string name="theme_font">Font</string>
     <string name="theme_weight">Weight</string>
     <string name="theme_size">Size</string>
