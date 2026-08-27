@@ -123,6 +123,7 @@
     <string name="notification_call_back">かけ直す</string>
     <string name="notification_message">メッセージ</string>
     <string name="notification_channel_missed_calls">不在着信</string>
+    <string name="secret_code_sent">シークレットコード %1$s を送信しました</string>
     <string name="theme_font">フォント</string>
     <string name="theme_weight">太さ</string>
     <string name="theme_size">サイズ</string>
