@@ -3,6 +3,59 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+064 — 2026-08-27
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **The keypad opens over the call log instead of leaving it.** Pressing the dial‑pad button on the
+  Recents tab used to hand you a separate screen listing contacts, so the calls you were looking at
+  vanished exactly when you started typing the number of one of them. The keypad now slides up over
+  Recents and the list filters underneath it as you type: **matching calls first**, then, under a
+  heading, the **contacts that match but have not called you**. A contact already present among the
+  matched calls is not listed twice. Tapping either kind of row calls it; back closes the panel and
+  puts the full history back, as does switching tabs.
+- **The pad pulls down to a dial line.** Drag the keypad downward and it folds away, leaving only
+  the dial line at the bottom — the number, a backspace, a call button and the pull‑down toggle at
+  the far right. What you typed stays there and **keeps filtering**, with the whole screen above it
+  for results, and the call button on the line means that number can still be dialled without
+  bringing the pad back. Drag up on the line, or tap the toggle or the line itself, to restore it.
+  The gesture is taken in `onInterceptTouchEvent`, before the keys — which swallow their own touches
+  — ever see it, and only once a finger has travelled twice the touch slop and more vertically than
+  horizontally, so a tap still types a digit.
+- **Name matching on the keypad is shared.** Typing `2665` finds "Bonk" both in the panel over
+  Recents and on the Dial‑pad screen, through one `T9Helper` rather than two implementations that
+  could drift.
+- **Secret codes are fired, not dialled.** Typing `*#*#2432546#*#*` placed a real call and earned
+  the operator's "this number does not exist". The dispatch to Telephony already worked, but nothing
+  about a secret code is visible, so the natural next move was to press the green button — which
+  dialled the literal string. The code is now fired from the call button and the SIM‑selector long
+  press as well as from the text watcher, so pressing call on one can never place a call, a **toast
+  confirms it went out**, and the field clears a second later so nothing is left to dial.
+
+### Changed
+- The keypad, dial line and call button live in **one shared layout driven by one controller**, used
+  by both the panel over Recents and the Dial‑pad screen, which dropped from 508 lines to 178. The
+  keys, the tones, the haptics, speed dial, the SIM‑selector long press and the secret codes cannot
+  drift between the two.
+- The **Dial‑pad screen keeps its contact list** and does not collapse. It is now reached only by the
+  launcher shortcut and by `ACTION_DIAL` from other apps, where a pre‑filled number and a contact
+  search are the point.
+
+### Fixed
+- **The missed‑call count no longer grows back after every reboot.** A missed‑call notification
+  returned on each boot, only ever larger — 50 of them by the end — however many times the app had
+  been opened and the Recents tab visited. Telecom rebuilds that notification at boot from every
+  call‑log row still flagged `NEW=1`; there were 51 such rows on the phone, going back two months.
+  Opening Recents left the bookkeeping to Telecom, whose `clearMissedCalls()` is supposed to write
+  `NEW=0, IS_READ=1` before cancelling — but **EMUI's version returns early**
+  (`missCallNumberCount should not be null.`) because Huawei only fills that per‑number tally when
+  its own notifier drew the notification, and this app holds the dialer role. The flags were
+  therefore never cleared, on any build. The app now writes them itself and keeps the Telecom call
+  as a best‑effort extra.
+- **A missed‑call notification no longer names an already‑acknowledged caller.** It now takes the
+  newest *unread* missed call for the name and time, falling back to the unfiltered query only for
+  the moment when Telecom has broadcast but not yet written the call‑log row.
+
 ## 白い熊 電話 1.11.1+059 — 2026-08-16
 Built on Fossify Phone 1.11.1.
 
