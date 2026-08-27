@@ -50,6 +50,7 @@ import org.fossify.commons.views.MyRecyclerView
 import org.fossify.phone.R
 import org.fossify.phone.activities.MainActivity
 import org.fossify.phone.activities.SimpleActivity
+import org.fossify.phone.databinding.ItemDialpadContactBinding
 import org.fossify.phone.databinding.ItemRecentCallBinding
 import org.fossify.phone.databinding.ItemRecentsDateBinding
 import org.fossify.phone.dialogs.ShowGroupedCallsDialog
@@ -205,6 +206,8 @@ class RecentCallsAdapter(
     override fun getItemViewType(position: Int): Int {
         return when (currentList[position]) {
             is CallLogItem.Date -> VIEW_TYPE_DATE
+            is CallLogItem.ContactsHeader -> VIEW_TYPE_CONTACTS_HEADER
+            is CallLogItem.ContactSuggestion -> VIEW_TYPE_CONTACT
             is RecentCall -> VIEW_TYPE_CALL
         }
     }
@@ -217,6 +220,14 @@ class RecentCallsAdapter(
 
             VIEW_TYPE_CALL -> RecentCallViewHolder(
                 ItemRecentCallBinding.inflate(layoutInflater, parent, false)
+            )
+
+            VIEW_TYPE_CONTACTS_HEADER -> ContactsHeaderViewHolder(
+                ItemRecentsDateBinding.inflate(layoutInflater, parent, false)
+            )
+
+            VIEW_TYPE_CONTACT -> ContactSuggestionViewHolder(
+                ItemDialpadContactBinding.inflate(layoutInflater, parent, false)
             )
 
             else -> throw IllegalArgumentException("Unknown view type: $viewType")
@@ -233,6 +244,8 @@ class RecentCallsAdapter(
         when (holder) {
             is RecentCallDateViewHolder -> holder.bind(callRecord as CallLogItem.Date)
             is RecentCallViewHolder -> holder.bind(callRecord as RecentCall)
+            is ContactsHeaderViewHolder -> holder.bind()
+            is ContactSuggestionViewHolder -> holder.bind(callRecord as CallLogItem.ContactSuggestion)
         }
 
         bindViewHolder(holder)
@@ -243,6 +256,8 @@ class RecentCallsAdapter(
         if (!activity.isDestroyed && !activity.isFinishing) {
             if (holder is RecentCallViewHolder) {
                 Glide.with(activity).clear(holder.binding.itemRecentsImage)
+            } else if (holder is ContactSuggestionViewHolder) {
+                Glide.with(activity).clear(holder.binding.itemDialpadContactImage)
             }
         }
     }
@@ -721,7 +736,7 @@ class RecentCallsAdapter(
             applyLine(binding.dateUnderline, dateUnderlineColor, dateUnderlineThicknessDp)
             binding.dateTextView.apply {
                 setTextColor(dayDateColor)
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.76f)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * DAY_HEADER_FONT_SCALE)
                 applyThemeFont(ThemeSlot.CALL_LOG_DAY_DATE)
 
                 val now = DateTime.now()
@@ -742,9 +757,58 @@ class RecentCallsAdapter(
         }
     }
 
+    // The label that separates the matching contacts from the calls above them. Drawn with the call
+    // log's own day-separator layout, so the two headings look like one list.
+    private inner class ContactsHeaderViewHolder(val binding: ItemRecentsDateBinding) : ViewHolder(binding.root) {
+        fun bind() {
+            applyLine(binding.dayDivider, dayDividerColor, dayDividerThicknessDp)
+            applyLine(binding.dateUnderline, dateUnderlineColor, dateUnderlineThicknessDp)
+            binding.dateTextView.apply {
+                setTextColor(dayDateColor)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * DAY_HEADER_FONT_SCALE)
+                applyThemeFont(ThemeSlot.CALL_LOG_DAY_DATE)
+                text = activity.getString(R.string.contacts_tab)
+            }
+        }
+    }
+
+    private inner class ContactSuggestionViewHolder(val binding: ItemDialpadContactBinding) : ViewHolder(binding.root) {
+        fun bind(item: CallLogItem.ContactSuggestion) {
+            binding.apply {
+                root.setupViewBackground(activity)
+                root.setOnClickListener { itemClick(item) }
+                applyLine(itemDialpadContactDivider, callDividerColor, callDividerThicknessDp)
+
+                val name = item.contact.getNameToDisplay()
+                val number = if (activity.config.formatPhoneNumbers) item.number.formatPhoneNumber() else item.number
+
+                itemDialpadContactName.apply {
+                    text = name.highlightTextPart(textToHighlight, properPrimaryColor)
+                    setTextColor(nameColor)
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
+                    applyThemeFont(ThemeSlot.CALL_LOG_NAME)
+                }
+
+                itemDialpadContactNumber.apply {
+                    text = number.highlightTextPart(textToHighlight, properPrimaryColor)
+                    setTextColor(subtitleColor)
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * CONTACT_NUMBER_FONT_SCALE)
+                    applyThemeFont(ThemeSlot.CALL_LOG_SUBTITLE)
+                }
+
+                SimpleContactsHelper(root.context)
+                    .loadContactImage(item.contact.photoUri, itemDialpadContactImage, name)
+            }
+        }
+    }
+
     companion object {
         private const val VIEW_TYPE_DATE = 0
         private const val VIEW_TYPE_CALL = 1
+        private const val VIEW_TYPE_CONTACTS_HEADER = 2
+        private const val VIEW_TYPE_CONTACT = 3
+        private const val DAY_HEADER_FONT_SCALE = 0.76f
+        private const val CONTACT_NUMBER_FONT_SCALE = 0.8f
     }
 }
 
@@ -755,6 +819,13 @@ class RecentCallsDiffCallback : DiffUtil.ItemCallback<CallLogItem>() {
     override fun areContentsTheSame(oldItem: CallLogItem, newItem: CallLogItem): Boolean {
         return when {
             oldItem is CallLogItem.Date && newItem is CallLogItem.Date -> oldItem.timestamp == newItem.timestamp && oldItem.dayCode == newItem.dayCode
+            oldItem is CallLogItem.ContactsHeader && newItem is CallLogItem.ContactsHeader -> true
+            oldItem is CallLogItem.ContactSuggestion && newItem is CallLogItem.ContactSuggestion -> {
+                oldItem.number == newItem.number &&
+                        oldItem.contact.getNameToDisplay() == newItem.contact.getNameToDisplay() &&
+                        oldItem.contact.photoUri == newItem.contact.photoUri
+            }
+
             oldItem is RecentCall && newItem is RecentCall -> {
                 oldItem.phoneNumber == newItem.phoneNumber &&
                         oldItem.name == newItem.name &&

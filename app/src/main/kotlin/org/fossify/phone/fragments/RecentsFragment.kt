@@ -9,6 +9,7 @@ import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.extensions.isVisible
+import org.fossify.commons.extensions.trimToComparableNumber
 import org.fossify.commons.extensions.underlineText
 import org.fossify.commons.helpers.ContactsHelper
 import org.fossify.commons.helpers.MyContactsContentProvider
@@ -27,6 +28,7 @@ import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
 import org.fossify.phone.helpers.RecentsHelper
+import org.fossify.phone.helpers.T9Helper
 import org.fossify.phone.interfaces.RefreshItemsListener
 import org.fossify.phone.models.CallLogItem
 import org.fossify.phone.models.RecentCall
@@ -41,6 +43,7 @@ class RecentsFragment(
 
     private var searchQuery: String? = null
     private var phoneNumberFilter: String? = null
+    private var dialpadQuery: String? = null
     private var recentsHelper = RecentsHelper(context)
 
     override fun onFinishInflate() {
@@ -93,6 +96,7 @@ class RecentsFragment(
 
     override fun onSearchClosed() {
         searchQuery = null
+        dialpadQuery = null
         clearPhoneNumberFilter()
         showOrHidePlaceholder(allRecentCalls.isEmpty())
         recentsAdapter?.updateItems(allRecentCalls)
@@ -170,12 +174,19 @@ class RecentsFragment(
                         allRecentCalls = allRecentCalls.filter { it !in deleted }
                     },
                     enableSwipeToCall = true,
-                    itemClick = {
-                        val recentCall = it as RecentCall
-                        if (searchQuery.isNullOrEmpty()) {
-                            applyPhoneNumberFilter(recentCall.phoneNumber, recentCall.name)
-                        } else {
-                            activity?.startCallWithConfirmationCheck(recentCall.phoneNumber, recentCall.name)
+                    itemClick = { item ->
+                        when (item) {
+                            is CallLogItem.ContactSuggestion -> activity?.startCallWithConfirmationCheck(
+                                item.number, item.contact.getNameToDisplay()
+                            )
+
+                            is RecentCall -> if (searchQuery.isNullOrEmpty() && dialpadQuery.isNullOrEmpty()) {
+                                applyPhoneNumberFilter(item.phoneNumber, item.name)
+                            } else {
+                                activity?.startCallWithConfirmationCheck(item.phoneNumber, item.name)
+                            }
+
+                            else -> {}
                         }
                     },
                     profileIconClick = {
@@ -200,7 +211,9 @@ class RecentsFragment(
     private fun refreshCallLog(loadAll: Boolean = false, callback: (() -> Unit)? = null) {
         getRecentCalls(loadAll) {
             allRecentCalls = it
-            if (!searchQuery.isNullOrEmpty()) {
+            if (!dialpadQuery.isNullOrEmpty()) {
+                applyDialpadQuery(dialpadQuery!!)
+            } else if (!searchQuery.isNullOrEmpty()) {
                 updateSearchResult()
             } else if (phoneNumberFilter != null) {
                 activity?.runOnUiThread { applyCurrentFilter() }
@@ -336,6 +349,57 @@ class RecentsFragment(
                 recentsAdapter?.updateItems(grouped)
             }
         }
+    }
+
+    /**
+     * Filters the call log by what is typed on the dialpad panel over this tab: matching calls first,
+     * then, under a heading, the contacts that match but have not called. Passing an empty query puts
+     * the full history back.
+     */
+    fun applyDialpadQuery(text: String) {
+        dialpadQuery = text
+        if (text.isEmpty()) {
+            showOrHidePlaceholder(allRecentCalls.isEmpty())
+            recentsAdapter?.updateItems(allRecentCalls)
+            return
+        }
+
+        ensureBackgroundThread {
+            val matchingCalls = allRecentCalls
+                .filterIsInstance<RecentCall>()
+                .filter { it.doesContainPhoneNumber(text) || T9Helper.toDigits(it.name).contains(text, true) }
+
+            val calledNumbers = matchingCalls.map { it.phoneNumber.trimToComparableNumber() }.toSet()
+            val suggestions = matchingContacts(text)
+                .filterNot { it.number.trimToComparableNumber() in calledNumbers }
+
+            val items = mutableListOf<CallLogItem>()
+            items += groupCallsByDate(matchingCalls)
+            if (suggestions.isNotEmpty()) {
+                items += CallLogItem.ContactsHeader
+                items += suggestions
+            }
+
+            activity?.runOnUiThread {
+                gotRecents(items)
+                recentsAdapter?.updateItems(items, text)
+            }
+        }
+    }
+
+    // Contacts matching the typed digits, either by number or by the name typed on the keypad, each
+    // paired with the number that matched (or its first, when the name is what matched).
+    private fun matchingContacts(text: String): List<CallLogItem.ContactSuggestion> {
+        val contacts = (activity as? MainActivity)?.cachedContacts.orEmpty()
+        return contacts
+            .filter { it.doesContainPhoneNumber(text) || T9Helper.toDigits(it.getNameToDisplay()).contains(text, true) }
+            .mapNotNull { contact ->
+                val number = contact.phoneNumbers
+                    .firstOrNull { it.value.contains(text) || it.normalizedNumber?.contains(text) == true }
+                    ?: contact.phoneNumbers.firstOrNull()
+
+                number?.let { CallLogItem.ContactSuggestion(contact = contact, number = it.value) }
+            }
     }
 
     /** Clears an active contact filter, restoring the full call history. Returns true if a filter was cleared. */
