@@ -91,12 +91,25 @@ class MissedCallNotifier(private val context: Context) {
     }
 
     // The newest missed call (number to date-millis), used for the caller and the formatted time.
+    // Unread calls come first, so an already-acknowledged call can never be named on a notification
+    // that is about newer ones; the unfiltered query stays as a fallback for the moment right after a
+    // call is missed, when Telecom has broadcast to us but not yet written the call log row.
     private fun latestMissedCall(): Pair<String, Long>? {
+        return latestMissedCall(unreadOnly = true) ?: latestMissedCall(unreadOnly = false)
+    }
+
+    private fun latestMissedCall(unreadOnly: Boolean): Pair<String, Long>? {
+        val selection = if (unreadOnly) {
+            "${CallLog.Calls.TYPE} = ? AND ${CallLog.Calls.NEW} = 1"
+        } else {
+            "${CallLog.Calls.TYPE} = ?"
+        }
+
         return try {
             context.contentResolver.query(
                 CallLog.Calls.CONTENT_URI,
                 arrayOf(CallLog.Calls.NUMBER, CallLog.Calls.DATE),
-                "${CallLog.Calls.TYPE} = ?",
+                selection,
                 arrayOf(CallLog.Calls.MISSED_TYPE.toString()),
                 "${CallLog.Calls.DATE} DESC"
             )?.use { cursor ->
