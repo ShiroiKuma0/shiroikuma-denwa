@@ -4,12 +4,14 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.KeyguardManager
 import android.content.ComponentName
+import android.content.ContentValues
 import android.content.Context
 import android.content.Context.KEYGUARD_SERVICE
 import android.content.Intent
 import android.media.AudioManager
 import android.net.Uri
 import android.os.PowerManager
+import android.provider.CallLog
 import android.telecom.PhoneAccountHandle
 import android.telecom.TelecomManager
 import android.telephony.SubscriptionManager
@@ -158,13 +160,38 @@ fun Context.buildSIMAccountLookupMap(): HashMap<String, SIMAccount> {
 
 fun Context.clearMissedCalls() {
     ensureBackgroundThread {
+        // dismiss our own missed-call notification (posted by MissedCallNotifier)…
         try {
-            // dismiss our own missed-call notification (posted by MissedCallNotifier)…
             MissedCallNotifier(this).cancel()
-            // …and tell Telecom to clear its missed-call state. notification cancellation triggers
-            // MissedCallNotifier.clearMissedCalls() which, in turn, should update the database and
-            // reset the cached missed call count in MissedCallNotifier.java
-            // https://android.googlesource.com/platform/packages/services/Telecomm/+/master/src/com/android/server/telecom/ui/MissedCallNotifierImpl.java#170
+        } catch (ignored: Exception) {
+        }
+
+        // …mark the call log entries read ourselves. Telecom is *supposed* to do this from
+        // cancelMissedCallsNotification() below — MissedCallNotifierImpl.clearMissedCalls() writes
+        // NEW=0/IS_READ=1 before cancelling — but EMUI's version bails out first with
+        // "Telecom-MissedCallNotifierImpl: missCallNumberCount should not be null.", because Huawei
+        // only fills that per-number tally when its own notifier drew the notification, and we hold
+        // the dialer role. The rows therefore kept NEW=1 forever, so every reboot re-derived the
+        // missed-call broadcast from them and the count only ever grew. We hold WRITE_CALL_LOG, so
+        // we do the bookkeeping ourselves and leave the Telecom call as a best-effort extra.
+        // https://android.googlesource.com/platform/packages/services/Telecomm/+/master/src/com/android/server/telecom/ui/MissedCallNotifierImpl.java#170
+        try {
+            val values = ContentValues().apply {
+                put(CallLog.Calls.NEW, 0)
+                put(CallLog.Calls.IS_READ, 1)
+            }
+
+            contentResolver.update(
+                CallLog.Calls.CONTENT_URI,
+                values,
+                "${CallLog.Calls.TYPE} = ? AND ${CallLog.Calls.NEW} = 1",
+                arrayOf(CallLog.Calls.MISSED_TYPE.toString())
+            )
+        } catch (ignored: Exception) {
+        }
+
+        // …and tell Telecom to reset its cached missed-call count as well.
+        try {
             telecomManager.cancelMissedCallsNotification()
         } catch (ignored: Exception) {
         }
