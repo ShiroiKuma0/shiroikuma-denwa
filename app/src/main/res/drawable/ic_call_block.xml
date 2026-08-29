@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The block button's background: the same 72dp footprint as decline/accept/silence, but an
+     octagon rather than a circle — the only non-round control on the call screen, so the one
+     button whose effect outlives the call cannot be hit by mistake. The fill is re-applied at
+     runtime from the theme (CallActivity.setupBlockButton). -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/ripple_foreground">
+    <item
+        android:id="@+id/block_call_background"
+        android:drawable="@drawable/ic_octagon_vector" />
+
+    <item
+        android:id="@android:id/mask"
+        android:drawable="@drawable/ic_octagon_vector" />
+</ripple>

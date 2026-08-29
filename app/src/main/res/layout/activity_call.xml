@@ -325,7 +325,8 @@
             android:padding="@dimen/bigger_margin"
             android:src="@drawable/ic_bell_off_vector"
             app:layout_constraintBottom_toTopOf="@+id/call_silence_ringer_label"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/call_block"
+            app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintStart_toStartOf="parent" />
 
         <org.fossify.commons.views.MyTextView
@@ -336,8 +337,37 @@
             android:text="@string/silence"
             android:textSize="@dimen/bigger_text_size"
             app:layout_constraintBottom_toTopOf="@+id/call_decline"
+            app:layout_constraintEnd_toEndOf="@+id/call_silence_ringer"
+            app:layout_constraintStart_toStartOf="@+id/call_silence_ringer" />
+
+        <ImageView
+            android:id="@+id/call_block"
+            android:layout_width="@dimen/incoming_call_button_size"
+            android:layout_height="@dimen/incoming_call_button_size"
+            android:layout_marginStart="@dimen/incoming_call_pair_gap"
+            android:background="@drawable/ic_call_block"
+            android:contentDescription="@string/block_caller"
+            android:padding="@dimen/block_call_padding"
+            android:src="@drawable/ic_raised_hand_vector"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/call_silence_ringer"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toEndOf="@+id/call_silence_ringer"
+            app:layout_constraintTop_toTopOf="@+id/call_silence_ringer"
+            tools:visibility="visible" />
+
+        <org.fossify.commons.views.MyTextView
+            android:id="@+id/call_block_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/block"
+            android:textSize="@dimen/bigger_text_size"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/call_silence_ringer_label"
+            app:layout_constraintEnd_toEndOf="@+id/call_block"
+            app:layout_constraintStart_toStartOf="@+id/call_block"
+            app:layout_constraintTop_toTopOf="@+id/call_silence_ringer_label"
+            tools:visibility="visible" />
 
         <ImageView
             android:id="@+id/call_decline"
@@ -522,6 +552,47 @@
         <include
             android:id="@+id/dialpad_include"
             layout="@layout/dialpad" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/block_undo_bar"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/activity_margin"
+        android:layout_marginBottom="@dimen/end_call_button_margin"
+        android:background="@drawable/block_undo_background"
+        android:elevation="@dimen/big_margin"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/normal_margin"
+        android:paddingEnd="@dimen/medium_margin"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:visibility="visible">
+
+        <org.fossify.commons.views.MyTextView
+            android:id="@+id/block_undo_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:paddingVertical="@dimen/normal_margin"
+            android:textSize="@dimen/bigger_text_size"
+            tools:text="Number blocked" />
+
+        <org.fossify.commons.views.MyTextView
+            android:id="@+id/block_undo_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:paddingHorizontal="@dimen/normal_margin"
+            android:paddingVertical="@dimen/medium_margin"
+            android:text="@string/undo"
+            android:textAllCaps="true"
+            android:textSize="@dimen/bigger_text_size"
+            android:textStyle="bold" />
 
     </LinearLayout>
 

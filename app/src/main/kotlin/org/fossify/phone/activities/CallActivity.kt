@@ -50,6 +50,9 @@ class CallActivity : SimpleActivity() {
             openAppIntent.flags = Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             return openAppIntent
         }
+
+        // long enough to notice the bar and react, short enough that the screen does not linger
+        private const val BLOCK_UNDO_TIMEOUT_MS = 6000L
     }
 
     private val binding by viewBinding(ActivityCallBinding::inflate)
@@ -68,6 +71,9 @@ class CallActivity : SimpleActivity() {
     private var dialpadHeight = 0f
     private var toneGeneratorHelper: ToneGeneratorHelper? = null
     private var consumedVolumeKeyDownTime = 0L
+    private var blockedNumber: String? = null
+    private var isBlockingCaller = false
+    private val blockUndoHandler = Handler(Looper.getMainLooper())
 
     private var audioRouteChooserDialog: DynamicBottomSheetChooserDialog? = null
 
@@ -88,6 +94,9 @@ class CallActivity : SimpleActivity() {
         updateTextColors(binding.callHolder)
         toneGeneratorHelper = ToneGeneratorHelper(this, MIN_DTMF_TONE_LENGTH_MS)
         initButtons()
+        setupSilenceButton()
+        setupBlockButton()
+        setupBlockUndoBar()
         audioManager.mode = AudioManager.MODE_IN_CALL
         addLockScreenFlags()
         CallManager.addListener(callCallback)
@@ -108,6 +117,7 @@ class CallActivity : SimpleActivity() {
         super.onDestroy()
         CallManager.removeListener(callCallback)
         disableProximitySensor()
+        blockUndoHandler.removeCallbacksAndMessages(null)
 
         if (screenOnWakeLock?.isHeld == true) {
             screenOnWakeLock!!.release()
@@ -117,6 +127,11 @@ class CallActivity : SimpleActivity() {
     override fun onBackPressedCompat(): Boolean {
         if (binding.dialpadWrapper.isVisible()) {
             hideDialpad()
+            return true
+        }
+
+        if (isBlockingCaller) {
+            dismissBlockUndoBar()
             return true
         }
 
@@ -249,8 +264,6 @@ class CallActivity : SimpleActivity() {
             it.applyColorFilter(bgColor.getContrastColor())
             it.background.applyColorFilter(inactiveColor)
         }
-
-        setupSilenceButton()
 
         arrayOf(
             callToggleMicrophone, callToggleSpeaker, callDialpad,
@@ -607,6 +620,10 @@ class CallActivity : SimpleActivity() {
 
         binding.apply {
             val (name, _, number, numberLabel) = callContact!!
+            // a withheld caller ID gives the blocked-numbers provider nothing to store
+            val canBlock = CallManager.getPrimaryCall().getRawNumber().isNotEmpty()
+            callBlock.beVisibleIf(canBlock)
+            callBlockLabel.beVisibleIf(canBlock)
             callerNameLabel.text = name.ifEmpty { getString(R.string.unknown_caller) }
             if (number.isNotEmpty() && number != name) {
                 callerNumber.text = number
@@ -787,6 +804,106 @@ class CallActivity : SimpleActivity() {
         callSilenceRingerLabel.setTextColor(ringColor)
     }
 
+    /**
+     * The block button repeats the silence button's construction, but wears the stop-sign octagon:
+     * the only control on the screen that is not a circle, so the one button whose effect outlives
+     * the call cannot be taken for Decline at a glance.
+     */
+    private fun setupBlockButton() = binding.apply {
+        callBlock.setOnClickListener {
+            blockCaller()
+        }
+
+        val blockColor = themeColor(ThemeSlot.CALL_DECLINE)
+        (callBlock.background as? RippleDrawable)
+            ?.findDrawableByLayerId(R.id.block_call_background)
+            ?.applyColorFilter(blockColor)
+
+        callBlock.applyColorFilter(blockColor.getContrastColor())
+        callBlockLabel.setTextColor(themeColor(ThemeSlot.PRIMARY))
+    }
+
+    private fun setupBlockUndoBar() = binding.apply {
+        blockUndoAction.setOnClickListener {
+            undoBlock()
+        }
+
+        val frameColor = themeColor(ThemeSlot.PRIMARY)
+        (blockUndoBar.background as? GradientDrawable)?.apply {
+            setColor(getProperBackgroundColor())
+            setStroke(resources.getDimensionPixelSize(R.dimen.block_undo_stroke_width), frameColor)
+        }
+
+        blockUndoLabel.setTextColor(frameColor)
+        blockUndoAction.setTextColor(frameColor)
+    }
+
+    /**
+     * Hang up and block in one tap. The block is written straight away rather than held for the
+     * undo window: if the screen is torn down early the caller stays blocked, which is what the
+     * tap asked for, and UNDO simply deletes the entry again. The call itself cannot be un-rejected.
+     */
+    private fun blockCaller() {
+        val number = CallManager.getPrimaryCall().getRawNumber()
+        if (number.isEmpty()) {
+            return
+        }
+
+        // claim the finish before rejecting — otherwise the DISCONNECTED callback tears the screen
+        // down long before the undo bar can be seen
+        isBlockingCaller = true
+        binding.callBlock.isEnabled = false
+        binding.incomingCallHolder.beGone()
+        endCall()
+
+        ensureBackgroundThread {
+            val blocked = addBlockedNumber(number)
+            runOnUiThread {
+                if (blocked) {
+                    showBlockUndoBar(number)
+                } else {
+                    // addBlockedNumber has already reported the failure; there is nothing to undo
+                    isBlockingCaller = false
+                    safeFinishAndRemoveTask()
+                }
+            }
+        }
+    }
+
+    private fun showBlockUndoBar(number: String) {
+        blockedNumber = number
+        binding.blockUndoLabel.text = getString(R.string.number_blocked)
+        binding.blockUndoAction.isEnabled = true
+        binding.blockUndoBar.beVisible()
+
+        blockUndoHandler.removeCallbacksAndMessages(null)
+        blockUndoHandler.postDelayed(BLOCK_UNDO_TIMEOUT_MS) {
+            dismissBlockUndoBar()
+        }
+    }
+
+    private fun undoBlock() {
+        val number = blockedNumber ?: return
+        blockUndoHandler.removeCallbacksAndMessages(null)
+        binding.blockUndoAction.isEnabled = false
+
+        ensureBackgroundThread {
+            deleteBlockedNumber(number)
+            runOnUiThread {
+                toast(R.string.number_unblocked)
+                dismissBlockUndoBar()
+            }
+        }
+    }
+
+    private fun dismissBlockUndoBar() {
+        blockUndoHandler.removeCallbacksAndMessages(null)
+        blockedNumber = null
+        binding.blockUndoBar.beGone()
+        isBlockingCaller = false
+        safeFinishAndRemoveTask()
+    }
+
     private fun silenceRinger() {
         if (CallManager.isRingerSilenced() || CallManager.getState() != Call.STATE_RINGING) {
             return
@@ -900,12 +1017,19 @@ class CallActivity : SimpleActivity() {
             } else {
                 disableAllActionButtons()
                 binding.callStatusLabel.text = getString(R.string.call_ended)
-                finish()
+                if (!isBlockingCaller) {
+                    finish()
+                }
             }
         }
     }
 
     private fun safeFinishAndRemoveTask() {
+        // while the undo bar is up it owns the finish, so the screen outlives the rejected call
+        if (isBlockingCaller) {
+            return
+        }
+
         try {
             if (intent != null) {
                 finishAndRemoveTask()
