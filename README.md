@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+064`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+065`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -53,6 +53,20 @@ When the pad is in the way, **pull it down**. It folds to a single dial line at 
 ## 🔕 Let it ring — quietly
 
 Not every call you want to take is one you want to hear. A **Silence** button sits on the incoming‑call screen, above Decline and Accept: it stops the ringtone and the vibration while the call **keeps ringing for the caller**, so you can still pick it up a moment later, or let it go to voicemail without ever declining it. Either **volume key** does the same thing, and the volume you were ringing at is put back afterwards — you asked for quiet, not for a quieter phone from now on.
+
+---
+
+## 🛑 Block a nuisance caller in one tap
+
+Declining a nuisance call leaves the number free to ring again a minute later, and blocking it used
+to mean letting the call ring out, opening Recents, long‑pressing the entry and picking *Block
+number*. A **Block** button now sits beside *Silence* on the incoming‑call screen: one tap hangs up
+**and** adds the caller to the blocked list.
+
+It is a red octagon — the stop‑sign silhouette, and the only control on that screen which is not a
+circle, because it is the one button whose effect outlives the call and must never be taken for
+*Decline* by a thumb moving fast. An **undo bar** follows for six seconds in case it was, and the
+button quietly disappears for callers who withhold their number, since there is nothing to block.
 
 ---
 

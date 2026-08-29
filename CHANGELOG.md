@@ -3,6 +3,30 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+065 — 2026-08-29
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **A nuisance caller can be blocked from the incoming‑call screen.** Declining left the number free
+  to ring again a minute later; blocking it meant letting the call ring out, opening Recents,
+  long‑pressing the entry and picking *Block number*. A **Block** button now sits beside *Silence*
+  above the answer row, and one tap rejects the call **and** writes the number to the system
+  blocked‑numbers list — the two steps that always went together are one gesture.
+- **The button is a red octagon**, the stop‑sign silhouette, and the only control on that screen
+  which is not a circle. That matters more there than house style: it is the one button whose effect
+  outlives the call, and it must not be taken for *Decline* by a thumb moving fast. It takes the
+  existing *Decline call* theme slot rather than a hardcoded red, so it follows the palette like
+  everything else, and it **hides itself when the caller ID is withheld**, since a call carrying no
+  number gives the blocked‑numbers provider nothing to store.
+- **An undo bar holds the screen for six seconds afterwards.** The block itself is written straight
+  away rather than held for that window — if the screen is torn down early the caller stays blocked,
+  which is what the tap asked for — and **UNDO** deletes the entry again. The call cannot be
+  un‑rejected and the bar does not pretend otherwise. `CallActivity` finishes the instant a ringing
+  call is rejected, so the bar has to own the finish while it is up: `endCall()` and
+  `safeFinishAndRemoveTask()` both defer to it.
+- The number blocked is taken from the **telecom handle**, not from the number on screen, which is
+  reformatted when *Format phone numbers* is on.
+
 ## 白い熊 電話 1.11.1+064 — 2026-08-27
 Built on Fossify Phone 1.11.1.
 
