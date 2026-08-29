@@ -1,5 +1,6 @@
 package org.fossify.phone.extensions
 
+import android.net.Uri
 import android.telecom.Call
 import android.telecom.Call.STATE_CONNECTING
 import android.telecom.Call.STATE_DIALING
@@ -41,3 +42,19 @@ fun Call.isOutgoing(): Boolean {
 fun Call.hasCapability(capability: Int): Boolean = (details.callCapabilities and capability) != 0
 
 fun Call?.isConference(): Boolean = this?.details?.hasProperty(Call.Details.PROPERTY_CONFERENCE) == true
+
+/**
+ * The caller's number exactly as the telecom stack handed it over — unformatted, so it can be fed
+ * straight to the blocked-numbers provider. Empty for a withheld caller ID or a conference.
+ */
+fun Call?.getRawNumber(): String {
+    if (this.isConference()) {
+        return ""
+    }
+
+    // some ROMs throw out of Call.getDetails() rather than returning null
+    val handle = runCatching { this?.details?.handle?.toString() }.getOrNull() ?: return ""
+
+    val uri = Uri.decode(handle)
+    return if (uri.startsWith("tel:")) uri.substringAfter("tel:") else ""
+}

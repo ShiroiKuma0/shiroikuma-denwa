@@ -10,6 +10,14 @@
     <dimen name="incoming_call_arrow_size">50dp</dimen>
     <dimen name="incoming_call_button_size">72dp</dimen>
     <dimen name="silence_call_stroke_width">2dp</dimen>
+    <!-- Silence and Block sit as a pair above the answer row; the gap keeps the two 72dp
+         buttons clearly apart without crowding the screen edges. -->
+    <dimen name="incoming_call_pair_gap">40dp</dimen>
+    <!-- An octagon has less room at its flats than a circle, so the glyph sits a touch tighter
+         than the silence bell's bigger_margin. -->
+    <dimen name="block_call_padding">18dp</dimen>
+    <dimen name="block_undo_stroke_width">2dp</dimen>
+    <dimen name="block_undo_corner_radius">8dp</dimen>
     <dimen name="call_notification_button_size">40dp</dimen>
     <dimen name="caller_avatar_max_size">172dp</dimen>
     <dimen name="end_call_button_margin">34dp</dimen>

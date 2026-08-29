@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The undo bar wears the fork's toast idiom: app background fill, primary-color frame.
+     Both colors are re-applied at runtime from the theme (CallActivity). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/black" />
+    <stroke
+        android:width="@dimen/block_undo_stroke_width"
+        android:color="@android:color/white" />
+    <corners android:radius="@dimen/block_undo_corner_radius" />
+</shape>
