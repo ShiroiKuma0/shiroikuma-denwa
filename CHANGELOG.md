@@ -3,6 +3,62 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+070 — 2026-09-04
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **The app can now be backed up with its data and restored onto a wiped phone.** A new
+  automation **data door** — a `ContentProvider` at `<app id>.automation` — answers
+  `describe` / `export` / `import` / `cancel`, so 白い熊 応用管理 can capture the dialer's whole
+  state and put it back on a phone that has just been reset. Until now the app could export its
+  settings but nothing could restore it unattended, which is precisely the moment the backup
+  exists for.
+- **The door identifies who is calling, three ways.** A broadcast cannot tell you who sent it, and
+  the caller is the one naming where the backup is written — so a caller must match an **exact
+  package name**, agree with the **uid the kernel reports** for it, and present a **pinned signing
+  certificate**. A `shiroikuma.*` prefix is deliberately *not* accepted: package names are not a
+  namespace anyone owns, so any sideloaded app could take one and would then be handed the app's
+  complete data.
+- **Restoring exists only on that door.** It is never given a broadcast action. The broadcast
+  receiver is exported with no permission, so an import there would let any app on the phone
+  overwrite the dialer's settings.
+- **The backup travels through a file descriptor the caller opens**, not a path. An archive is not
+  a stable directory while it is being assembled, it is encrypted and checksummed file by file, and
+  anything written into it from outside would sit in plaintext and unverified inside an otherwise
+  sealed backup. It also means the automation path no longer needs All-files access.
+
+### Changed
+- **Automation is on out of the box, and the token is now optional.** It used to ship closed, with a
+  48-character secret you copied from this app into the caller's settings. That cannot survive a
+  wipe — and restoring a freshly-wiped phone is exactly when nothing has been configured and nobody
+  has pasted anything. The master switch now ships **on**, and 「Use authorization token?」 is a
+  separate opt-in that starts **off**.
+- **A token sent to the app while it is not asking for one is ignored, never refused.** Tokens
+  outlive the settings they were pasted for, so refusing one would turn "a switch was turned off"
+  into "half the backup run mysteriously fails".
+- **The token row is hidden unless a token is actually being demanded**, so a long secret is not
+  left sitting under a switch that is off, inviting it to be pasted somewhere it would do nothing.
+- The two checks behind all of this now live in **one place**, so "automation disabled" and "bad
+  token" cannot drift apart between the export receiver, the cancel path and the new door.
+
+### Fixed
+- **Progress and reply broadcasts could reach nobody at all.** When a caller supplied no package to
+  aim at, the app still sent — but since Android 8 an implicit broadcast is not delivered to
+  manifest-declared receivers, so it was not a *wider* send, it was **no send**. An export would run,
+  write correctly, and never be heard of; a progress row would sit still and then jump to done.
+  The app now sends only where a broadcast can actually arrive.
+- **The app could be killed by the system while starting a data export.** Once a foreground service
+  has been requested, Android requires it to go foreground whatever it then decides — so a caller
+  retrying with a stale job id **crashed the dialer** instead of being quietly ignored. It now goes
+  foreground first, and answers with a readable reason when the platform refuses the start outright.
+- **Turning automation off could silently undo itself.** The switches were written asynchronously,
+  and because the default is now *on*, a write lost to a force-stop did not fall back to "off" — it
+  fell back to **on**, quietly reopening a door that had been closed. All three automation settings
+  are now written synchronously. The same applies to regenerating the token, where a lost write
+  would otherwise leave a copied secret the app would never accept.
+- **Neither the automation switches nor the token are carried in a backup**, so restoring one phone's
+  export onto another can no longer flip its automation state or overwrite its token.
+
 ## 白い熊 電話 1.11.1+065 — 2026-08-29
 Built on Fossify Phone 1.11.1.
 
