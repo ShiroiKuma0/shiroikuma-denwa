@@ -203,12 +203,35 @@ class Config(context: Context) : BaseConfig(context) {
     fun setFontSize(slotKey: String, value: Int) =
         prefs.edit().putInt(FONT_SIZE_PREFIX + slotKey, value).apply()
 
-    // External-automation intent surface (receivers/StateExportReceiver): a master switch plus a shared
-    // secret every automation broadcast must carry. The same model the sister apps use — one token per
-    // app, never a second one. Both keys are device-local: SettingsExport never carries them in a backup.
+    // External-automation surface (receivers/StateExportReceiver and automation/AutomationProvider): a
+    // master switch, a separate opt-in for the token, and the shared secret itself. The same model the
+    // sister apps use — one token per app, never a second one. All three are device-local: SettingsExport
+    // never carries them in a backup, so a restore can neither flip automation nor overwrite the token.
+    //
+    // Default ON since contract v2 (2026-09-04): the case this exists for is 応用管理 restoring apps and
+    // their data onto a wiped phone, where nothing has been configured yet — a door that has to be opened
+    // by hand first is no door for setting a phone up. The switch stays because closing one app off is
+    // still 白い熊's to do. The read gate lives in helpers/AutomationAuth, never written out per caller.
+    //
+    // These three write with commit(), not apply(), and that is not fussiness. apply() is asynchronous,
+    // and v2 flipped the default: a LOST write of `automationEnabled = false` does not fall back to
+    // "off", it falls back to ON, because the key is then absent and absent now means open. The same
+    // asymmetry runs the other way for the token — a lost regenerate leaves 白い熊 holding a copied
+    // string the app will never accept. These are written once, from a settings row tap, so the cost
+    // of a synchronous write is nothing and the failure mode it removes is a door quietly reopening.
     var automationEnabled: Boolean
-        get() = prefs.getBoolean(AUTOMATION_ENABLED, false)
-        set(value) = prefs.edit().putBoolean(AUTOMATION_ENABLED, value).apply()
+        get() = prefs.getBoolean(AUTOMATION_ENABLED, true)
+        set(value) {
+            prefs.edit().putBoolean(AUTOMATION_ENABLED, value).commit()
+        }
+
+    // Whether a caller must also present the token. Default OFF: a pasted secret cannot survive a wipe,
+    // so it is an extra a caller may be asked for rather than the gate itself.
+    var automationRequireToken: Boolean
+        get() = prefs.getBoolean(AUTOMATION_REQUIRE_TOKEN, false)
+        set(value) {
+            prefs.edit().putBoolean(AUTOMATION_REQUIRE_TOKEN, value).commit()
+        }
 
     // The shared secret; generated on first read so the settings row always shows a value.
     val automationToken: String
@@ -217,7 +240,7 @@ class Config(context: Context) : BaseConfig(context) {
     fun regenerateAutomationToken(): String {
         val bytes = ByteArray(AUTOMATION_TOKEN_BYTES).also { SecureRandom().nextBytes(it) }
         val token = bytes.joinToString("") { "%02x".format(it) }
-        prefs.edit().putString(AUTOMATION_TOKEN, token).apply()
+        prefs.edit().putString(AUTOMATION_TOKEN, token).commit()
         return token
     }
 

@@ -60,9 +60,12 @@ const val DECLINE_CALL = PATH + "DECLINE_CALL"
 
 // ---- 保存復元: the sister-app state-export automation contract (see receivers/StateExportReceiver) ----
 
-// The master switch (default OFF) and the shared secret every automation broadcast must carry. Both are
-// device-local: SettingsExport.PREFS_EXCLUDE keeps them out of every backup this app writes.
+// The master switch (default ON since contract v2) and, separately, whether a caller must also present
+// the shared secret (default OFF) — a token sent to an app that does not ask for one is ignored, never
+// refused. All three keys are device-local: SettingsExport.PREFS_EXCLUDE keeps them out of every backup
+// this app writes, because each device owns its own security state. See helpers/AutomationAuth.
 const val AUTOMATION_ENABLED = "automation_enabled"
+const val AUTOMATION_REQUIRE_TOKEN = "automation_require_token"
 const val AUTOMATION_TOKEN = "automation_token"
 
 // Namespaced on the INSTALLED package id (shiroikuma.denwa[.debug]), not on the code namespace the

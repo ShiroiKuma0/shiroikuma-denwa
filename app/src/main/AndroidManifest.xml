@@ -14,6 +14,10 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <!-- The 保存復元 data door runs its export/import in a foreground service: it can run for a
+         while, and a backgrounded app writing into a caller's descriptor is frozen mid-stream on
+         this phone, which would hand back a truncated archive under a success reply. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -44,6 +48,13 @@
         <package android:name="org.fossify.contacts" />
         <package android:name="shiroikuma.renrakusaki.debug" />
         <package android:name="shiroikuma.renrakusaki" />
+
+        <!-- The two 保存復元 automation callers. Without these, setPackage() on our reply broadcast
+             fails SILENTLY on Android 11+ — the export runs, writes correctly and is never heard of —
+             and AutomationCallers cannot read the caller's signing certificate to check it against
+             its pin, which would refuse every call with "caller signature unreadable". -->
+        <package android:name="shiroikuma.oyokanri" />
+        <package android:name="shiroikuma.jiyusagyoban" />
 
         <!-- Required for loading contact accounts -->
         <intent>
@@ -255,6 +266,43 @@
                 <action android:name="${applicationId}.action.CANCEL_EXPORT" />
             </intent-filter>
         </receiver>
+
+        <!-- 保存復元 contract v2, the data door: 応用管理 backs this app up WITH its data and puts it
+             back on a wiped phone. Exported with no android:permission on purpose — a custom one would
+             have to be "normal" (any app may hold it) or "signature" (impossible: every app in this
+             family has its own keystore), and neither buys anything AutomationCallers does not already
+             check. It identifies its caller three ways instead: an exact package name, the uid the
+             kernel reports for it, and a pinned signing certificate. See automation/AutomationProvider,
+             and note that IMPORT lives here and nowhere else. -->
+        <provider
+            android:name=".automation.AutomationProvider"
+            android:authorities="${applicationId}.automation"
+            android:enabled="true"
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
+
+        <service
+            android:name=".automation.AutomationDataService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Automation data export/import" />
+        </service>
+
+        <!-- Read with MATCH_UNINSTALLED_PACKAGES | MATCH_DISABLED_COMPONENTS, so 応用管理 can answer
+             "can this app be backed up" for an app that is currently FROZEN — which 白い熊 freezes apps
+             enough for to matter, and which no query intent could ever answer. An app without these
+             entries is simply not offered for data backup or restore. -->
+        <meta-data
+            android:name="shiroikuma.automation.contract"
+            android:value="2" />
+        <meta-data
+            android:name="shiroikuma.automation.format"
+            android:value="1" />
+        <meta-data
+            android:name="shiroikuma.automation.min_format"
+            android:value="1" />
 
         <activity-alias
             android:name=".activities.SplashActivity.Red"

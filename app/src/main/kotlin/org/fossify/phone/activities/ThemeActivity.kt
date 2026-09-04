@@ -412,7 +412,10 @@ class ThemeActivity : SimpleActivity() {
         addSubgroup(R.string.automation, primaryColor)
         val indent = rowIndent + stepPx
 
-        // Two rows, in the order every sister app uses: the master switch (default OFF), then the token.
+        // Three rows, in the order every sister app uses: the master switch (default ON since contract
+        // v2), then whether a token is demanded at all (default OFF), then — only when it is — the token
+        // itself. A 48-character secret sitting under an off switch only invites 白い熊 to paste it
+        // somewhere it would do nothing, so the row is hidden rather than dimmed.
         addSwitchRow(
             labelRes = R.string.enable_automation,
             checked = config.automationEnabled,
@@ -420,7 +423,20 @@ class ThemeActivity : SimpleActivity() {
             description = getString(R.string.enable_automation_desc),
         ) { config.automationEnabled = it }
 
-        addTokenRow(indent)
+        addSwitchRow(
+            labelRes = R.string.automation_require_token,
+            checked = config.automationRequireToken,
+            indent = indent,
+            description = getString(R.string.automation_require_token_desc),
+        ) {
+            config.automationRequireToken = it
+            // Rebuild so the token row appears or goes away with the switch that asks for it.
+            buildRows()
+        }
+
+        if (config.automationRequireToken) {
+            addTokenRow(indent)
+        }
 
         // All-files access: needed only so an automation broadcast can name an absolute backup
         // directory outside Download/ and Documents/. API 30+ only.
