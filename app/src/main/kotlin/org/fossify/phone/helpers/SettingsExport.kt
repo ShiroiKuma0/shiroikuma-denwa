@@ -140,10 +140,12 @@ object SettingsExport {
     private const val EXIM_PREFS = "denwa_eximport"
     private const val EXIM_DIR_URI = "dir_uri"
 
-    // Device-local keys never carried across an export: the automation shared secret AND its enable
-    // switch (each device owns its own security state — a restore must never silently flip automation
-    // on or overwrite the token), plus the one-time upgrade marker.
-    private val PREFS_EXCLUDE = setOf(AUTOMATION_TOKEN, AUTOMATION_ENABLED, LAST_VERSION)
+    // Device-local keys never carried across an export: the automation shared secret AND both of its
+    // switches (each device owns its own security state — a restore must never silently open or close
+    // the automation door, demand a token the caller has not got, or overwrite the token itself), plus
+    // the one-time upgrade marker.
+    private val PREFS_EXCLUDE =
+        setOf(AUTOMATION_TOKEN, AUTOMATION_ENABLED, AUTOMATION_REQUIRE_TOKEN, LAST_VERSION)
 
     // Appearance = the granular theme slots and dimensions, the per-element fonts, and the commons
     // colour/theme keys the fork's palette sits on top of. Everything else in the prefs file is a
@@ -412,7 +414,14 @@ object SettingsExport {
         }
     }
 
-    private fun importBlocking(context: Context, zip: ByteArray, items: Set<Item>): String {
+    /**
+     * The import core, callable headlessly — the Export/Import panel reaches it through [import], and
+     * the data door ([org.fossify.phone.automation.AutomationDataService]) calls it directly, because a
+     * provider-started job already owns a background thread and needs the summary as a return value
+     * rather than in a callback. Blocking, and it throws on every failure so both callers have one
+     * error path.
+     */
+    fun importBlocking(context: Context, zip: ByteArray, items: Set<Item>): String {
         val files = readZip(zip)
         require(categoriesIn(zip).isNotEmpty()) { context.getString(R.string.eim_import_none) }
         val parts = mutableListOf<String>()

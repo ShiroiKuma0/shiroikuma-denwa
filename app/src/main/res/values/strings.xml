@@ -237,7 +237,11 @@
     <!-- 保存復元 automation -->
     <string name="automation">Automation</string>
     <string name="enable_automation">Automation export</string>
-    <string name="enable_automation_desc">Let a sister app\'s task run this export in the background, through a token-gated intent.</string>
+    <string name="enable_automation_desc">Let a sister app run this export in the background, and let 応用管理 back this app up with its data and put it back.</string>
+    <string name="automation_require_token">Use authorization token?</string>
+    <string name="automation_require_token_desc">Off: any sister app may drive the automation. On: a caller must also present the token below. Either way the data door checks the caller\'s package and signature.</string>
+    <string name="automation_exporting">Exporting data…</string>
+    <string name="automation_importing">Restoring data…</string>
     <string name="automation_token">Automation token</string>
     <string name="automation_token_copied">Token copied to the clipboard</string>
     <string name="automation_token_regenerate">Regenerate</string>

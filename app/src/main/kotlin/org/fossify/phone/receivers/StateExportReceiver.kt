@@ -12,6 +12,7 @@ import org.fossify.phone.extensions.config
 import org.fossify.phone.helpers.ACTION_CANCEL_EXPORT
 import org.fossify.phone.helpers.ACTION_EXPORT_STATE
 import org.fossify.phone.helpers.ACTION_LIST_CATEGORIES
+import org.fossify.phone.helpers.AutomationAuth
 import org.fossify.phone.helpers.EXTRA_AUTOMATION_TOKEN
 import org.fossify.phone.helpers.EXTRA_BACKUP_PATH
 import org.fossify.phone.helpers.EXTRA_EXPORT_ITEMS
@@ -37,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference
 /**
  * The 保存復元 state-export contract, for 白い熊 自由作業盤's one-run backup of every sister app.
  *
- * Three exported, token-gated actions:
+ * Three exported actions, each behind the [AutomationAuth] gate:
  *  - [ACTION_LIST_CATEGORIES] — instant; replies "OK:" plus one `id<TAB>label<TAB>parent<TAB>on|off`
  *    line per selectable item. The third field is the parent id, empty for a top-level item, so a
  *    sub-option ("appearance.fonts" under "appearance") can be rendered indented and follow its
@@ -68,8 +69,15 @@ import java.util.concurrent.atomic.AtomicReference
  * Progress is reported as real counts, never a percentage — "区分 3/5 — 外観", throttled to one
  * broadcast per [PROGRESS_THROTTLE_MS] with an unthrottled final one at completion.
  *
- * Exported with no android:permission — the caller cannot hold one, so the master switch plus the token
- * are the gate. Both live on the 白い熊 電話 UI page, under Export / Import.
+ * Exported with no android:permission — the caller cannot hold one. Since contract v2 that is deliberate
+ * rather than merely unavoidable: this receiver is the UNAUTHENTICATED half of the surface, and it only
+ * ever writes where it was told to and reports what it did. The gate it does have is [AutomationAuth] —
+ * a master switch that ships ON, and a token that is only demanded when 白い熊 has asked for one. Both
+ * rows live on the 白い熊 電話 UI page, under Export / Import.
+ *
+ * Everything that moves data through a caller-supplied descriptor — and IMPORT, which overwrites this
+ * app's settings and therefore exists nowhere else — lives behind
+ * [org.fossify.phone.automation.AutomationProvider], which can identify who is calling.
  */
 // Every catch here is deliberately broad: a request from another app must always be answered with a
 // single ERROR line rather than take the receiver down, and a reply or progress broadcast that the
@@ -129,11 +137,15 @@ class StateExportReceiver : BroadcastReceiver() {
             // Logged either way: the reply is invisible on this side, and this is what 白い熊 reads back
             // with `adb logcat` during acceptance testing.
             Log.i(TAG, "result → $result")
-            if (replyAction.isNotEmpty() && replyId.isNotEmpty()) {
+            // A missing reply_package means nobody can hear this: since API 26 an implicit broadcast
+            // reaches no manifest-declared receiver, so setPackage(null) is not a WIDER send, it is no
+            // send at all. reply_package is a required extra, so an absent one is a malformed request —
+            // answer it by not pretending to have replied (contract v2 anti-pattern, 2026-09-04).
+            if (replyAction.isNotEmpty() && replyPackage.isNotEmpty() && replyId.isNotEmpty()) {
                 try {
                     appContext.sendBroadcast(
                         Intent(replyAction)
-                            .setPackage(replyPackage.ifEmpty { null })
+                            .setPackage(replyPackage)
                             .putExtra(EXTRA_REPLY_ID, replyId)
                             .putExtra(EXTRA_REPLY_RESULT, result)
                             .addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES)
@@ -188,10 +200,10 @@ class StateExportReceiver : BroadcastReceiver() {
         Log.i(
             TAG,
             "received $ACTION_CANCEL_EXPORT: enabled=${config.automationEnabled}, " +
-                "tokenLen=${token?.length ?: 0}, reply_id=$replyId"
+                "requireToken=${config.automationRequireToken}, tokenLen=${token?.length ?: 0}, reply_id=$replyId"
         )
-        if (!config.automationEnabled || !config.isAutomationTokenValid(token)) {
-            Log.i(TAG, "cancel refused by the automation gate")
+        AutomationAuth.refuse(context, token)?.let {
+            Log.i(TAG, "cancel refused by the automation gate: $it")
             return
         }
 
@@ -207,9 +219,9 @@ class StateExportReceiver : BroadcastReceiver() {
     }
 
     /**
-     * Decide the request without doing any work: the gate first (the switch and the token report
-     * distinctly, since they debug differently), then the instant category list, then the export's own
-     * validation — so a malformed request is answered before anything is written.
+     * Decide the request without doing any work: the gate first ([AutomationAuth], which reports the
+     * switch and the token distinctly since they debug differently), then the instant category list,
+     * then the export's own validation — so a malformed request is answered before anything is written.
      */
     private fun parse(context: Context, intent: Intent, action: String?): Request {
         val config = context.config
@@ -219,13 +231,16 @@ class StateExportReceiver : BroadcastReceiver() {
         val cats = parseItems(itemsRaw)
         Log.i(
             TAG,
-            "received $action: enabled=${config.automationEnabled}, tokenLen=${token?.length ?: 0}, " +
+            "received $action: enabled=${config.automationEnabled}, " +
+                "requireToken=${config.automationRequireToken}, tokenLen=${token?.length ?: 0}, " +
                 "items=$itemsRaw, path=$path"
         )
+        // One gate, in one place: "disabled" and "bad token" debug differently and must never drift
+        // apart between here, the cancel path and the data door. A token sent to this app while it is
+        // not asking for one is IGNORED — see AutomationAuth for why refusing it would be worse.
+        AutomationAuth.refuse(context, token)?.let { return Request.Done(it) }
 
         return when {
-            !config.automationEnabled -> Request.Done("ERROR:automation disabled")
-            !config.isAutomationTokenValid(token) -> Request.Done("ERROR:bad token")
             action == ACTION_LIST_CATEGORIES -> Request.Done(categoryList(context))
             cats == null -> Request.Done("ERROR:unknown category in items: $itemsRaw")
             path.isNotEmpty() && !path.startsWith("/") ->
@@ -333,11 +348,14 @@ class StateExportReceiver : BroadcastReceiver() {
         val appLabel = context.getString(R.string.app_launcher_name)
         val unit = context.getString(R.string.eim_progress_unit)
 
+        // Same rule as the reply: without a package to aim at this reaches nobody, so it is not sent.
+        val canSend = progressAction.isNotEmpty() && replyPackage.isNotEmpty()
+
         fun send(current: Long, total: Long, unitName: String, text: String) {
             try {
                 context.sendBroadcast(
                     Intent(progressAction)
-                        .setPackage(replyPackage.ifEmpty { null })
+                        .setPackage(replyPackage)
                         .putExtra(EXTRA_REPLY_ID, replyId)
                         .putExtra(EXTRA_PROGRESS_APP, appLabel)
                         .putExtra(EXTRA_PROGRESS_TEXT, text)
@@ -355,13 +373,13 @@ class StateExportReceiver : BroadcastReceiver() {
         return ThrottledProgress(
             reporter = { current, total, unitName, text ->
                 val now = System.currentTimeMillis()
-                if (progressAction.isNotEmpty() && now - lastSent >= PROGRESS_THROTTLE_MS) {
+                if (canSend && now - lastSent >= PROGRESS_THROTTLE_MS) {
                     lastSent = now
                     send(current, total, unitName, text)
                 }
             },
             final = { categories ->
-                if (progressAction.isNotEmpty()) {
+                if (canSend) {
                     send(categories, categories, unit, "$unit $categories/$categories")
                 }
             },
