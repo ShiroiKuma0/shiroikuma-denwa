@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+065`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+070`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -98,9 +98,19 @@ Pick a backup folder once and the page tells you, every time you open it, when t
 
 ## 🤖 One command backs up every 白い熊 app
 
-The dialer answers the family's **保存復元** automation contract, so 白い熊 自由作業盤 can back it up headlessly alongside every sister app in a single run — no screens, no taps. It reports real progress counts while it works and replies with the exact path and size it wrote. Off by default and gated by a per‑device token you copy with one tap.
+The dialer answers the family's **保存復元** automation contract, so 白い熊 自由作業盤 can back it up headlessly alongside every sister app in a single run — no screens, no taps. It reports real progress counts while it works and replies with the exact path and size it wrote. **It is on out of the box and there is nothing to paste**: the authorization token is now an extra you can switch on, not the gate, because a pasted secret cannot survive the wipe this feature exists to recover from.
 
 It also **names the items it can save and says which should start ticked**, so the picker you see is the app's own answer rather than a guess — and a run in progress can be **stopped from outside**: the cancel unwinds the export at the next safe boundary and deletes what it had written, leaving your backup folder exactly as it found it.
+
+---
+
+## 🔐 Restored with its data onto a clean phone
+
+Beyond exporting itself, the dialer opens a **data door** that 白い熊 応用管理 can drive to back the app up *with its data* and put it back on a wiped phone — the case a settings export alone never covered.
+
+It is deliberately not another broadcast, because **a broadcast cannot tell you who sent it** and the caller is the one naming where the backup goes. The door identifies its caller three ways — the exact package name, the uid the kernel reports for it, and a **pinned signing certificate** — and a package-name prefix is explicitly not enough, since any sideloaded app may name itself whatever it likes. Restoring is available **only** through that door, never over the open broadcast surface, because an import overwrites what the app knows.
+
+The backup itself travels through a **file descriptor the caller opens**, never a path: your archive is encrypted and checksummed file by file, and anything written into it from the outside would sit in plaintext and unverified inside an otherwise sealed backup.
 
 ---
 
