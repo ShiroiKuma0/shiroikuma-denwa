@@ -197,7 +197,7 @@
 
     <!-- Export / Import (白い熊 電話 UI page) -->
     <string name="eim_title">Export / Import</string>
-    <string name="eim_hint">Back up everything this phone app is set to — settings, speed dial, the per-contact SIM choices and the whole 白い熊 UI — into one dated .zip, or restore the ticked parts from one.</string>
+    <string name="eim_hint">Back up everything this phone app is set to and everything it holds — settings, speed dial, the per-contact SIM choices, the call history, the blocked numbers and the whole 白い熊 UI — into one dated .zip, or restore the ticked parts from one.</string>
     <string name="eim_dir">Backup folder</string>
     <string name="eim_dir_unset">Not set — tap to choose a folder</string>
     <string name="eim_open">Export / Import…</string>
@@ -233,6 +233,22 @@
     <string name="eim_cat_appearance_short">Appearance</string>
     <string name="eim_cat_fonts">Imported font files</string>
     <string name="eim_cat_fonts_short">Fonts</string>
+    <string name="eim_cat_call_history">Call history</string>
+    <string name="eim_cat_call_history_short">Call history</string>
+    <string name="eim_cat_blocked">Blocked numbers</string>
+    <string name="eim_cat_blocked_short">Blocked numbers</string>
+    <!-- One category a restore could not apply yet: name, how many rows are held, why. -->
+    <string name="eim_import_held">%1$s: %2$d HELD (%3$s)</string>
+
+    <!-- The held-restore prompt: shown on every launch until the last held row is in. -->
+    <string name="pending_restore_title">⚠ Restore not finished</string>
+    <string name="pending_restore_body">These were restored from the backup but could NOT be put back yet:\n\n%1$s\n\nNothing is lost — the data is being held and goes in the moment this app is the default dialer. Set it now with the button below, or restore again from 応用管理 once it is.</string>
+    <string name="pending_restore_item">• %1$s — %2$d waiting (%3$s)</string>
+    <string name="pending_restore_set_dialer">Make this the default dialer</string>
+    <string name="pending_restore_grant">Grant call-log access</string>
+    <string name="pending_restore_retry">Try again</string>
+    <string name="pending_restore_later">Later</string>
+    <string name="pending_restore_done">Restored what was held — %s</string>
 
     <!-- 保存復元 automation -->
     <string name="automation">Automation</string>
