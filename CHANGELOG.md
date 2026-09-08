@@ -3,6 +3,52 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+071 — 2026-09-08
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **The backup now carries the call history and the blocked numbers.** Until now it held only
+  preferences — settings, speed dial, the per-contact SIM choices, the appearance keys and the font
+  files — so everything living in a system content provider, which on a dialer is the data actually
+  worth mourning, sat outside it. Both are new categories in the Export / Import panel and in the
+  automation contract, ticked by default, and 応用管理 picks them up without any change on its side.
+- **A restore that cannot run yet is held, never dropped.** Android accepts writes to the
+  blocked-numbers list only from the **default dialer**, and on a freshly wiped phone — the case the
+  whole restore contract exists for — the app does not hold that role at the moment the archive
+  arrives. The import now stashes such a payload in private storage, reports it as **HELD** instead
+  of restored, and applies it the moment it becomes possible: retried on every resume, and
+  immediately when the dialer role is granted.
+- **An unmissable prompt until the last held row is in.** While anything is still waiting, opening
+  the app raises a red-framed dialog that cannot be dismissed by tapping outside or pressing back,
+  naming each held category and its exact row count, with a button that requests the dialer role on
+  the spot. It returns on every launch until there is nothing left to apply.
+
+### Fixed
+- **A backup could record "no blocked numbers" and look perfectly healthy.** Commons' blocked-number
+  reader returns an **empty list** when the dialer role is missing and its cursor helper swallows the
+  refusal, while its `isDefaultDialer()` check is keyed to the `org.fossify.*` package names and so
+  answered "yes" unconditionally for this fork. Backing up through that pair would have written an
+  archive whose blocked-numbers file was empty — a failure invisible until the day it was restored.
+  The app now asks the platform about **itself**, reads the provider directly, and **fails the
+  export** rather than writing an empty list.
+- **A call-history backup would have lost every call from a blocked number.** The existing export
+  path went through the Recents list, which filters those calls out — correct for a list on screen,
+  ruinous for an archive, since it drops precisely the calls from the people who were blocked. The
+  call log is now dumped raw.
+- **Restoring a call history no longer doubles it.** The previous restore inserted every row blindly,
+  so importing onto a phone that still had its log duplicated the lot. Restores now deduplicate on
+  the call's own timestamp and number.
+- **A restored call log no longer arrives as a wall of notifications.** Rows are written already
+  read, instead of handing the platform a few hundred fresh missed calls.
+- **A backup from this phone can be restored onto another make of phone.** `subscription_id` is
+  Huawei's own call-log column; handing it to a call log that lacks it fails the entire insert rather
+  than dropping the value, so the archive is now filtered against the destination's real columns.
+
+### Notes
+- **Contacts stay out of this app's backup on purpose.** They live in the shared system provider and
+  白い熊 連絡先 already exports them; carrying them here too would write every contact twice when both
+  apps are restored.
+
 ## 白い熊 電話 1.11.1+070 — 2026-09-04
 Built on Fossify Phone 1.11.1.
 

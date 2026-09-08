@@ -6,11 +6,11 @@
 
 **A privacy‑friendly dialer, supercharged for dual‑SIM power users.**
 
-A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, one‑zip backup & restore, and a deep hand‑off to our Contacts fork.
+A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, a one‑zip backup that carries your call history and blocked numbers and cannot lose them on the way back, and a deep hand‑off to our Contacts fork.
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+070`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+071`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -90,9 +90,11 @@ Day headers with an underline, configurable thin‑call / thick‑day dividers, 
 
 ## 💾 Back up everything in one zip — and restore just the parts you want
 
-An **Export / Import** page at the top of the UI screen writes every setting the app has — behaviour, speed dial, the per‑contact SIM choices, and the whole black/yellow theme with your imported fonts — into a single dated `.zip`. Tick only what you want on the way back in: each category, and its sub‑parts, restore independently, and a backup taken by an older build still restores into a newer one.
+An **Export / Import** page at the top of the UI screen writes everything the app is set to *and everything it holds* — behaviour, speed dial, the per‑contact SIM choices, your **call history**, your **blocked numbers**, and the whole black/yellow theme with your imported fonts — into a single dated `.zip`. Tick only what you want on the way back in: each category, and its sub‑parts, restore independently, and a backup taken by an older build still restores into a newer one.
 
-Pick a backup folder once and the page tells you, every time you open it, when this app was last saved.
+The call log is dumped as it really is, not as the Recents list shows it — which matters more than it sounds, because that list **hides calls from blocked numbers**, and a backup built on it would quietly lose exactly the calls from the people you blocked. Restoring deduplicates on the call's own timestamp, so putting a backup back onto a phone that still has part of its log adds what is missing instead of doubling everything, and restored calls arrive already read rather than as a few hundred fresh missed‑call notifications.
+
+Pick a backup folder once and the page tells you, every time you open it, when this app was last saved. And if the blocked numbers cannot be read at the moment you export — they need the dialer role — the export **fails and says so** instead of writing a perfectly good‑looking archive with an empty list inside it.
 
 ---
 
@@ -111,6 +113,18 @@ Beyond exporting itself, the dialer opens a **data door** that 白い熊 応用�
 It is deliberately not another broadcast, because **a broadcast cannot tell you who sent it** and the caller is the one naming where the backup goes. The door identifies its caller three ways — the exact package name, the uid the kernel reports for it, and a **pinned signing certificate** — and a package-name prefix is explicitly not enough, since any sideloaded app may name itself whatever it likes. Restoring is available **only** through that door, never over the open broadcast surface, because an import overwrites what the app knows.
 
 The backup itself travels through a **file descriptor the caller opens**, never a path: your archive is encrypted and checksummed file by file, and anything written into it from the outside would sit in plaintext and unverified inside an otherwise sealed backup.
+
+---
+
+## 🛟 A restore can be late — it cannot be lost
+
+Your **blocked numbers are irreplaceable**. There is no second copy of that list anywhere and no way to rebuild it, and the whole point of restoring onto a new phone is that the nuisance callers do not simply start getting through again.
+
+But Android only lets the **default dialer** write to the blocked‑numbers list — and on a phone that has just been wiped, nothing is the default dialer yet at the moment your backup arrives. The two obvious ways to handle that both lose the list: fail the whole restore, or skip the numbers and report success over nothing.
+
+So this fork does neither. A restore that cannot apply something **yet** keeps it. The data is written to the app's private storage the instant it arrives, reported as **HELD** rather than restored, and put in the moment it becomes possible — retried every time you open the app, and immediately when you grant the dialer role. Until the last held number is in, opening the app raises a **red‑framed warning that cannot be dismissed away**, naming exactly what is still waiting and how many, with the button that unblocks it right there.
+
+The same holds for the call history, which needs call‑log access for the same reason. Restore first and set things up afterwards, or the other way round — the order stops mattering.
 
 ---
 
