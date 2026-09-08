@@ -93,9 +93,10 @@ object SettingsExport {
      *
      * [defaultOn] is the fourth `LIST_CATEGORIES` field: whether the item starts TICKED in a picker,
      * and what an absent "items" extra therefore means. It is this app's answer to state rather than
-     * the picker's to guess — everything here is small and not re-creatable from anything else, so
-     * every item is `on`; the `off` case is for bulk data a restore could regenerate (downloaded media,
-     * a thumbnail cache), which this app has none of.
+     * the picker's to guess — nothing here can be re-created from anything else, so every item is
+     * `on`; the `off` case is for bulk data a restore could regenerate (downloaded media, a thumbnail
+     * cache), which this app has none of. Note that "small" is not the test and never was: the call
+     * log is the one big category, and it is exactly as irreplaceable as the rest.
      */
     enum class Item(
         val id: String,
@@ -109,10 +110,20 @@ object SettingsExport {
             "settings.speed_dial", "settings", R.string.eim_cat_speed_dial, R.string.eim_cat_speed_dial_short
         ),
         SETTINGS_SIM("settings.sim", "settings", R.string.eim_cat_sim, R.string.eim_cat_sim_short),
+        CALL_HISTORY("call_history", null, R.string.eim_cat_call_history, R.string.eim_cat_call_history_short),
+        BLOCKED_NUMBERS("blocked_numbers", null, R.string.eim_cat_blocked, R.string.eim_cat_blocked_short),
         APPEARANCE("appearance", null, R.string.eim_cat_appearance, R.string.eim_cat_appearance_short),
         APPEARANCE_FONTS("appearance.fonts", "appearance", R.string.eim_cat_fonts, R.string.eim_cat_fonts_short);
 
         val isTopLevel: Boolean get() = parentId == null
+
+        /**
+         * Whether this item's data lives in a system content provider rather than in this app's
+         * preferences. The two that do — the call log and the blocked numbers — are the only ones a
+         * restore can be *unable* to apply at the moment it arrives, and so the only ones that can be
+         * held (see [PendingRestore]).
+         */
+        val isProviderBacked: Boolean get() = this == CALL_HISTORY || this == BLOCKED_NUMBERS
 
         /** The parts of this item, in declaration order — empty for a leaf. */
         val children: List<Item> get() = entries.filter { it.parentId == id }
@@ -228,12 +239,22 @@ object SettingsExport {
                 if (isCancelled()) throw ExportCancelledException()
                 val done = index + 1L
                 onProgress(done, total, unit, "$unit $done/$total — ${context.getString(item.shortLabelRes)}")
-                val count = if (item == Item.APPEARANCE_FONTS) {
-                    exportFonts(context, zip, isCancelled)
-                } else {
-                    val slice = prefs.filterKeys { itemForKey(it) == item && it !in PREFS_EXCLUDE }
-                    writeEntry(zip, item.entryName, encodePrefs(slice).toByteArray())
-                    slice.size
+                val count = when {
+                    item == Item.APPEARANCE_FONTS -> exportFonts(context, zip, isCancelled)
+                    item.isProviderBacked -> {
+                        // Throws rather than writing an empty file when the provider is out of reach:
+                        // "blocked numbers: 0" inside an otherwise good archive is the one failure
+                        // nobody notices until the day it is restored.
+                        val bytes = exportProviderData(context, item)
+                        writeEntry(zip, item.entryName, bytes)
+                        countIn(item, bytes)
+                    }
+
+                    else -> {
+                        val slice = prefs.filterKeys { itemForKey(it) == item && it !in PREFS_EXCLUDE }
+                        writeEntry(zip, item.entryName, encodePrefs(slice).toByteArray())
+                        slice.size
+                    }
                 }
                 parts += "${context.getString(item.shortLabelRes)}: $count"
             }
@@ -425,20 +446,82 @@ object SettingsExport {
         val files = readZip(zip)
         require(categoriesIn(zip).isNotEmpty()) { context.getString(R.string.eim_import_none) }
         val parts = mutableListOf<String>()
+        val held = mutableListOf<String>()
 
         for (item in Item.listed.filter { it in items }) {
-            val count = if (item == Item.APPEARANCE_FONTS) {
-                importFonts(context, files)
-            } else {
-                val data = files[item.entryName] ?: continue
-                // Merge — never clear — so unrelated and device-local keys survive a partial restore.
-                decodeInto(context.getSharedPrefs(), data.decodeToString())
-            }
-            if (count > 0 || item != Item.APPEARANCE_FONTS) {
-                parts += "${context.getString(item.shortLabelRes)}: $count"
+            val data = files[item.entryName]
+            when {
+                item.isProviderBacked -> data?.let { applyOrHold(context, item, it, parts, held) }
+
+                item == Item.APPEARANCE_FONTS -> {
+                    val count = importFonts(context, files)
+                    if (count > 0) {
+                        parts += "${context.getString(item.shortLabelRes)}: $count"
+                    }
+                }
+
+                data != null -> {
+                    // Merge — never clear — so unrelated and device-local keys survive a partial restore.
+                    val count = decodeInto(context.getSharedPrefs(), data.decodeToString())
+                    parts += "${context.getString(item.shortLabelRes)}: $count"
+                }
             }
         }
-        return if (parts.isEmpty()) context.getString(R.string.eim_import_none) else parts.joinToString("・")
+        // Held first: whatever else this restore did, what it could NOT do yet is the line to read.
+        val summary = held + parts
+        return if (summary.isEmpty()) context.getString(R.string.eim_import_none) else summary.joinToString("・")
+    }
+
+    /**
+     * Apply one provider-backed category, or hold it for later — never drop it.
+     *
+     * A [RestoreDeferredException] is not a failure: it is a fresh phone saying "not yet". The payload
+     * goes to [PendingRestore] and the app keeps asking until it is in. Any OTHER exception propagates
+     * and fails the import loudly, which is right, because in that case the archive is still on disk
+     * and nothing has been lost by refusing.
+     */
+    private fun applyOrHold(
+        context: Context,
+        item: Item,
+        data: ByteArray,
+        parts: MutableList<String>,
+        held: MutableList<String>,
+    ) {
+        val label = context.getString(item.shortLabelRes)
+        try {
+            parts += "$label: ${applyProviderData(context, item, data)}"
+        } catch (e: RestoreDeferredException) {
+            PendingRestore.stash(context, item, data)
+            held += context.getString(R.string.eim_import_held, label, countIn(item, data), e.reason)
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // PROVIDER-BACKED CATEGORIES
+    // ---------------------------------------------------------------------------------------------
+
+    private fun exportProviderData(context: Context, item: Item): ByteArray = when (item) {
+        Item.CALL_HISTORY -> CallHistoryBackup.exportJson(context)
+        Item.BLOCKED_NUMBERS -> BlockedNumbersBackup.exportJson(context)
+        else -> error("${item.id} is not provider-backed")
+    }
+
+    /**
+     * Write one provider-backed category back, returning how many rows went in. Public because
+     * [PendingRestore] replays held payloads through exactly this path — a restore that happens ten
+     * minutes late must be the same restore, not a second implementation of one.
+     */
+    fun applyProviderData(context: Context, item: Item, bytes: ByteArray): Int = when (item) {
+        Item.CALL_HISTORY -> CallHistoryBackup.importJson(context, bytes)
+        Item.BLOCKED_NUMBERS -> BlockedNumbersBackup.importJson(context, bytes)
+        else -> error("${item.id} is not provider-backed")
+    }
+
+    /** How many rows a provider-backed payload carries, for counting what is held without applying it. */
+    fun countIn(item: Item, bytes: ByteArray): Int = when (item) {
+        Item.CALL_HISTORY -> CallHistoryBackup.countIn(bytes)
+        Item.BLOCKED_NUMBERS -> BlockedNumbersBackup.countIn(bytes)
+        else -> 0
     }
 
     /** Apply a typed pref dump onto [sp]. Returns the applied-key count. */

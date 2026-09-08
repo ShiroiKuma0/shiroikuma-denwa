@@ -36,6 +36,7 @@ import org.fossify.phone.adapters.ViewPagerAdapter
 import org.fossify.phone.databinding.ActivityMainBinding
 import org.fossify.phone.dialogs.ChangeSortingDialog
 import org.fossify.phone.dialogs.FilterContactSourcesDialog
+import org.fossify.phone.dialogs.PendingRestoreDialog
 import org.fossify.phone.extensions.clearMissedCalls
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.applyThemeFont
@@ -43,6 +44,7 @@ import org.fossify.phone.extensions.colorItemTitles
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getInstalledContactsAppPackage
 import org.fossify.phone.extensions.handleFullScreenNotificationsPermission
+import org.fossify.phone.extensions.holdsDialerRole
 import org.fossify.phone.extensions.launchContactsApp
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.launchCreateNewContactIntent
@@ -52,7 +54,9 @@ import org.fossify.phone.fragments.MyViewPagerFragment
 import org.fossify.phone.fragments.RecentsFragment
 import org.fossify.phone.helpers.DialpadPanel
 import org.fossify.phone.helpers.OPEN_DIAL_PAD_AT_LAUNCH
+import org.fossify.phone.helpers.PendingRestore
 import org.fossify.phone.helpers.RecentsHelper
+import org.fossify.phone.helpers.SettingsExport
 import org.fossify.phone.helpers.tabsList
 import org.fossify.phone.models.Events
 import org.greenrobot.eventbus.EventBus
@@ -75,6 +79,7 @@ class MainActivity : SimpleActivity() {
             onNotDefaultDialer = { launchSetDefaultDialerIntent() }
         )
     }
+    private var pendingRestoreDialog: PendingRestoreDialog? = null
     private var storedShowTabs = 0
     private var storedFontSize = 0
     private var storedStartNameWithSurname = false
@@ -171,6 +176,7 @@ class MainActivity : SimpleActivity() {
         }
 
         checkShortcuts()
+        checkPendingRestore()
         Handler().postDelayed({
             getRecentsFragment()?.refreshItems()
         }, 2000)
@@ -188,6 +194,9 @@ class MainActivity : SimpleActivity() {
         // we don't really care about the result, the app can work without being the default Dialer too
         if (requestCode == REQUEST_CODE_SET_DEFAULT_DIALER) {
             checkContactPermissions()
+            // The role is the one thing a held restore was waiting for — do not make 白い熊 wait for
+            // the next launch to find out it went in.
+            checkPendingRestore()
         } else if (requestCode == REQUEST_CODE_SET_DEFAULT_CALLER_ID && resultCode != Activity.RESULT_OK) {
             toast(R.string.must_make_default_caller_id_app, length = Toast.LENGTH_LONG)
             baseConfig.blockUnknownNumbers = false
@@ -395,6 +404,68 @@ class MainActivity : SimpleActivity() {
 
         menu.findViewById<ImageView>(org.fossify.commons.R.id.top_toolbar_search_icon)
             ?.applyColorFilter(themeColor(ThemeSlot.SEARCH_ICON))
+    }
+
+    /**
+     * Apply anything a restore had to hold, and keep asking until there is nothing left.
+     *
+     * Runs on every resume, which is what makes the guarantee real: whatever order 白い熊 does things
+     * in on a new phone — restore first, dialer role later, or the other way round — the held data
+     * goes in the first time the app is looked at with the role in place. The directory check is one
+     * `list()` and the common case is an empty directory, so this costs nothing on a normal launch.
+     */
+    private fun checkPendingRestore() {
+        if (pendingRestoreDialog != null || !PendingRestore.hasAny(this)) {
+            return
+        }
+        ensureBackgroundThread {
+            val outcome = PendingRestore.applyPending(this)
+            runOnUiThread { onPendingRestoreChecked(outcome) }
+        }
+    }
+
+    private fun onPendingRestoreChecked(outcome: PendingRestore.Outcome) {
+        if (isFinishing || isDestroyed) {
+            return
+        }
+        if (outcome.appliedAnything) {
+            val summary = outcome.applied.entries.joinToString("・") { (item, count) ->
+                "${getString(item.shortLabelRes)}: $count"
+            }
+            toast(getString(R.string.pending_restore_done, summary), Toast.LENGTH_LONG)
+        }
+        if (outcome.stillHeld.isEmpty()) {
+            return
+        }
+
+        val lines = outcome.stillHeld.map { (item, held) ->
+            getString(R.string.pending_restore_item, getString(item.shortLabelRes), held.count, held.reason)
+        }
+        val (label, action) = pendingRestorePrimary(outcome.stillHeld.keys)
+        pendingRestoreDialog = PendingRestoreDialog(
+            activity = this,
+            lines = lines,
+            primaryLabel = label,
+            onPrimary = { pendingRestoreDialog = null; action() },
+            onLater = { pendingRestoreDialog = null },
+        ).apply { show() }
+    }
+
+    /**
+     * The one button that would actually unblock the held data, in the order the blocks appear: the
+     * dialer role gates the blocked numbers AND brings call-log access with it, so it is always the
+     * first ask; the explicit call-log grant only matters when the role is somehow held without it.
+     */
+    private fun pendingRestorePrimary(held: Set<SettingsExport.Item>): Pair<String, () -> Unit> {
+        if (!holdsDialerRole()) {
+            return getString(R.string.pending_restore_set_dialer) to { launchSetDefaultDialerIntent() }
+        }
+        if (SettingsExport.Item.CALL_HISTORY in held && !hasPermission(PERMISSION_WRITE_CALL_LOG)) {
+            return getString(R.string.pending_restore_grant) to {
+                handlePermission(PERMISSION_WRITE_CALL_LOG) { checkPendingRestore() }
+            }
+        }
+        return getString(R.string.pending_restore_retry) to { checkPendingRestore() }
     }
 
     private fun checkContactPermissions() {
