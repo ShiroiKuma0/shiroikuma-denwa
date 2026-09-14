@@ -3,6 +3,29 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+072 — 2026-09-14
+Built on Fossify Phone 1.11.1.
+
+### Changed
+- **The bottom tab bar keeps the dialer's shape while the Contacts fork is on screen.** Tapping
+  Contacts or Favourites still hands off to 白い熊 連絡先, but the Contacts fork now comes up wearing
+  *this* app's tab set — Contacts | Favourites | Recents, its own Groups tab dropped for the duration
+  — instead of its own. Previously the Recents tab was replaced by Groups the moment the hand-off
+  happened, so returning to the call log meant backing out of another app first.
+- **The hand-off is bidirectional.** The Recents tab over in 連絡先 hands straight back here, onto the
+  call log. Neither app closes the other, so after the first trip both stay warm and a tap swaps them
+  as a task switch rather than an app launch — started with a zero-length transition on both sides so
+  it reads as a tab change.
+- **The two bars cannot disagree.** A hand-off launch carries this app's own visible-tab mask, so
+  switching the Favourites tab off here switches it off there as well.
+- **A hand-off launch can no longer be bounced back out.** An incoming tab request is honoured only
+  for a tab that stays in the dialer, so a request for Contacts or Favourites — which the hand-off
+  would immediately send away again — can never ping-pong a tap between the two apps.
+
+### Requires
+- **白い熊 連絡先 1.6.0+083 or newer** for the shared bar; against an older Contacts fork the hand-off
+  behaves exactly as it did before, with 連絡先's own tabs.
+
 ## 白い熊 電話 1.11.1+071 — 2026-09-08
 Built on Fossify Phone 1.11.1.
 
