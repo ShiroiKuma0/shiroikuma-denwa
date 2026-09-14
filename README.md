@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+071`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+072`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -76,9 +76,11 @@ Swipe a recent call **left for SIM 1, right for SIM 2** to dial instantly — th
 
 ---
 
-## 🤝 Hands the Contacts & Favourites tabs to 連絡先
+## 🤝 Two apps, one bottom bar
 
 With our Contacts fork (白い熊 連絡先) installed, tapping or swiping the Contacts/Favourites tabs opens it on the matching tab — one contacts experience shared across both apps.
+
+And the tab bar **keeps the dialer's shape while you are over there**: 連絡先 comes up wearing *this* app's tabs — Contacts | Favourites | Recents, its own Groups tab out of the way — so the call log is always one tap away instead of something you have to back out of another app to reach. Hide Favourites here and it disappears there too; the two bars never disagree. Neither app closes the other, so after the first trip the two sit warm side by side and a tap swaps them instantly, with no launch animation to sit through. (Requires 白い熊 連絡先 1.6.0+083 or newer.)
 
 ---
 
