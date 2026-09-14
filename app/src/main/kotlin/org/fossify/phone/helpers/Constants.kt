@@ -47,9 +47,16 @@ const val ALL_TABS_MASK = TAB_CONTACTS or TAB_FAVORITES or TAB_CALL_HISTORY
 // Our Contacts fork (shiroikuma-renrakusaki); when installed, the Contacts and Favorites tabs hand off to it
 val contactsAppPackages = listOf("shiroikuma.renrakusaki", "shiroikuma.renrakusaki.debug")
 
-// Int extra (a commons TAB_* mask) telling renrakusaki's MainActivity which tab to open;
-// must match OPEN_TAB_INTENT_EXTRA in the renrakusaki repo
+// Int extra (a commons TAB_* mask) naming the tab to open. Bidirectional: we send it to renrakusaki's
+// MainActivity on a hand-off, and renrakusaki sends it back to ours when the Recents tab on the bar it
+// wears for us is tapped. Must match OPEN_TAB_INTENT_EXTRA in the renrakusaki repo.
 const val CONTACTS_APP_OPEN_TAB_EXTRA = "shiroikuma_open_tab"
+
+// Int extra carrying our own visible-tab mask (config.showTabs) on a hand-off launch. Non-zero tells
+// renrakusaki the launch came from the dialer's bottom bar, so it wears our tab set — Recents included —
+// instead of its own for that session, and the mask says which of our tabs to draw.
+// Must match DIALER_TABS_INTENT_EXTRA in the renrakusaki repo.
+const val CONTACTS_APP_DIALER_TABS_EXTRA = "shiroikuma_dialer_tabs"
 const val CONTACTS_APP_MAIN_ACTIVITY = "org.fossify.contacts.activities.MainActivity"
 
 val tabsList = arrayListOf(TAB_CONTACTS, TAB_FAVORITES, TAB_CALL_HISTORY)

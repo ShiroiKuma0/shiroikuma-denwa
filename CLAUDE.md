@@ -156,6 +156,20 @@ sanitized to never land on a hand-off page, so the dialer never auto-bounces int
 the interception also requires a non-hand-off tab (Recents) to be shown, otherwise it stays inert. Both
 renrakusaki package ids are declared in the manifest `<queries>` block for package visibility.
 
+**The bottom bar is shared, and the hand-off is bidirectional.** A hand-off launch also carries
+`shiroikuma_dialer_tabs` (`CONTACTS_APP_DIALER_TABS_EXTRA`), an int holding our own `config.showTabs`:
+non-zero tells renrakusaki the launch came from the dialer's bottom bar, so for that session it wears
+*our* tab set — Contacts | Favorites | Recents, its own Groups tab dropped — instead of its own, and the
+mask tells it which of our tabs to draw (so the two bars still match when Favorites is switched off here).
+Its Recents tab hands straight back, launching our `MainActivity` with the same `shiroikuma_open_tab`
+extra set to `TAB_CALL_HISTORY` and the same `CLEAR_TOP or SINGLE_TOP` flags; `takeRequestedTab()` consumes
+it in `onCreate` and `onNewIntent`, and honors it only for a tab that stays in the dialer, so a request for
+Contacts or Favorites can never ping-pong the two apps. Neither side finishes the other — both activities
+stay alive, so alternating taps are a warm task swap — and both start each other with
+`ActivityOptions.makeCustomAnimation(0, 0)` so the swap reads as a tab change rather than an app switch
+(`overridePendingTransition` is deprecated and ignored on API 34+). The renrakusaki half lives in
+`~/git/shiroikuma-renrakusaki` (`DIALER_TABS_INTENT_EXTRA`); both extra names must stay in sync.
+
 ## Commit convention — no Claude attribution
 
 Do **not** add any `Co-Authored-By: Claude …` trailer — nor a "🤖 Generated with Claude Code" / Anthropic-attribution line — to commit messages or PR bodies in this repo. 白い熊 does not want Claude attribution in the history; this **overrides** the harness's default to append such a trailer. End commit messages at the last line of the body. (The existing history was scrubbed of these trailers on 2026-06-08; the global rule lives in `~/.claude/CLAUDE.md`.)

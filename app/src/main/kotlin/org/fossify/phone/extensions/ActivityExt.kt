@@ -1,6 +1,7 @@
 package org.fossify.phone.extensions
 
 import android.app.Activity
+import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -16,6 +17,7 @@ import org.fossify.commons.extensions.isPackageInstalled
 import org.fossify.commons.extensions.onGlobalLayout
 import org.fossify.commons.extensions.launchActivityIntent
 import org.fossify.commons.extensions.launchViewContactIntent
+import org.fossify.commons.extensions.toast
 import org.fossify.commons.helpers.CONTACT_ID
 import org.fossify.commons.helpers.FIRST_CONTACT_ID
 import org.fossify.commons.helpers.IS_PRIVATE
@@ -25,6 +27,7 @@ import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.models.contacts.Contact
 import org.fossify.phone.activities.SimpleActivity
+import org.fossify.phone.helpers.CONTACTS_APP_DIALER_TABS_EXTRA
 import org.fossify.phone.helpers.CONTACTS_APP_MAIN_ACTIVITY
 import org.fossify.phone.helpers.CONTACTS_APP_OPEN_TAB_EXTRA
 import org.fossify.phone.helpers.contactsAppPackages
@@ -85,16 +88,33 @@ fun SimpleActivity.handleGenericContactClick(contact: Contact) {
 
 fun Context.getInstalledContactsAppPackage() = contactsAppPackages.firstOrNull { isPackageInstalled(it) }
 
-// Opens our Contacts fork on the given tab (a commons TAB_* mask). Targets its MainActivity directly:
-// the launcher intent would not deliver the extra when the app is already running.
-fun Activity.launchContactsApp(tab: Int) {
+/**
+ * Opens our Contacts fork on the given tab (a commons TAB_* mask), and tells it to wear our bottom bar
+ * while it is there: `visibleTabs` is our own `config.showTabs`, so renrakusaki comes up with the dialer's
+ * tabs — Recents included — instead of its own, and its Recents tab hands straight back here. Without it
+ * the third tab would be renrakusaki's Groups, and getting back to the call log would mean leaving the app.
+ *
+ * Targets its MainActivity directly: the launcher intent would not deliver the extras when the app is
+ * already running. Started with a zero-length animation so the swap reads as a tab change rather than an
+ * app switch — `overridePendingTransition` is deprecated and ignored on API 34+, hence ActivityOptions.
+ */
+fun Activity.launchContactsApp(tab: Int, visibleTabs: Int) {
     val contactsAppPackage = getInstalledContactsAppPackage() ?: return
-    Intent().apply {
+    val intent = Intent().apply {
         setClassName(contactsAppPackage, CONTACTS_APP_MAIN_ACTIVITY)
         putExtra(CONTACTS_APP_OPEN_TAB_EXTRA, tab)
+        putExtra(CONTACTS_APP_DIALER_TABS_EXTRA, visibleTabs)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        launchActivityIntent(this)
     }
+
+    // the package was confirmed installed a line ago, so an unresolvable target means renrakusaki went
+    // away mid-tap — say what commons' own launcher would have said rather than crashing the dialer
+    if (intent.resolveActivity(packageManager) == null) {
+        toast(org.fossify.commons.R.string.no_app_found)
+        return
+    }
+
+    startActivity(intent, ActivityOptions.makeCustomAnimation(this, 0, 0).toBundle())
 }
 
 fun SimpleActivity.launchCreateNewContactIntent() {

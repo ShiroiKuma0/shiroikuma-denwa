@@ -52,6 +52,7 @@ import org.fossify.phone.fragments.ContactsFragment
 import org.fossify.phone.fragments.FavoritesFragment
 import org.fossify.phone.fragments.MyViewPagerFragment
 import org.fossify.phone.fragments.RecentsFragment
+import org.fossify.phone.helpers.CONTACTS_APP_OPEN_TAB_EXTRA
 import org.fossify.phone.helpers.DialpadPanel
 import org.fossify.phone.helpers.OPEN_DIAL_PAD_AT_LAUNCH
 import org.fossify.phone.helpers.PendingRestore
@@ -80,6 +81,9 @@ class MainActivity : SimpleActivity() {
         )
     }
     private var pendingRestoreDialog: PendingRestoreDialog? = null
+    // A tab renrakusaki's bottom bar asked us to open, as a page position; consumed by the first tab
+    // selection that runs after the launch, so a cold start lands on it instead of the default tab.
+    private var requestedTab: Int? = null
     private var storedShowTabs = 0
     private var storedFontSize = 0
     private var storedStartNameWithSurname = false
@@ -89,6 +93,7 @@ class MainActivity : SimpleActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         appLaunched(BuildConfig.APPLICATION_ID)
+        requestedTab = takeRequestedTab()
         setupOptionsMenu()
         refreshMenuItems()
         setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.mainTabsHolder))
@@ -187,6 +192,14 @@ class MainActivity : SimpleActivity() {
         storedShowTabs = config.showTabs
         storedStartNameWithSurname = config.startNameWithSurname
         config.lastUsedViewPagerPage = binding.viewPager.currentItem
+    }
+
+    // How we are handed back: renrakusaki's Recents tab relaunches this activity with CLEAR_TOP or
+    // SINGLE_TOP, so the running instance is brought forward with the wanted tab rather than recreated.
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        takeRequestedTab()?.let { binding.mainTabsHolder.getTabAt(it)?.select() }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
@@ -601,6 +614,11 @@ class MainActivity : SimpleActivity() {
                     wantedTab = binding.mainTabsHolder.tabCount - 1
                 }
 
+                // a tab asked for by renrakusaki's bar outranks both — that is 白い熊 tapping one of our
+                // own tabs, only from the other app
+                requestedTab?.let { wantedTab = it }
+                requestedTab = null
+
                 binding.mainTabsHolder.getTabAt(wantedTab)?.select()
                 refreshMenuItems()
             }, 100L)
@@ -644,7 +662,7 @@ class MainActivity : SimpleActivity() {
             },
             tabSelectedAction = {
                 if (shouldOpenContactsAppForTab(it.position)) {
-                    launchContactsApp(tabMaskAt(it.position))
+                    launchContactsApp(tabMaskAt(it.position), config.showTabs)
                     // bounce the selection back to the page we are actually staying on
                     Handler().post {
                         binding.mainTabsHolder.getTabAt(sanitizeWantedTab(binding.viewPager.currentItem))?.select()
@@ -697,7 +715,8 @@ class MainActivity : SimpleActivity() {
         binding.apply {
             if (viewPager.adapter == null) {
                 viewPager.adapter = ViewPagerAdapter(this@MainActivity)
-                viewPager.currentItem = if (openLastTab) sanitizeWantedTab(config.lastUsedViewPagerPage) else getDefaultTab()
+                viewPager.currentItem = requestedTab
+                    ?: if (openLastTab) sanitizeWantedTab(config.lastUsedViewPagerPage) else getDefaultTab()
                 viewPager.onGlobalLayout {
                     refreshFragments()
                 }
@@ -768,12 +787,30 @@ class MainActivity : SimpleActivity() {
     private fun shouldOpenContactsAppForTab(position: Int): Boolean {
         return config.openContactsAppForTab
                 && position < handOffTabCount()
-                && binding.mainTabsHolder.tabCount > handOffTabCount()
+                && visibleTabs().size > handOffTabCount()
                 && getInstalledContactsAppPackage() != null
     }
 
+    // The TAB_* masks of the tabs actually shown, in bar order — the source of both tab positions and count.
+    // Read from the config rather than the tab bar, so it also answers before the bar has been built.
+    private fun visibleTabs() = tabsList.filter { config.showTabs and it != 0 }
+
     // The TAB_* mask of the tab shown at the given position.
-    private fun tabMaskAt(position: Int) = tabsList.filter { config.showTabs and it != 0 }.getOrNull(position) ?: 0
+    private fun tabMaskAt(position: Int) = visibleTabs().getOrNull(position) ?: 0
+
+    // A tab renrakusaki asked us to open, as a page position: the mirror of the extra we send it, arriving
+    // when the Recents tab on the bar it wears for us is tapped. Consumed on read, and honored only for a
+    // tab that stays in the dialer — a request for Contacts or Favorites would bounce us straight back out.
+    private fun takeRequestedTab(): Int? {
+        val wantedMask = intent.getIntExtra(CONTACTS_APP_OPEN_TAB_EXTRA, 0)
+        if (wantedMask == 0) {
+            return null
+        }
+
+        intent.removeExtra(CONTACTS_APP_OPEN_TAB_EXTRA)
+        val position = visibleTabs().indexOf(wantedMask)
+        return position.takeIf { it >= 0 && !shouldOpenContactsAppForTab(it) }
+    }
 
     // Programmatic selections (default tab, last used page) must not land on a hand-off page,
     // otherwise the dialer would bounce into the Contacts app right at launch.
