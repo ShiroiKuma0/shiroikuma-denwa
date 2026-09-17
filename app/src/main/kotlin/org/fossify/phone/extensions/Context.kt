@@ -53,7 +53,8 @@ fun Context.getAvailableSIMCardLabels(): List<SIMAccount> {
                     handle = phoneAccount.accountHandle,
                     label = label,
                     phoneNumber = address.substringAfter("tel:"),
-                    color = phoneAccount.highlightColor
+                    // the fork palette, not the carrier's highlight: SIM 1 red, SIM 2 blue by default
+                    color = simColorOrSystem(index + 1, phoneAccount.highlightColor)
                 )
             )
         }
@@ -127,7 +128,7 @@ fun Context.buildSIMAccountLookupMap(): HashMap<String, SIMAccount> {
                     ),
                     label = subInfo.displayName?.toString() ?: "SIM ${subInfo.simSlotIndex + 1}",
                     phoneNumber = "",
-                    color = subInfo.iconTint
+                    color = simColorOrSystem(subInfo.simSlotIndex + 1, subInfo.iconTint)
                 )
                 map[subId] = fallbackAccount
                 if (!iccId.isNullOrEmpty()) {
@@ -140,19 +141,6 @@ fun Context.buildSIMAccountLookupMap(): HashMap<String, SIMAccount> {
             }
         }
     } catch (_: Exception) {
-    }
-
-    // Apply user-configured SIM color overrides
-    val sim1Color = config.sim1Color
-    val sim2Color = config.sim2Color
-    if (sim1Color != -1 || sim2Color != -1) {
-        for ((key, account) in map.entries.toList()) {
-            if (account.id == 1 && sim1Color != -1) {
-                map[key] = account.copy(color = sim1Color)
-            } else if (account.id == 2 && sim2Color != -1) {
-                map[key] = account.copy(color = sim2Color)
-            }
-        }
     }
 
     return map

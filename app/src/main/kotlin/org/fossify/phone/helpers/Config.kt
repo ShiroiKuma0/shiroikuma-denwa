@@ -143,13 +143,20 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(ALWAYS_SHOW_FULLSCREEN, false)
         set(alwaysShowFullscreen) = prefs.edit().putBoolean(ALWAYS_SHOW_FULLSCREEN, alwaysShowFullscreen).apply()
 
+    // SIM_COLOR_UNSET here means "no pick yet"; the fork default (SIM 1 red, SIM 2 blue) then applies,
+    // so read these through Context.simColor() rather than directly.
     var sim1Color: Int
-        get() = prefs.getInt(SIM_1_COLOR, -1)
+        get() = prefs.getInt(SIM_1_COLOR, SIM_COLOR_UNSET)
         set(sim1Color) = prefs.edit().putInt(SIM_1_COLOR, sim1Color).apply()
 
     var sim2Color: Int
-        get() = prefs.getInt(SIM_2_COLOR, -1)
+        get() = prefs.getInt(SIM_2_COLOR, SIM_COLOR_UNSET)
         set(sim2Color) = prefs.edit().putInt(SIM_2_COLOR, sim2Color).apply()
+
+    // The SIM number drawn on the badge is bold unless turned off in the Theme screen
+    var simTextBold: Boolean
+        get() = prefs.getBoolean(SIM_TEXT_BOLD, true)
+        set(simTextBold) = prefs.edit().putBoolean(SIM_TEXT_BOLD, simTextBold).apply()
 
     var swipeToCall: Boolean
         get() = prefs.getBoolean(SWIPE_TO_CALL, true)

@@ -7,7 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import org.fossify.commons.R
 import org.fossify.commons.activities.BaseSimpleActivity
 import org.fossify.commons.extensions.getColoredDrawableWithColor
-import org.fossify.commons.extensions.getContrastColor
+import org.fossify.phone.extensions.simTextColor
 
 /**
  * Swipe-only [ItemTouchHelper.SimpleCallback] used to place a call with a specific SIM:
@@ -30,10 +30,13 @@ class SwipeToCallCallback(
     var resetItemTouchHelper: (() -> Unit)? = null
 
     private val background = ColorDrawable()
+
+    // The 1/2 glyph is the same marking as the number on a SIM badge, so it wears the SIM text colour
+    private val simTextColor = activity.simTextColor()
     private val sim1Icon = activity.resources
-        .getColoredDrawableWithColor(R.drawable.ic_phone_one_vector, sim1Color.getContrastColor())
+        .getColoredDrawableWithColor(R.drawable.ic_phone_one_vector, simTextColor)
     private val sim2Icon = activity.resources
-        .getColoredDrawableWithColor(R.drawable.ic_phone_two_vector, sim2Color.getContrastColor())
+        .getColoredDrawableWithColor(R.drawable.ic_phone_two_vector, simTextColor)
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
         return if (canSwipe(viewHolder.bindingAdapterPosition)) {

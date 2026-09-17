@@ -22,6 +22,10 @@ const val HIDE_DIALPAD_NUMBERS = "hide_dialpad_numbers"
 const val ALWAYS_SHOW_FULLSCREEN = "always_show_fullscreen"
 const val SIM_1_COLOR = "sim_1_color"
 const val SIM_2_COLOR = "sim_2_color"
+// Stored SIM colors carry this when the user has not picked one, and the fork default applies
+const val SIM_COLOR_UNSET = -1
+// Named "theme_…" so the backup files it under Appearance like every other themed key
+const val SIM_TEXT_BOLD = "theme_sim_text_bold"
 const val SWIPE_TO_CALL = "swipe_to_call"
 const val USE_IMPERIAL_DATE = "use_imperial_date"
 const val CALL_TIME_FORMAT = "call_time_format"
@@ -38,6 +42,9 @@ const val MAX_FONT_SIZE_SP = 40
 const val THEME_UNSET = Int.MIN_VALUE // a slot with this stored value follows its inherited default
 const val PALETTE_BLACK = 0xFF000000.toInt()
 const val PALETTE_YELLOW = 0xFFFFFF00.toInt()
+// SIM badge defaults — pure like the yellow above, so the two SIMs are told apart at a glance
+const val PALETTE_RED = 0xFFFF0000.toInt()
+const val PALETTE_BLUE = 0xFF0000FF.toInt()
 // The material yellow PALETTE_YELLOW used to be; persisted colors carrying its RGB are rewritten
 // once at startup (see migrateToPureYellowIfNeeded)
 const val LEGACY_PALETTE_YELLOW = 0xFFFFEB3B.toInt()

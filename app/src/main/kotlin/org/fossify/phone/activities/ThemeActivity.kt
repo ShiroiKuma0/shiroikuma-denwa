@@ -55,15 +55,17 @@ import org.fossify.phone.extensions.callDurationFormatOf
 import org.fossify.phone.extensions.callTimeFormatOf
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.fontDisplayName
-import org.fossify.phone.extensions.getAvailableSIMCardLabels
 import org.fossify.phone.extensions.importFont
 import org.fossify.phone.extensions.resetThemeColor
 import org.fossify.phone.extensions.setThemeColor
 import org.fossify.phone.extensions.setThemeDimenDp
+import org.fossify.phone.extensions.setSimColor
+import org.fossify.phone.extensions.simColor
 import org.fossify.phone.extensions.showFontSample
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.themeDimenDp
 import org.fossify.phone.helpers.MAX_FONT_SIZE_SP
+import org.fossify.phone.helpers.SIM_COLOR_UNSET
 import org.fossify.phone.helpers.SettingsExport
 import java.io.OutputStream
 
@@ -236,6 +238,8 @@ class ThemeActivity : SimpleActivity() {
             addSection(R.string.theme_group_sim, primaryColor)
             addSimColorRow(simId = 1, indent = rowIndent)
             addSimColorRow(simId = 2, indent = rowIndent)
+            addColorRow(ThemeSlot.SIM_TEXT, rowIndent)
+            addSwitchRow(R.string.sim_text_bold, config.simTextBold, rowIndent) { config.simTextBold = it }
             addSwitchRow(R.string.swipe_to_call, config.swipeToCall, rowIndent) { config.swipeToCall = it }
         }
     }
@@ -660,6 +664,8 @@ class ThemeActivity : SimpleActivity() {
             )
         }
 
+    // The badge fill for one SIM. "Default" in the picker drops the override, so the row falls back to
+    // the fork colour for that SIM (1 red, 2 blue) rather than to whatever the system happens to use.
     private fun addSimColorRow(simId: Int, indent: Int) {
         val row = ItemThemeColorBinding.inflate(layoutInflater, binding.themeHolder, false)
         val labelRes = if (simId == 1) R.string.sim_1_color else R.string.sim_2_color
@@ -668,25 +674,12 @@ class ThemeActivity : SimpleActivity() {
         row.themeColorPreview.background.setTint(simColor(simId))
         row.root.setOnClickListener {
             AlphaColorPickerDialog(this, simColor(simId), addDefaultColorButton = true) { wasPositive, color ->
-                setSimColor(simId, if (wasPositive) color else -1)
+                setSimColor(simId, if (wasPositive) color else SIM_COLOR_UNSET)
                 row.themeColorPreview.background.setTint(simColor(simId))
             }
         }
         indentRow(row.root, indent)
         binding.themeHolder.addView(row.root)
-    }
-
-    private fun simColor(simId: Int): Int {
-        val stored = if (simId == 1) config.sim1Color else config.sim2Color
-        return if (stored != -1) stored else getSimDefaultColor(simId)
-    }
-
-    private fun setSimColor(simId: Int, color: Int) {
-        if (simId == 1) config.sim1Color = color else config.sim2Color = color
-    }
-
-    private fun getSimDefaultColor(simId: Int): Int {
-        return getAvailableSIMCardLabels().firstOrNull { it.id == simId }?.color ?: getProperPrimaryColor()
     }
 
     /**

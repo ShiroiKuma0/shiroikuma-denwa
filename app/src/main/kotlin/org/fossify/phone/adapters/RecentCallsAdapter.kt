@@ -25,7 +25,6 @@ import org.fossify.commons.dialogs.FeatureLockedDialog
 import org.fossify.commons.extensions.addBlockedNumber
 import org.fossify.commons.extensions.addLockedLabelIfNeeded
 import org.fossify.commons.extensions.adjustAlpha
-import org.fossify.commons.extensions.adjustForContrast
 import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.beGone
@@ -34,7 +33,6 @@ import org.fossify.commons.extensions.copyToClipboard
 import org.fossify.commons.extensions.formatDateOrTime
 import org.fossify.commons.extensions.formatPhoneNumber
 import org.fossify.commons.extensions.getColoredDrawableWithColor
-import org.fossify.commons.extensions.getContrastColor
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.extensions.highlightTextPart
@@ -64,6 +62,8 @@ import org.fossify.phone.extensions.formatCallTime
 import org.fossify.phone.extensions.getDayCode
 import org.fossify.phone.extensions.getSimSwipeColors
 import org.fossify.phone.extensions.setupSwipeToCall
+import org.fossify.phone.extensions.simTextColor
+import org.fossify.phone.extensions.simTextStyle
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
@@ -115,7 +115,8 @@ class RecentCallsAdapter(
     private var durationPadding = resources.getDimension(R.dimen.normal_margin).toInt()
     private var phoneNumberUtilInstance: PhoneNumberUtil = PhoneNumberUtil.getInstance()
     private var phoneNumberOfflineGeocoderInstance: PhoneNumberOfflineGeocoder = PhoneNumberOfflineGeocoder.getInstance()
-    private val cachedSimColors = HashMap<Pair<Int,Int>, Int>()
+    private var simTextColor = activity.simTextColor()
+    private var simTextStyle = activity.simTextStyle()
 
     init {
         initDrawables()
@@ -287,6 +288,8 @@ class RecentCallsAdapter(
         dateUnderlineThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DATE_UNDERLINE_THICKNESS)
         incomingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_INCOMING)
         outgoingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_OUTGOING)
+        simTextColor = activity.simTextColor()
+        simTextStyle = activity.simTextStyle()
 
         outgoingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_made_vector, outgoingIconColor)
         incomingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_received_vector, incomingIconColor)
@@ -660,9 +663,9 @@ class RecentCallsAdapter(
                 itemRecentsSimImage.beVisibleIf(areMultipleSIMsAvailable && call.simID != -1)
                 itemRecentsSimId.beVisibleIf(areMultipleSIMsAvailable && call.simID != -1)
                 if (areMultipleSIMsAvailable && call.simID != -1) {
-                    val simColor = getAdjustedSimColor(call.simColor)
-                    itemRecentsSimImage.applyColorFilter(simColor)
-                    itemRecentsSimId.setTextColor(simColor.getContrastColor())
+                    itemRecentsSimImage.applyColorFilter(call.simColor)
+                    itemRecentsSimId.setTextColor(simTextColor)
+                    itemRecentsSimId.setTypeface(null, simTextStyle)
                     itemRecentsSimId.text = call.simID.toString()
                 }
 
@@ -721,12 +724,6 @@ class RecentCallsAdapter(
             val params = view.layoutParams
             params.height = (thicknessDp * view.resources.displayMetrics.density).toInt()
             view.layoutParams = params
-        }
-    }
-
-    private fun getAdjustedSimColor(simColor: Int): Int {
-        return cachedSimColors.getOrPut(simColor to backgroundColor) {
-            simColor.adjustForContrast(backgroundColor)
         }
     }
 

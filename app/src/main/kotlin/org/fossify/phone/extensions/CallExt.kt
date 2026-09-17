@@ -10,10 +10,7 @@ import org.fossify.commons.R
 import org.fossify.commons.activities.BaseSimpleActivity
 import org.fossify.commons.dialogs.CallConfirmationDialog
 import org.fossify.commons.dialogs.PermissionRequiredDialog
-import org.fossify.commons.extensions.adjustForContrast
 import org.fossify.commons.extensions.canUseFullScreenIntent
-import org.fossify.commons.extensions.getProperBackgroundColor
-import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.initiateCall
 import org.fossify.commons.extensions.isDefaultDialer
 import org.fossify.commons.extensions.launchActivityIntent
@@ -123,16 +120,9 @@ fun BaseSimpleActivity.callContactWithSimWithConfirmationCheck(
     }
 }
 
-// SIM1/SIM2 colors used as the swipe-to-call background, mirroring how the recents list
-// colors the SIM badge: prefer the user override, fall back to the system highlight color.
-fun BaseSimpleActivity.getSimSwipeColors(): Pair<Int, Int> {
-    val sims = getAvailableSIMCardLabels().sortedBy { it.id }
-    val backgroundColor = getProperBackgroundColor()
-    val fallback = getProperPrimaryColor()
-    val sim1 = config.sim1Color.takeIf { it != -1 } ?: sims.getOrNull(0)?.color ?: fallback
-    val sim2 = config.sim2Color.takeIf { it != -1 } ?: sims.getOrNull(1)?.color ?: fallback
-    return sim1.adjustForContrast(backgroundColor) to sim2.adjustForContrast(backgroundColor)
-}
+// SIM1/SIM2 colors used as the swipe-to-call background — the same fills the recents list paints
+// the SIM badge with, so a swipe announces its SIM in the colour that SIM already wears.
+fun BaseSimpleActivity.getSimSwipeColors(): Pair<Int, Int> = simColor(1) to simColor(2)
 
 // used at devices with multiple SIM cards
 @SuppressLint("MissingPermission")
