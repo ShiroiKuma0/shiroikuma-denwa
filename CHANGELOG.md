@@ -3,6 +3,33 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+074 — 2026-09-17
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **The SIM badges have their own palette, and all of it is settable.** A SIM badge — the little card
+  glyph with the SIM's number on it in the call log and on the call screen, and the 1/2 phone glyph
+  revealed under a swipe — now defaults to **SIM 1 red, SIM 2 blue**, with the number drawn on it in
+  **pure yellow** and **bold**. Four new rows under **SIM cards** in the 白い熊 電話 UI page change any
+  of it: the two badge fills, the number's colour, and a switch for the bold. All four travel in the
+  backup with the rest of the appearance settings.
+
+### Fixed
+- **A SIM colour you set was ignored on the call screen.** The override reached the call log but not
+  the screen you see while dialling, because that one reads the SIM accounts directly and never saw
+  it — so a SIM set to red still dialled out in the carrier's blue. The palette is now applied where
+  the SIM accounts are built, so the call log, the call screen and the swipe backgrounds can no
+  longer disagree.
+- **A picked colour is no longer quietly repainted.** Every SIM colour used to be pushed toward the
+  background for contrast and then dimmed by a fixed transparency before it reached the screen, so
+  what the picker showed and what the badge wore were never the same colour. Both are gone: the
+  badge wears exactly what was chosen.
+- **A new build no longer says "already installed".** The `versionCode` was upstream's number
+  verbatim, identical for every build of a given upstream release, so Android — and any installer
+  that compares codes — saw a fresh build as the one already on the phone and offered no update.
+  It now carries the fork's build counter, so each build genuinely outranks the last while upstream's
+  number still leads the whole line.
+
 ## 白い熊 電話 1.11.1+072 — 2026-09-14
 Built on Fossify Phone 1.11.1.
 
