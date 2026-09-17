@@ -25,11 +25,17 @@ fun hasSigningVars(): Boolean {
 // The build counter is always written zero-padded to three digits (+001, +050). File lists sort
 // lexicographically, and an unpadded counter sorts wrongly — +10 lands before +3, burying the newest
 // build in the middle of ~/tmp, of the phone's file manager and of the release list. Padding is text
-// only: gradle.properties keeps BUILD_NUMBER a plain integer, and so does versionCode.
+// only: gradle.properties keeps BUILD_NUMBER a plain integer.
 // Everything named after a build — versionName, archivesName, the buildFoss APK, and the release tag
 // derived from it — comes from this one string, so they can never disagree.
 val forkBuildNumber = project.property("BUILD_NUMBER").toString().toInt()
 val forkVersionName = "${project.property("VERSION_NAME")}+${"%03d".format(forkBuildNumber)}"
+
+// The counter rides in the versionCode too: upstream's code, room for 9999 fork builds, then ours.
+// Without it every build of a given upstream line carries the same code, and Android — plus any
+// installer that compares codes — calls a new build "already installed". Upstream's own code still
+// leads, so when it climbs, the whole new line outranks every build of the previous one.
+val forkVersionCode = project.property("VERSION_CODE").toString().toInt() * 10000 + forkBuildNumber
 
 base {
     archivesName = "shiroikuma-denwa_${forkVersionName}_arm64-v8a"
@@ -43,7 +49,7 @@ android {
         minSdk = project.libs.versions.app.build.minimumSDK.get().toInt()
         targetSdk = project.libs.versions.app.build.targetSDK.get().toInt()
         versionName = forkVersionName
-        versionCode = project.property("VERSION_CODE").toString().toInt()
+        versionCode = forkVersionCode
     }
 
     signingConfigs {

@@ -91,7 +91,14 @@ Heavy reliance on `org.fossify:commons` (version in `gradle/libs.versions.toml`)
 
 ## Versioning & Release
 
-Versions live in `gradle.properties` (`VERSION_NAME`, `VERSION_CODE`). Releases are triggered by CI when `.fossify/release-marker.txt` is modified. The `CHANGELOG.md` follows Keep a Changelog format and drives the prepare-release workflow.
+Versions live in `gradle.properties` (`VERSION_NAME`, `VERSION_CODE`), which track upstream, plus
+`BUILD_NUMBER`, our own per-build counter (bumped automatically by the `buildFoss` task). The two are
+combined in `app/build.gradle.kts`: `versionName` = `"<VERSION_NAME>+<BUILD_NUMBER padded to 3>"` and
+`versionCode` = `VERSION_CODE * 10000 + BUILD_NUMBER`. **Both must carry the counter** — with a bare
+`VERSION_CODE` every build of one upstream line shares a code, and Android and any code-comparing
+installer report a fresh build as "already installed" (that happened through build +073).
+
+Releases are triggered by CI when `.fossify/release-marker.txt` is modified. The `CHANGELOG.md` follows Keep a Changelog format and drives the prepare-release workflow.
 
 ## Patched Fossify Commons (anti-tamper removed + fork-package fixes)
 
