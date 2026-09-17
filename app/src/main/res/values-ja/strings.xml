@@ -155,6 +155,8 @@
     <string name="theme_settings_button">設定の文字</string>
     <string name="sim_1_color">SIM 1 の色</string>
     <string name="sim_2_color">SIM 2 の色</string>
+    <string name="sim_text_color">SIM 番号の文字色</string>
+    <string name="sim_text_bold">SIM 番号を太字にする</string>
     <string name="swipe_to_call">連絡先を左にスワイプで SIM 1、右にスワイプで SIM 2 から発信</string>
     <string name="open_dialpad_by_default">アプリを開いたときにデフォルトでダイヤルパッドを開く</string>
     <string name="disable_proximity_sensor">通話中に近接センサーを無効にする</string>

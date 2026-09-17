@@ -1,6 +1,7 @@
 package org.fossify.phone.extensions
 
 import android.content.Context
+import android.graphics.Typeface
 import androidx.annotation.StringRes
 import org.fossify.commons.extensions.adjustAlpha
 import org.fossify.commons.extensions.getContrastColor
@@ -10,7 +11,10 @@ import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.phone.R
 import org.fossify.phone.helpers.LEGACY_PALETTE_YELLOW
 import org.fossify.phone.helpers.PALETTE_BLACK
+import org.fossify.phone.helpers.PALETTE_BLUE
+import org.fossify.phone.helpers.PALETTE_RED
 import org.fossify.phone.helpers.PALETTE_YELLOW
+import org.fossify.phone.helpers.SIM_COLOR_UNSET
 import org.fossify.phone.helpers.THEME_UNSET
 
 // Granular, per-element theming for 白い熊 電話.
@@ -31,6 +35,7 @@ enum class ThemeGroup(@StringRes val labelRes: Int) {
     IN_CALL(R.string.theme_group_in_call),
     CONTACTS(R.string.theme_group_contacts),
     FAVORITES(R.string.theme_group_favorites),
+    SIM(R.string.theme_group_sim),
 }
 
 enum class ThemeSlot(
@@ -95,6 +100,10 @@ enum class ThemeSlot(
     // Favorites
     FAVORITE_NAME("theme_favorite_name", ThemeGroup.FAVORITES, R.string.theme_favorite_name, hasFont = true),
     FAVORITE_FASTSCROLLER("theme_favorite_fastscroller", ThemeGroup.FAVORITES, R.string.theme_favorite_fastscroller),
+
+    // SIM cards — the number drawn on the badge (the badge fill itself is SIM_1_COLOR / SIM_2_COLOR,
+    // which map onto the system's SIM accounts and so live outside the slot machinery)
+    SIM_TEXT("theme_sim_text", ThemeGroup.SIM, R.string.sim_text_color),
 }
 
 // A configurable line thickness (in dp), grouped alongside the color slots in the Theme screen.
@@ -175,6 +184,10 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CONTACT_FASTSCROLLER -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.FAVORITE_NAME -> themeColor(ThemeSlot.TEXT)
     ThemeSlot.FAVORITE_FASTSCROLLER -> themeColor(ThemeSlot.PRIMARY)
+
+    // The SIM number sits on the badge, not on the app background, so it keeps its own yellow rather
+    // than inheriting the foundation text colour
+    ThemeSlot.SIM_TEXT -> PALETTE_YELLOW
 }
 
 /** Set an explicit override for a slot. Foundation slots write through to the stock commons colors. */
@@ -207,6 +220,43 @@ fun Context.resetThemeColor(slot: ThemeSlot) {
         else -> config.clearThemeOverride(slot.key)
     }
 }
+
+// -------------------------------------------------------------------------------------------------
+// SIM badge palette
+//
+// A SIM badge is the little card glyph with the SIM's number drawn on it — in the call log, on the
+// call screen, and (as the 1/2 phone glyph) on a swipe-to-call row. Its fill is per-SIM and its
+// number is one colour for both, all three settable under "SIM cards" in the Theme screen.
+// Nothing is contrast-adjusted on the way out: every one of these colours is an explicit choice, so
+// the badge wears exactly what the picker showed.
+// -------------------------------------------------------------------------------------------------
+
+/** The badge fill for SIM [simId] — the user's own colour if they picked one, else the fork default. */
+fun Context.simColor(simId: Int): Int {
+    val stored = if (simId == 1) config.sim1Color else config.sim2Color
+    return if (stored != SIM_COLOR_UNSET) stored else simDefaultColor(simId)
+}
+
+/** Store (or, with [SIM_COLOR_UNSET], forget) an explicit fill for SIM [simId]. */
+fun Context.setSimColor(simId: Int, color: Int) {
+    if (simId == 1) config.sim1Color = color else config.sim2Color = color
+}
+
+/**
+ * The fill a SIM account should be built with: ours for SIM 1 and SIM 2, the system's highlight colour
+ * for any beyond them (rare, and with nowhere in the UI to set one).
+ */
+fun Context.simColorOrSystem(simId: Int, systemColor: Int): Int =
+    if (simId == 1 || simId == 2) simColor(simId) else systemColor
+
+/** The fork's own SIM fills — what the picker's "Default" button restores. */
+fun simDefaultColor(simId: Int): Int = if (simId == 1) PALETTE_RED else PALETTE_BLUE
+
+/** The colour of the number on a SIM badge, shared by both SIMs. */
+fun Context.simTextColor(): Int = themeColor(ThemeSlot.SIM_TEXT)
+
+/** That number's [Typeface] style — bold unless turned off in the Theme screen. */
+fun Context.simTextStyle(): Int = if (config.simTextBold) Typeface.BOLD else Typeface.NORMAL
 
 /** One-time seed of the default black/yellow look across the whole app (via the stock colors). */
 fun Context.seedBlackYellowThemeIfNeeded() {

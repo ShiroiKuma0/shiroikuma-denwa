@@ -277,7 +277,8 @@ class CallActivity : SimpleActivity() {
             }
         }
 
-        callSimId.setTextColor(getProperTextColor().getContrastColor())
+        callSimId.setTextColor(simTextColor())
+        callSimId.setTypeface(null, simTextStyle())
         dialpadInput.disableKeyboard()
 
         dialpadWrapper.onGlobalLayout {
@@ -680,9 +681,9 @@ class CallActivity : SimpleActivity() {
                             callSimId.text = sim.id.toString()
                             callSimId.beVisible()
                             callSimImage.beVisible()
-                            val simColor = sim.color.adjustForContrast(getProperBackgroundColor())
-                            callSimId.setTextColor(simColor.getContrastColor())
-                            callSimImage.applyColorFilter(simColor)
+                            callSimImage.applyColorFilter(sim.color)
+                            callSimId.setTextColor(simTextColor())
+                            callSimId.setTypeface(null, simTextStyle())
                         }
 
                         val acceptDrawableId = when (index) {

@@ -12,6 +12,14 @@ The 白い熊 電話 UI (granular theming in `ThemeActivity` / `extensions/Theme
 to black `#000000` + **pure yellow `#FFFF00`** (`PALETTE_BLACK` / `PALETTE_YELLOW` in
 `helpers/Constants.kt`). Never use material yellow `#FFEB3B` for fork UI defaults.
 
+The SIM badges (call log, call screen, and the 1/2 glyph on a swipe-to-call row) have their own
+defaults in the same file: **SIM 1 pure red `#FF0000`, SIM 2 pure blue `#0000FF`** (`PALETTE_RED` /
+`PALETTE_BLUE`), with the number drawn on them in pure yellow and bold (`ThemeSlot.SIM_TEXT` +
+`config.simTextBold`). All four are settable under "SIM cards" in the Theme screen. The carrier's own
+highlight colour is never used for SIM 1 or 2, and none of these colours is contrast-adjusted on the
+way to the screen — an explicitly picked colour reaches the badge unchanged, which is also why the
+badge views carry no dimming `android:alpha`.
+
 ## Build Commands
 
 ```bash
