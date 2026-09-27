@@ -6,11 +6,11 @@
 
 **A privacy‑friendly dialer, supercharged for dual‑SIM power users.**
 
-A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, a one‑zip backup that carries your call history and blocked numbers and cannot lose them on the way back, and a deep hand‑off to our Contacts fork.
+A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a call screen on the phone for the calls the car takes over, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, a one‑zip backup that carries your call history and blocked numbers and cannot lose them on the way back, and a deep hand‑off to our Contacts fork.
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+074`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+080`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -23,6 +23,16 @@ Give each contact a default SIM and outgoing calls go out on the right one autom
 Android Auto will not dial at all until a **system‑wide** default calling SIM is set: its only way to resolve the SIM would be a prompt on the handset, which it refuses to raise while driving, so the tap dies silently before it ever reaches Telecom. And once that default *is* set, every call it places arrives with that one SIM already attached, decided long before any dialer gets a say.
 
 So this fork takes the `CALL_REDIRECTION` role and swaps the SIM back to the contact's own in the moment before the call goes out — the car obeys the same per‑contact choice the phone does, with no prompt and no stalling. On the phone itself the SIM picker still appears for contacts you haven't given a SIM to, rather than quietly deferring to that new device‑wide default. (You set the per‑contact SIM in our Contacts fork — long‑press a contact → *Set default SIM*.)
+
+---
+
+## 🚗 A call screen on the phone, even when the car owns the call
+
+Plug into Android Auto and Telecom hands the in-call UI to the car. Useful on the head unit — but it leaves the handset with **nothing**: dial from this app and the app disappears, no call screen, no notification, nothing to hang up with short of hunting for the phone icon on the car's screen and tapping through to it.
+
+So this fork puts its own call screen on the phone for the whole of such a call: the contact's photo full width, their name, the number properly formatted, the SIM badge, the running duration, and a hang-up target big enough to hit without looking away from the road. An ongoing notification carries the same hang-up for when something else is in front.
+
+The trick is *when* it decides. An app that waits to find out the car took the call is, by then, a background app — and a background app may start neither a service nor a screen. So the decision is made at the instant of dialling, while the tap is still being handled: the app asks Android Auto whether it is projecting, and commits there and then. If Telecom turns out to hand the call over after all, the screen withdraws by itself.
 
 ---
 
