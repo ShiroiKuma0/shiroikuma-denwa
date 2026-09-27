@@ -3,6 +3,39 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+080 — 2026-09-27
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **The phone shows the call when the car has taken it.** While Android Auto projects, Telecom hands
+  the in-call UI to Android Auto's own service and unbinds this app's, so a call dialled from the
+  phone used to leave the phone showing *nothing at all* — the app vanished on dialling, no call
+  screen, no notification, and the only way to hang up was to find the right icon on the car's
+  screen and tap through to it. There is now a proper call screen on the handset for the whole of
+  such a call: the contact photo full width, the name, the formatted number, the SIM badge, a
+  running duration, and a hang-up button big enough to hit without looking. An ongoing notification
+  carries the same hang-up, so it is reachable even from behind another app.
+- **Add to Favorites, straight from the call log.** The row menu can now star the person who called,
+  or unstar them, without a trip through the Contacts app — the same `starred` flag the Favourites
+  tab reads, so both apps agree immediately.
+- **A contact with several numbers is asked which one a tap should call.** Starring such a contact
+  now prompts once for the number to dial, and stores the answer as the platform's own *default
+  number*. Every app honours that, this one and 白い熊 連絡先 included, so a tap on a favourite in the
+  car reaches the right line instead of guessing.
+
+### Fixed
+- **The call log put calls in the wrong country.** Numbers stored without a country code were read
+  against the phone's *locale*, which here is Japanese — so a Czech mobile, a perfectly good
+  Japanese landline when read that way, was labelled "Kushimoto, Wakayama" on a call placed in
+  Prague. The region now comes from the SIM, with the registered network behind it and the locale
+  only as a last resort; the locale still decides the language the place name is written in.
+
+### Changed
+- **The SIM picker stays down while the car is projecting.** A contact with no SIM of its own used to
+  raise the picker on the handset — a dialog to read, mid-drive, which is exactly what this app's
+  car handling exists to avoid. While Android Auto is connected the system default is taken
+  silently instead; on the phone the picker behaves exactly as before.
+
 ## 白い熊 電話 1.11.1+074 — 2026-09-17
 Built on Fossify Phone 1.11.1.
 
