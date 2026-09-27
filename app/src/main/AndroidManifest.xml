@@ -18,6 +18,9 @@
          while, and a backgrounded app writing into a caller's descriptor is frozen mid-stream on
          this phone, which would hand back a truncated archive under a success reply. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <!-- The car-call screen runs a phoneCall foreground service for the length of a call Android
+         Auto holds the in-call UI for; see helpers/CarCallMonitor. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -48,6 +51,11 @@
         <package android:name="org.fossify.contacts" />
         <package android:name="shiroikuma.renrakusaki.debug" />
         <package android:name="shiroikuma.renrakusaki" />
+
+        <!-- Android Auto, for its CarConnection provider: without this the projection probe in
+             extensions/CarProjection.kt cannot see the provider and silently reads "not in a car",
+             which would leave the car call screen never being shown. -->
+        <package android:name="com.google.android.projection.gearhead" />
 
         <!-- The two 保存復元 automation callers. Without these, setPackage() on our reply broadcast
              fails SILENTLY on Android 11+ — the export runs, writes correctly and is never heard of —
@@ -153,6 +161,18 @@
             android:screenOrientation="portrait"
             android:showOnLockScreen="true" />
 
+        <!-- Our call screen for a call Telecom handed to somebody else's in-call UI (Android Auto
+             while it projects). Excluded from recents like CallActivity, shown over the lock screen,
+             and singleTask so the notification and the service always reach the same instance. -->
+        <activity
+            android:name=".activities.CarCallActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:label="@string/ongoing_call"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:showOnLockScreen="true" />
+
         <activity
             android:name=".activities.DialpadActivity"
             android:exported="true"
@@ -237,10 +257,27 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".services.CarCallService"
+            android:exported="false"
+            android:foregroundServiceType="phoneCall" />
+
         <receiver
             android:name=".receivers.CallActionReceiver"
             android:enabled="true"
             android:exported="false" />
+
+        <!-- Incoming calls while Android Auto owns the in-call UI: nothing else tells us they exist.
+             A protected broadcast, and one of the implicit-broadcast exemptions, so it still reaches
+             a manifest receiver on O+. See receivers/PhoneStateReceiver. -->
+        <receiver
+            android:name=".receivers.PhoneStateReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE" />
+            </intent-filter>
+        </receiver>
 
         <receiver
             android:name=".receivers.MissedCallReceiver"

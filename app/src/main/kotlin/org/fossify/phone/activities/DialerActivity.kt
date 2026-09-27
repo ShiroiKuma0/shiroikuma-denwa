@@ -11,6 +11,8 @@ import org.fossify.commons.extensions.*
 import org.fossify.commons.helpers.REQUEST_CODE_SET_DEFAULT_DIALER
 import org.fossify.phone.R
 import org.fossify.phone.extensions.getHandleToUse
+import org.fossify.phone.extensions.getSimSlotForHandle
+import org.fossify.phone.helpers.CarCallMonitor
 
 class DialerActivity : SimpleActivity() {
     private var callNumber: Uri? = null
@@ -50,6 +52,18 @@ class DialerActivity : SimpleActivity() {
                         putBoolean(TelecomManager.EXTRA_START_CALL_WITH_SPEAKERPHONE, false)
                         telecomManager.placeCall(callNumber, this)
                     }
+
+                    // The last moment this app is foreground on an outgoing call, and therefore the
+                    // only moment it may put a screen up for one Android Auto is about to take. See
+                    // helpers/CarCallMonitor.
+                    CarCallMonitor.armOutgoing(
+                        context = this@DialerActivity,
+                        // schemeSpecificPart, NOT toString(): Uri.toString() returns the encoded
+                        // form, so a leading "+" arrives as "%2B" — which the screen then shows and
+                        // the contact lookup then fails to match.
+                        number = callNumber?.schemeSpecificPart.orEmpty(),
+                        simSlot = getSimSlotForHandle(handle)
+                    )
                 }
                 finish()
             }

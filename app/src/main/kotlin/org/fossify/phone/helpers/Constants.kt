@@ -20,6 +20,9 @@ const val DIALPAD_VIBRATION = "dialpad_vibration"
 const val DIALPAD_BEEPS = "dialpad_beeps"
 const val HIDE_DIALPAD_NUMBERS = "hide_dialpad_numbers"
 const val ALWAYS_SHOW_FULLSCREEN = "always_show_fullscreen"
+// Our own call screen for a call Telecom gave to somebody else's in-call UI (Android Auto while it
+// projects). See helpers/CarCallMonitor.
+const val CAR_CALL_SCREEN = "car_call_screen"
 const val SIM_1_COLOR = "sim_1_color"
 const val SIM_2_COLOR = "sim_2_color"
 // Stored SIM colors carry this when the user has not picked one, and the fork default applies
@@ -71,6 +74,9 @@ val tabsList = arrayListOf(TAB_CONTACTS, TAB_FAVORITES, TAB_CALL_HISTORY)
 private const val PATH = "org.fossify.phone.action."
 const val ACCEPT_CALL = PATH + "ACCEPT_CALL"
 const val DECLINE_CALL = PATH + "DECLINE_CALL"
+// The same two, for a call we hold no Call object for — they go through TelecomManager instead
+const val END_CAR_CALL = PATH + "END_CAR_CALL"
+const val ACCEPT_CAR_CALL = PATH + "ACCEPT_CAR_CALL"
 
 // ---- 保存復元: the sister-app state-export automation contract (see receivers/StateExportReceiver) ----
 

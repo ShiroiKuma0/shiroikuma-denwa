@@ -281,6 +281,17 @@
     <string name="faq_2_text">Due to system restrictions, emergency calls can only be made through your system\'s default dialer or phone app. To ensure emergency calls work properly, you need to keep the system app installed and enabled.</string>
     <string name="faq_3_title">Why are some of my contacts missing from the app?</string>
     <string name="faq_3_text">Fossify Phone only displays contacts that have a phone number associated with them. Contacts without a phone number are not shown in the app.</string>
+    <string name="which_number_to_call">Which number should a tap call?</string>
+    <string name="added_to_favorites">Added to Favorites</string>
+    <string name="removed_from_favorites">Removed from Favorites</string>
+
+    <!-- Car-call screen: our own call UI for a call Android Auto holds the in-call UI for -->
+    <string name="car_call_screen">Show the call screen when the car takes over</string>
+    <string name="car_call_notification_channel">Call status (car)</string>
+    <string name="car_call_answer">Answer</string>
+    <string name="could_not_end_call">The system would not let this app end the call</string>
+    <string name="could_not_answer_call">The system would not let this app answer the call</string>
+
     <!--
         Haven't found some strings? There's more at
         https://github.com/FossifyOrg/Commons/tree/master/commons/src/main/res
