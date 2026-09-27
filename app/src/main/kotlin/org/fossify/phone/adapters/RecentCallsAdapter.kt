@@ -20,8 +20,10 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 import com.google.i18n.phonenumbers.geocoding.PhoneNumberOfflineGeocoder
 import org.fossify.commons.adapters.MyRecyclerViewListAdapter
+import org.fossify.commons.models.RadioItem
 import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.dialogs.FeatureLockedDialog
+import org.fossify.commons.dialogs.RadioGroupDialog
 import org.fossify.commons.extensions.addBlockedNumber
 import org.fossify.commons.extensions.addLockedLabelIfNeeded
 import org.fossify.commons.extensions.adjustAlpha
@@ -34,11 +36,15 @@ import org.fossify.commons.extensions.formatDateOrTime
 import org.fossify.commons.extensions.formatPhoneNumber
 import org.fossify.commons.extensions.getColoredDrawableWithColor
 import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.commons.extensions.getPhoneNumberTypeText
 import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.extensions.highlightTextPart
 import org.fossify.commons.extensions.isOrWasThankYouInstalled
 import org.fossify.commons.extensions.launchSendSMSIntent
 import org.fossify.commons.extensions.setupViewBackground
+import org.fossify.commons.helpers.ContactsHelper
+import org.fossify.commons.extensions.toast
+import org.fossify.commons.extensions.showErrorToast
 import org.fossify.commons.helpers.PERMISSION_WRITE_CALL_LOG
 import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.helpers.ensureBackgroundThread
@@ -59,6 +65,8 @@ import org.fossify.phone.extensions.colorItemTitles
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.formatCallDuration
 import org.fossify.phone.extensions.formatCallTime
+import org.fossify.phone.extensions.getCallLogRegion
+import org.fossify.phone.extensions.setDefaultPhoneNumber
 import org.fossify.phone.extensions.getDayCode
 import org.fossify.phone.extensions.getSimSwipeColors
 import org.fossify.phone.extensions.setupSwipeToCall
@@ -115,6 +123,9 @@ class RecentCallsAdapter(
     private var durationPadding = resources.getDimension(R.dimen.normal_margin).toInt()
     private var phoneNumberUtilInstance: PhoneNumberUtil = PhoneNumberUtil.getInstance()
     private var phoneNumberOfflineGeocoderInstance: PhoneNumberOfflineGeocoder = PhoneNumberOfflineGeocoder.getInstance()
+    // Read once: the SIM's country does not change while a list is on screen, and it is what a
+    // number stored without a country code has to be parsed against. See Context.getCallLogRegion.
+    private val callLogRegion = activity.getCallLogRegion()
     private var simTextColor = activity.simTextColor()
     private var simTextStyle = activity.simTextStyle()
 
@@ -407,6 +418,61 @@ class RecentCallsAdapter(
         }
     }
 
+    /**
+     * Stars or unstars the contact behind a call log row. Favorites live in the contacts provider as
+     * `starred`, which is what the Favorites tab reads, so this is the same flag the Contacts app
+     * sets — nothing dialer-local.
+     */
+    private fun toggleFavorite(contact: Contact?, isFavorite: Boolean) {
+        if (contact == null) {
+            return
+        }
+
+        val numbers = contact.phoneNumbers
+        if (isFavorite || numbers.size < 2 || numbers.any { it.isPrimary }) {
+            setFavorite(contact, isFavorite)
+            return
+        }
+
+        // More than one number and none of them marked as the default to call. The Favorites grid
+        // dials on a tap without asking which — a question nobody can answer while driving — so it
+        // gets asked here, once, at the moment the contact becomes a favourite.
+        val items = numbers.mapIndexed { index, number ->
+            val label = activity.getPhoneNumberTypeText(number.type, number.label)
+            RadioItem(index, if (label.isEmpty()) number.value else "${number.value}  ($label)")
+        }
+
+        RadioGroupDialog(activity, ArrayList(items), titleId = R.string.which_number_to_call) { chosen ->
+            val number = numbers[chosen as Int]
+            ensureBackgroundThread {
+                activity.setDefaultPhoneNumber(contact, number.value)
+                number.isPrimary = true
+            }
+
+            setFavorite(contact, isFavorite = false)
+        }
+    }
+
+    private fun setFavorite(contact: Contact, isFavorite: Boolean) {
+        ensureBackgroundThread {
+            val contacts = arrayListOf(contact)
+            try {
+                ContactsHelper(activity).apply {
+                    if (isFavorite) removeFavorites(contacts) else addFavorites(contacts)
+                }
+            } catch (e: SecurityException) {
+                activity.runOnUiThread { activity.showErrorToast(e) }
+                return@ensureBackgroundThread
+            }
+
+            contact.starred = if (isFavorite) 0 else 1
+            activity.runOnUiThread {
+                activity.toast(if (isFavorite) R.string.removed_from_favorites else R.string.added_to_favorites)
+                (activity as? MainActivity)?.refreshFragments()
+            }
+        }
+    }
+
     private fun findContactByCall(recentCall: RecentCall): Contact? {
         return (activity as MainActivity).cachedContacts.find { it.name == recentCall.name && it.doesHavePhoneNumber(recentCall.phoneNumber) }
     }
@@ -445,6 +511,7 @@ class RecentCallsAdapter(
         // the dark (black) one; the fork has no light look to switch to.
         val contextTheme = ContextThemeWrapper(activity, R.style.PopupMenuTheme)
         val contact = findContactByCall(call)
+        val isFavorite = contact?.starred == 1
         val selectedNumber = "tel:${call.phoneNumber}"
 
         PopupMenu(contextTheme, view, Gravity.END).apply {
@@ -456,6 +523,15 @@ class RecentCallsAdapter(
                 findItem(R.id.cab_call_sim_2).isVisible = areMultipleSIMsAvailable && !call.isUnknownNumber
                 findItem(R.id.cab_send_sms).isVisible = !call.isUnknownNumber
                 findItem(R.id.cab_view_details).isVisible = contact != null && !call.isUnknownNumber
+                // only a saved contact can be starred; a bare number has nothing to star
+                findItem(R.id.cab_toggle_favorite).isVisible = contact != null && !call.isUnknownNumber
+                findItem(R.id.cab_toggle_favorite).title = activity.getString(
+                    if (isFavorite) {
+                        org.fossify.commons.R.string.remove_from_favorites
+                    } else {
+                        org.fossify.commons.R.string.add_to_favorites
+                    }
+                )
                 findItem(R.id.cab_add_number).isVisible = !call.isUnknownNumber
                 findItem(R.id.cab_copy_number).isVisible = !call.isUnknownNumber
                 findItem(R.id.cab_show_call_details).isVisible = !call.isUnknownNumber
@@ -491,6 +567,8 @@ class RecentCallsAdapter(
                             sendSMS()
                         }
                     }
+
+                    R.id.cab_toggle_favorite -> toggleFavorite(contact, isFavorite)
 
                     R.id.cab_view_details -> {
                         executeItemMenuOperation(callId) {
@@ -633,8 +711,10 @@ class RecentCallsAdapter(
                 }
 
                 itemRecentsLocation.apply {
+                    // the locale still picks the LANGUAGE the place name is written in; the region a
+                    // bare national number is read against comes from the SIM, never from the locale
                     val locale = Locale.getDefault()
-                    val defaultCountryCode = locale.country
+                    val defaultCountryCode = callLogRegion
                     val phoneNumber = try {
                         phoneNumberUtilInstance
                             .parse(call.phoneNumber, defaultCountryCode)

@@ -134,6 +134,7 @@ class SettingsActivity : SimpleActivity() {
         setupDisableProximitySensor()
         setupDisableSwipeToAnswer()
         setupAlwaysShowFullscreen()
+        setupCarCallScreen()
         setupCallsExport()
         setupCallsImport()
         updateTextColors(binding.settingsHolder)
@@ -484,6 +485,16 @@ class SettingsActivity : SimpleActivity() {
             settingsAlwaysShowFullscreenHolder.setOnClickListener {
                 settingsAlwaysShowFullscreen.toggle()
                 config.alwaysShowFullscreen = settingsAlwaysShowFullscreen.isChecked
+            }
+        }
+    }
+
+    private fun setupCarCallScreen() {
+        binding.apply {
+            settingsCarCallScreen.isChecked = config.carCallScreen
+            settingsCarCallScreenHolder.setOnClickListener {
+                settingsCarCallScreen.toggle()
+                config.carCallScreen = settingsCarCallScreen.isChecked
             }
         }
     }

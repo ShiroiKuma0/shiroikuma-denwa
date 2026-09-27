@@ -152,6 +152,11 @@ fun SimpleActivity.getHandleToUse(
                     val handle = getRenrakusakiSimHandle(phoneNumber) ?: config.getCustomSIM(phoneNumber)
                     when {
                         handle != null -> callback(handle)
+                        // A picker is a dialog to read, on the handset, while driving — precisely
+                        // what the car flow exists to avoid, and a tap on a favourite would stall on
+                        // it. While Android Auto projects, take the system default instead, exactly
+                        // as CallService already does for the calls the car places itself.
+                        isCarProjectionActive() -> callback(defaultHandle)
                         areMultipleSIMsAvailable() -> showSelectSimDialog(phoneNumber, callback)
                         else -> callback(defaultHandle)
                     }

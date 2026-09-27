@@ -27,6 +27,7 @@ import org.fossify.phone.extensions.keyguardManager
 import org.fossify.phone.extensions.powerManager
 import org.fossify.phone.helpers.CallManager
 import org.fossify.phone.helpers.CallNotificationManager
+import org.fossify.phone.helpers.CarCallMonitor
 import org.fossify.phone.helpers.NoCall
 import org.fossify.phone.models.Events
 import org.greenrobot.eventbus.EventBus
@@ -124,6 +125,9 @@ class CallService : InCallService() {
 
     override fun onCallAdded(call: Call) {
         super.onCallAdded(call)
+        // We are the in-call UI for this call, so the car-call fallback must not also fire — and any
+        // screen it already put up (projection that ended mid-call) has to go.
+        CarCallMonitor.standDown(this)
         CallManager.onCallAdded(call)
         CallManager.inCallService = this
         call.registerCallback(callListener)

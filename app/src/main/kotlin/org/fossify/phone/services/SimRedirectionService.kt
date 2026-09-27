@@ -10,6 +10,8 @@ import androidx.annotation.RequiresApi
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getRenrakusakiSimHandle
+import org.fossify.phone.extensions.getSimSlotForHandle
+import org.fossify.phone.helpers.CarCallMonitor
 
 /**
  * Puts the per-contact SIM back in charge of calls this app did not place — above all the ones
@@ -48,6 +50,11 @@ class SimRedirectionService : CallRedirectionService() {
             return
         }
 
+        // Telecom binds this service for every outgoing call whoever placed it — including the ones
+        // Android Auto places, which never reach any other hook of ours. That makes it the one place
+        // that can start watching for the in-call UI going somewhere else. See CarCallMonitor.
+        CarCallMonitor.armOutgoing(applicationContext, number, getSimSlotForHandle(initialPhoneAccount))
+
         // The renrakusaki lookup is a content-provider query, so it stays off the main thread. Telecom
         // gives a redirection service only a few seconds before it gives up and places the call
         // unmodified, which is exactly the outcome we would pick anyway if the lookup were that slow.
@@ -58,6 +65,8 @@ class SimRedirectionService : CallRedirectionService() {
                     if (wanted == null || wanted == initialPhoneAccount) {
                         placeCallUnmodified()
                     } else {
+                        // the badge on the car-call screen has to name the SIM we just switched to
+                        CarCallMonitor.armOutgoing(applicationContext, number, getSimSlotForHandle(wanted))
                         redirectCall(handle, wanted, false)
                     }
                 } catch (ignored: Exception) {

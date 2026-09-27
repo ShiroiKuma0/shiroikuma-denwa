@@ -143,6 +143,12 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(ALWAYS_SHOW_FULLSCREEN, false)
         set(alwaysShowFullscreen) = prefs.edit().putBoolean(ALWAYS_SHOW_FULLSCREEN, alwaysShowFullscreen).apply()
 
+    // On by default: without it a call placed while Android Auto projects leaves the phone showing
+    // nothing at all, with no way to hang up off the car's screen.
+    var carCallScreen: Boolean
+        get() = prefs.getBoolean(CAR_CALL_SCREEN, true)
+        set(carCallScreen) = prefs.edit().putBoolean(CAR_CALL_SCREEN, carCallScreen).apply()
+
     // SIM_COLOR_UNSET here means "no pick yet"; the fork default (SIM 1 red, SIM 2 blue) then applies,
     // so read these through Context.simColor() rather than directly.
     var sim1Color: Int
