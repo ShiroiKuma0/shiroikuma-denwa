@@ -6,11 +6,11 @@
 
 **A privacy‑friendly dialer, supercharged for dual‑SIM power users.**
 
-A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a call screen on the phone for the calls the car takes over, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, a one‑zip backup that carries your call history and blocked numbers and cannot lose them on the way back, and a deep hand‑off to our Contacts fork.
+A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a call screen on the phone for the calls the car takes over, a caller block you decide the contents of, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, a one‑zip backup that carries your call history and blocked numbers and cannot lose them on the way back, and a deep hand‑off to our Contacts fork.
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+080`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+084`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -33,6 +33,28 @@ Plug into Android Auto and Telecom hands the in-call UI to the car. Useful on th
 So this fork puts its own call screen on the phone for the whole of such a call: the contact's photo full width, their name, the number properly formatted, the SIM badge, the running duration, and a hang-up target big enough to hit without looking away from the road. An ongoing notification carries the same hang-up for when something else is in front.
 
 The trick is *when* it decides. An app that waits to find out the car took the call is, by then, a background app — and a background app may start neither a service nor a screen. So the decision is made at the instant of dialling, while the tap is still being handled: the app asks Android Auto whether it is projecting, and commits there and then. If Telecom turns out to hand the call over after all, the screen withdraws by itself.
+
+---
+
+## 🪪 The call screen says who is calling — not just their name
+
+A ringing phone gives you a second to decide. Stock spends it on a name and a number, and throws the
+rest away: the lookup has already read the whole contact — the company, the job title, the nickname,
+the note you left on them — and then keeps four fields of it.
+
+So the caller block is **a list you compose**, not a fixed pair. Tick the fields it shows, drag them
+into the order you want them read in, and use the chevrons to put two of them side by side on one
+line. Out of the box it shows the name, the number with its type beside it, and then the **company,
+the position and your note** — so "an unknown number" is often a company and a job title before you
+have decided whether to answer.
+
+The name itself has **four shapes** to choose between — 姓、名 / 名 姓 / 名 姓（大文字）/ 姓（大文字） 名 —
+the same four 白い熊 連絡先 offers, so both apps can write a name the same way. A switch puts a
+**nickname** in place of whichever shape you picked, for the people you know by one. And every field
+carries its **own font, weight, size and colour**, so the thing you actually look at can be the big
+one. The car's call screen draws the same block from the same setting.
+
+Empty fields are skipped rather than drawn blank, so the block is as short as the caller is unknown.
 
 ---
 
@@ -96,7 +118,7 @@ And the tab bar **keeps the dialer's shape while you are over there**: 連絡先
 
 ## 🕓 A richer call log
 
-Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format.
+Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format. **Edit contact** sits in both of a row's menus, so a number you noted down wrong is corrected from the call it came in on rather than hunted for in another app.
 
 ---
 
