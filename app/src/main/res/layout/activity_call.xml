@@ -62,7 +62,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="@dimen/activity_margin"
         android:contentDescription="@null"
-        app:layout_constraintBottom_toTopOf="@id/caller_name_label"
+        app:layout_constraintBottom_toTopOf="@id/caller_details"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_max="@dimen/caller_avatar_max_size"
@@ -73,37 +73,22 @@
         tools:padding="16dp"
         tools:src="@drawable/ic_person_vector" />
 
-    <org.fossify.commons.views.MyTextView
-        android:id="@+id/caller_name_label"
+    <!-- The caller block: the name, number and whatever else of the caller the "In-call screen" section
+         of the 白い熊 UI page has been told to show. Filled in code (see extensions/CallerDetails), since
+         which fields appear, in what order and on which lines is a setting. -->
+    <LinearLayout
+        android:id="@+id/caller_details"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/bigger_margin"
-        android:ellipsize="end"
         android:gravity="center_horizontal"
-        android:maxLines="2"
+        android:orientation="vertical"
         android:paddingStart="@dimen/medium_margin"
         android:paddingEnd="@dimen/medium_margin"
-        android:textSize="@dimen/caller_name_text_size"
-        app:layout_constraintBottom_toTopOf="@id/caller_number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/caller_avatar"
-        android:textDirection="firstStrongLtr"
-        tools:text="Caller name" />
-
-    <org.fossify.commons.views.MyTextView
-        android:id="@+id/caller_number"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/normal_margin"
-        android:gravity="center_horizontal"
-        android:textSize="@dimen/call_status_text_size"
         app:layout_constraintBottom_toTopOf="@id/call_status_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/caller_name_label"
-        android:textDirection="firstStrongLtr"
-        tools:text="+1 (123) 456-7890" />
+        app:layout_constraintTop_toBottomOf="@id/caller_avatar" />
 
     <org.fossify.commons.views.MyTextView
         android:id="@+id/call_status_label"
@@ -115,7 +100,7 @@
         app:layout_constraintBottom_toTopOf="@id/hold_status_label"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/caller_number"
+        app:layout_constraintTop_toBottomOf="@+id/caller_details"
         tools:text="Is Calling" />
 
     <TextView

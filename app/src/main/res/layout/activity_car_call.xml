@@ -39,26 +39,14 @@
         app:layout_constraintTop_toBottomOf="@+id/car_caller_photo"
         app:layout_constraintVertical_bias="1.0">
 
-        <org.fossify.commons.views.MyTextView
-            android:id="@+id/car_caller_name"
+        <!-- The same caller block the phone's own call screen draws, from the same setting
+             (see extensions/CallerDetails) — filled in code, one line per shown field. -->
+        <LinearLayout
+            android:id="@+id/car_caller_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
             android:gravity="center_horizontal"
-            android:maxLines="2"
-            android:textDirection="firstStrongLtr"
-            android:textSize="@dimen/caller_name_text_size"
-            tools:text="白い熊爲右衞門" />
-
-        <org.fossify.commons.views.MyTextView
-            android:id="@+id/car_caller_number"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/small_margin"
-            android:gravity="center_horizontal"
-            android:textDirection="firstStrongLtr"
-            android:textSize="@dimen/call_status_text_size"
-            tools:text="+420 602 989 898" />
+            android:orientation="vertical" />
 
         <LinearLayout
             android:layout_width="wrap_content"

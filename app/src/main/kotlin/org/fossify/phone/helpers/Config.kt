@@ -181,6 +181,17 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getInt(CALL_DURATION_FORMAT, 0)
         set(value) = prefs.edit().putInt(CALL_DURATION_FORMAT, value).apply()
 
+    // The caller block's layout, serialized by CallScreenConfig; "" means the built-in default, which
+    // is also what an install that never opens the editor keeps carrying.
+    var callScreenFields: String
+        get() = prefs.getString(CALL_SCREEN_FIELDS, "")!!
+        set(value) = prefs.edit().putString(CALL_SCREEN_FIELDS, value).apply()
+
+    // Off by default: a nickname is an extra way to show a caller, not the default way.
+    var callScreenPreferNickname: Boolean
+        get() = prefs.getBoolean(CALL_SCREEN_PREFER_NICKNAME, false)
+        set(value) = prefs.edit().putBoolean(CALL_SCREEN_PREFER_NICKNAME, value).apply()
+
     // Granular theming: one Int override per color slot, THEME_UNSET means "follow the default".
     var themeV1Seeded: Boolean
         get() = prefs.getBoolean(THEME_V1_SEEDED, false)

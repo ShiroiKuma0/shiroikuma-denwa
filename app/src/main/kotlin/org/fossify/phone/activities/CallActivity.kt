@@ -620,21 +620,12 @@ class CallActivity : SimpleActivity() {
         }
 
         binding.apply {
-            val (name, _, number, numberLabel) = callContact!!
+            val (name, _, number) = callContact!!
             // a withheld caller ID gives the blocked-numbers provider nothing to store
             val canBlock = CallManager.getPrimaryCall().getRawNumber().isNotEmpty()
             callBlock.beVisibleIf(canBlock)
             callBlockLabel.beVisibleIf(canBlock)
-            callerNameLabel.text = name.ifEmpty { getString(R.string.unknown_caller) }
-            if (number.isNotEmpty() && number != name) {
-                callerNumber.text = number
-
-                if (numberLabel.isNotEmpty()) {
-                    callerNumber.text = "$number - $numberLabel"
-                }
-            } else {
-                callerNumber.beGone()
-            }
+            callerDetails.showCallerDetails(callContact, getString(R.string.unknown_caller))
 
             callerAvatar.apply {
                 if (name.isEmpty() || name == number) {

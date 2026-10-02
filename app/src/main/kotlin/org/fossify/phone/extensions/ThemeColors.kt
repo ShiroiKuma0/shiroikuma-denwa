@@ -33,6 +33,8 @@ enum class ThemeGroup(@StringRes val labelRes: Int) {
     CALL_LOG(R.string.theme_group_call_log),
     DIALPAD(R.string.theme_group_dialpad),
     IN_CALL(R.string.theme_group_in_call),
+    // The caller block's fields — enumerated by the order box in ThemeActivity, never by group
+    CALL_FIELDS(R.string.theme_subgroup_caller_details),
     CONTACTS(R.string.theme_group_contacts),
     FAVORITES(R.string.theme_group_favorites),
     SIM(R.string.theme_group_sim),
@@ -92,6 +94,60 @@ enum class ThemeSlot(
     CALL_DECLINE("theme_call_decline", ThemeGroup.IN_CALL, R.string.theme_call_decline),
     CALL_CONTROL_ACTIVE("theme_call_control_active", ThemeGroup.IN_CALL, R.string.theme_call_control_active),
     CALL_CONTROL_INACTIVE("theme_call_control_inactive", ThemeGroup.IN_CALL, R.string.theme_call_control_inactive),
+
+    // The caller block's fields (helpers/CallScreenFields) — one styling slot each, so every line of
+    // the block carries its own font, weight, size and colour. Only the ticked ones get a row in the
+    // Theme screen, right under the order box that ticks them.
+    CALL_DISPLAY_NAME(
+        "theme_call_field_display_name", ThemeGroup.CALL_FIELDS, R.string.field_display_name, hasFont = true,
+    ),
+    CALL_SURNAME_FIRST(
+        "theme_call_field_surname_first", ThemeGroup.CALL_FIELDS, R.string.field_surname_first, hasFont = true,
+    ),
+    CALL_FIRST_SURNAME(
+        "theme_call_field_first_surname", ThemeGroup.CALL_FIELDS, R.string.field_first_surname, hasFont = true,
+    ),
+    CALL_FIRST_SURNAME_CAPS(
+        "theme_call_field_first_surname_caps", ThemeGroup.CALL_FIELDS,
+        R.string.field_first_surname_caps, hasFont = true,
+    ),
+    CALL_SURNAME_CAPS_FIRST(
+        "theme_call_field_surname_caps_first", ThemeGroup.CALL_FIELDS,
+        R.string.field_surname_caps_first, hasFont = true,
+    ),
+    CALL_PREFIX(
+        "theme_call_field_prefix", ThemeGroup.CALL_FIELDS, R.string.field_prefix, hasFont = true,
+    ),
+    CALL_FIRST_NAME(
+        "theme_call_field_first_name", ThemeGroup.CALL_FIELDS, R.string.field_first_name, hasFont = true,
+    ),
+    CALL_MIDDLE_NAME(
+        "theme_call_field_middle_name", ThemeGroup.CALL_FIELDS, R.string.field_middle_name, hasFont = true,
+    ),
+    CALL_SURNAME(
+        "theme_call_field_surname", ThemeGroup.CALL_FIELDS, R.string.field_surname, hasFont = true,
+    ),
+    CALL_SUFFIX(
+        "theme_call_field_suffix", ThemeGroup.CALL_FIELDS, R.string.field_suffix, hasFont = true,
+    ),
+    CALL_NICKNAME(
+        "theme_call_field_nickname", ThemeGroup.CALL_FIELDS, R.string.field_nickname, hasFont = true,
+    ),
+    CALL_NUMBER(
+        "theme_call_field_number", ThemeGroup.CALL_FIELDS, R.string.field_phone, hasFont = true,
+    ),
+    CALL_NUMBER_LABEL(
+        "theme_call_field_number_label", ThemeGroup.CALL_FIELDS, R.string.field_number_label, hasFont = true,
+    ),
+    CALL_COMPANY(
+        "theme_call_field_company", ThemeGroup.CALL_FIELDS, R.string.field_company, hasFont = true,
+    ),
+    CALL_POSITION(
+        "theme_call_field_position", ThemeGroup.CALL_FIELDS, R.string.field_position, hasFont = true,
+    ),
+    CALL_NOTE(
+        "theme_call_field_note", ThemeGroup.CALL_FIELDS, R.string.field_note, hasFont = true,
+    ),
 
     // Contacts
     CONTACT_NAME("theme_contact_name", ThemeGroup.CONTACTS, R.string.theme_contact_name, hasFont = true),
@@ -179,6 +235,16 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CALL_DECLINE -> resources.getColor(R.color.md_red_400, theme)
     ThemeSlot.CALL_CONTROL_ACTIVE -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.CALL_CONTROL_INACTIVE -> themeColor(ThemeSlot.TEXT).adjustAlpha(0.10f)
+
+    // The caller block: the name shapes read as the headline, everything under them as its detail
+    ThemeSlot.CALL_DISPLAY_NAME, ThemeSlot.CALL_SURNAME_FIRST, ThemeSlot.CALL_FIRST_SURNAME,
+        ThemeSlot.CALL_FIRST_SURNAME_CAPS, ThemeSlot.CALL_SURNAME_CAPS_FIRST ->
+        themeColor(ThemeSlot.TEXT)
+
+    ThemeSlot.CALL_PREFIX, ThemeSlot.CALL_FIRST_NAME, ThemeSlot.CALL_MIDDLE_NAME, ThemeSlot.CALL_SURNAME,
+        ThemeSlot.CALL_SUFFIX, ThemeSlot.CALL_NICKNAME, ThemeSlot.CALL_NUMBER, ThemeSlot.CALL_NUMBER_LABEL,
+        ThemeSlot.CALL_COMPANY, ThemeSlot.CALL_POSITION, ThemeSlot.CALL_NOTE ->
+        themeColor(ThemeSlot.TEXT_SECONDARY)
 
     ThemeSlot.CONTACT_NAME -> themeColor(ThemeSlot.TEXT)
     ThemeSlot.CONTACT_FASTSCROLLER -> themeColor(ThemeSlot.PRIMARY)

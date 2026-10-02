@@ -30,6 +30,7 @@ import org.fossify.phone.helpers.CarCallMonitor
 import org.fossify.phone.helpers.END_CAR_CALL
 import org.fossify.phone.helpers.NoCall
 import org.fossify.phone.helpers.getCallContactByNumber
+import org.fossify.phone.models.CallContact
 import org.fossify.phone.receivers.CallActionReceiver
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -74,6 +75,14 @@ class CarCallService : Service() {
 
         @Volatile
         var contactName: String? = null
+            private set
+
+        /**
+         * Everything the lookup found about the caller, for the caller block on [CarCallActivity] to
+         * draw as configured. Null until the lookup answers — the block then has only the raw number.
+         */
+        @Volatile
+        var callContact: CallContact? = null
             private set
 
         /** The number as the app formats it for display, once the contact lookup has run. */
@@ -227,6 +236,7 @@ class CarCallService : Service() {
         contactName = null
         displayNumber = null
         contactPhotoUri = null
+        callContact = null
         connectedAt = if (isRinging) 0L else SystemClock.elapsedRealtime()
         startedAt = SystemClock.elapsedRealtime()
         hasSeenCall = false
@@ -313,6 +323,7 @@ class CarCallService : Service() {
                 return@getCallContactByNumber
             }
 
+            callContact = contact
             contactName = contact.name.takeIf { it.isNotEmpty() && it != contact.number }
             displayNumber = contact.number.takeIf { it.isNotEmpty() }
             contactPhotoUri = contact.photoUri.takeIf { it.isNotEmpty() }
