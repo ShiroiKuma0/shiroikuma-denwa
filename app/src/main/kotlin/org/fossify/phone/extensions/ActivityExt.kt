@@ -125,21 +125,79 @@ fun SimpleActivity.launchCreateNewContactIntent() {
     }
 }
 
-// handle private contacts differently, only Simple Contacts Pro can open them
-fun Activity.startContactDetailsIntent(contact: Contact) {
-    val simpleContacts = "org.fossify.contacts"
-    val simpleContactsDebug = "org.fossify.contacts.debug"
+// The stock Contacts app this fork replaced. Still a valid host for a private store if it happens to
+// be installed, so it stays as a fallback — but it is deliberately kept out of `contactsAppPackages`,
+// whose list drives the tab hand-off and must name only renrakusaki.
+private val legacyPrivateContactsPackages = listOf("org.fossify.contacts", "org.fossify.contacts.debug")
+
+/**
+ * The package a private contact's view / edit intent must be addressed to, or null when [contact] is
+ * not a private one (or nothing that could open it is installed).
+ *
+ * A private contact lives only in the contacts app's own store — the system's contacts provider has
+ * never heard of it — so it is reached by raw id straight at that app instead of through a lookup URI.
+ * Our own Contacts fork answers first; the stock package it replaced is tried only after it.
+ */
+private fun Activity.privateContactsHost(contact: Contact): String? {
     val isPrivateContact = contact.rawId > FIRST_CONTACT_ID
             && contact.contactId > FIRST_CONTACT_ID
             && contact.rawId == contact.contactId
-            && (isPackageInstalled(simpleContacts) || isPackageInstalled(simpleContactsDebug))
-    if (isPrivateContact) {
+    if (!isPrivateContact) {
+        return null
+    }
+
+    return getInstalledContactsAppPackage() ?: legacyPrivateContactsPackages.firstOrNull { isPackageInstalled(it) }
+}
+
+/**
+ * Open [contact] in the contacts app's editor — the "Edit contact" action on a call-log entry.
+ *
+ * Shaped like [startContactDetailsIntent], with the same split: a private contact goes by raw id
+ * straight at the app that holds it, an ordinary one as a plain ACTION_EDIT on its lookup URI for
+ * whichever app handles contacts. The lookup key costs a query, hence the background thread.
+ */
+fun Activity.startEditContactIntent(contact: Contact) {
+    val privateHost = privateContactsHost(contact)
+    if (privateHost != null) {
+        Intent().apply {
+            action = Intent.ACTION_EDIT
+            putExtra(CONTACT_ID, contact.rawId)
+            putExtra(IS_PRIVATE, true)
+            `package` = privateHost
+            setDataAndType(ContactsContract.Contacts.CONTENT_LOOKUP_URI, "vnd.android.cursor.item/person")
+            launchActivityIntent(this)
+        }
+    } else {
+        ensureBackgroundThread {
+            val lookupKey = SimpleContactsHelper(this).getContactLookupKey(contact.rawId.toString())
+            val publicUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, lookupKey)
+            runOnUiThread {
+                Intent().apply {
+                    action = Intent.ACTION_EDIT
+                    setDataAndType(publicUri, ContactsContract.Contacts.CONTENT_ITEM_TYPE)
+                    launchActivityIntent(this)
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Open [contact] in the contacts app's detail screen. A private contact is addressed straight at the
+ * app that holds it (see [privateContactsHost]); everything else goes out as a view intent on the
+ * public lookup URI.
+ *
+ * Upstream hard-coded `org.fossify.contacts` here, which is never what is installed for this fork —
+ * so a private contact quietly fell through to the public path and could not be found at all.
+ */
+fun Activity.startContactDetailsIntent(contact: Contact) {
+    val privateHost = privateContactsHost(contact)
+    if (privateHost != null) {
         Intent().apply {
             action = Intent.ACTION_VIEW
             putExtra(CONTACT_ID, contact.rawId)
             putExtra(IS_PRIVATE, true)
-            `package` =
-                if (isPackageInstalled(simpleContacts)) simpleContacts else simpleContactsDebug
+            `package` = privateHost
             setDataAndType(
                 ContactsContract.Contacts.CONTENT_LOOKUP_URI,
                 "vnd.android.cursor.dir/person"

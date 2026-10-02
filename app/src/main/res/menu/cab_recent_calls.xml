@@ -26,6 +26,12 @@
         android:title="@string/view_contact_details"
         app:showAsAction="always" />
     <item
+        android:id="@+id/cab_edit_contact"
+        android:icon="@drawable/ic_edit_vector"
+        android:showAsAction="never"
+        android:title="@string/edit_contact"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/cab_add_number"
         android:icon="@drawable/ic_add_person_vector"
         android:showAsAction="always"

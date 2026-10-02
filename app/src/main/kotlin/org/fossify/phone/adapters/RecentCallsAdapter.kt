@@ -75,6 +75,7 @@ import org.fossify.phone.extensions.simTextStyle
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
 import org.fossify.phone.extensions.startContactDetailsIntent
+import org.fossify.phone.extensions.startEditContactIntent
 import org.fossify.phone.extensions.styleContextualActionBar
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.ThemeDimen
@@ -164,6 +165,8 @@ class RecentCallsAdapter(
         val selectedItems = getSelectedItems()
         val isOneItemSelected = selectedItems.size == 1
         val selectedNumber = "tel:${getSelectedPhoneNumber()}"
+        // the contact behind the selection, if the call log found one — what "view" and "edit" act on
+        val selectedContact = if (isOneItemSelected) findContactByCall(selectedItems.first()) else null
 
         menu.apply {
             findItem(R.id.cab_call_sim_1).isVisible = hasMultipleSIMs && isOneItemSelected
@@ -175,7 +178,8 @@ class RecentCallsAdapter(
             findItem(R.id.cab_add_number).isVisible = isOneItemSelected
             findItem(R.id.cab_copy_number).isVisible = isOneItemSelected
             findItem(R.id.cab_show_call_details).isVisible = isOneItemSelected
-            findItem(R.id.cab_view_details).isVisible = isOneItemSelected && findContactByCall(selectedItems.first()) != null
+            findItem(R.id.cab_view_details).isVisible = selectedContact != null
+            findItem(R.id.cab_edit_contact).isVisible = selectedContact != null
         }
 
         activity.styleContextualActionBar(actMode, menu)
@@ -198,6 +202,7 @@ class RecentCallsAdapter(
             R.id.cab_remove -> askConfirmRemove()
             R.id.cab_select_all -> selectAll()
             R.id.cab_view_details -> launchContactDetailsIntent(findContactByCall(getSelectedItems().first()))
+            R.id.cab_edit_contact -> launchEditContactIntent(findContactByCall(getSelectedItems().first()))
         }
     }
 
@@ -483,6 +488,12 @@ class RecentCallsAdapter(
         }
     }
 
+    private fun launchEditContactIntent(contact: Contact?) {
+        if (contact != null) {
+            activity.startEditContactIntent(contact)
+        }
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     fun updateItems(newItems: List<CallLogItem>, highlightText: String = "") {
         if (textToHighlight != highlightText) {
@@ -523,6 +534,8 @@ class RecentCallsAdapter(
                 findItem(R.id.cab_call_sim_2).isVisible = areMultipleSIMsAvailable && !call.isUnknownNumber
                 findItem(R.id.cab_send_sms).isVisible = !call.isUnknownNumber
                 findItem(R.id.cab_view_details).isVisible = contact != null && !call.isUnknownNumber
+                // only a saved contact can be edited; a bare number has no contact to open
+                findItem(R.id.cab_edit_contact).isVisible = contact != null && !call.isUnknownNumber
                 // only a saved contact can be starred; a bare number has nothing to star
                 findItem(R.id.cab_toggle_favorite).isVisible = contact != null && !call.isUnknownNumber
                 findItem(R.id.cab_toggle_favorite).title = activity.getString(
@@ -573,6 +586,12 @@ class RecentCallsAdapter(
                     R.id.cab_view_details -> {
                         executeItemMenuOperation(callId) {
                             launchContactDetailsIntent(contact)
+                        }
+                    }
+
+                    R.id.cab_edit_contact -> {
+                        executeItemMenuOperation(callId) {
+                            launchEditContactIntent(contact)
                         }
                     }
 
