@@ -3,6 +3,43 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+084 — 2026-10-02
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **The call screen shows what you tell it to show about a caller.** It knew exactly one shape — a
+  display name over a number — while the lookup it runs had already read the whole contact and threw
+  the rest away. The caller block is now a composed list: tick which of the caller's fields it
+  shows, drag them into order, and merge two onto one line with the chevrons, in an order box under
+  **In-call screen** in the 白い熊 UI page — the same editor 白い熊 連絡先 carries for its contacts
+  list. The catalog is the name, four composite name shapes (姓、名 / 名 姓 / 名 姓（大文字）/
+  姓（大文字） 名, the same four the Contacts fork offers), the individual name parts, the nickname,
+  the number and its type, the company, the position and the note. A fresh install shows the name,
+  the number with its type beside it, then the company, position and note.
+- **A nickname can stand in for the name.** One switch above the box: a caller who has a nickname is
+  shown by it, in the place of whichever name shape is ticked, and everyone else keeps that shape.
+- **Every field of the caller block has its own styling.** Font, weight, size and colour per line,
+  through the same theme machinery as the rest of the app — only the ticked fields get a row, and
+  the list rebuilds as the box is ticked.
+- **The car's call screen draws the same block.** The screen shown on the handset while Android Auto
+  holds the call now renders the same fields, from the same setting, instead of a name and a number.
+- **Edit contact, from the call log.** A call-log entry could be viewed, called, blocked, copied and
+  added to, but never edited — correcting one field meant leaving for the Contacts app and finding
+  the person again. "Edit contact" now sits beside "View contact details" in both menus a Recents
+  entry offers: the long-press selection bar and the row's own overflow.
+
+### Fixed
+- **Numbers were grouped as if every one of them were Japanese.** A nine-digit Czech number came up
+  as `266-31-0574` — the Japanese landline grouping — because the formatter asked the *UI locale*
+  for its country, and this phone runs a Japanese locale on Czech SIMs. The grouping now follows the
+  same region the call log's place names already do: the SIM's country, the registered network when
+  the SIM will not say, and the locale only when neither does. Czech numbers read `266 310 574`, and
+  a number from anywhere else is grouped the way that country writes it.
+- **A private contact could not be opened from the call log.** Viewing one was addressed to
+  `org.fossify.contacts`, which is never what is installed here, so it fell through to the system
+  contacts provider — which has never heard of a private contact. Both the view and the new edit
+  action now resolve 白い熊 連絡先 first, with the stock package as a fallback.
+
 ## 白い熊 電話 1.11.1+080 — 2026-09-27
 Built on Fossify Phone 1.11.1.
 
