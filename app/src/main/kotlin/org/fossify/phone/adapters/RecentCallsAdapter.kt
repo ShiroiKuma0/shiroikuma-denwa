@@ -33,7 +33,6 @@ import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.copyToClipboard
 import org.fossify.commons.extensions.formatDateOrTime
-import org.fossify.commons.extensions.formatPhoneNumber
 import org.fossify.commons.extensions.getColoredDrawableWithColor
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.getPhoneNumberTypeText
@@ -65,6 +64,7 @@ import org.fossify.phone.extensions.colorItemTitles
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.formatCallDuration
 import org.fossify.phone.extensions.formatCallTime
+import org.fossify.phone.extensions.formatPhoneNumber
 import org.fossify.phone.extensions.getCallLogRegion
 import org.fossify.phone.extensions.setDefaultPhoneNumber
 import org.fossify.phone.extensions.getDayCode
@@ -657,7 +657,7 @@ class RecentCallsAdapter(
                 val name = matchingContact?.getNameToDisplay() ?: call.name
                 val formatPhoneNumbers = activity.config.formatPhoneNumbers
                 var nameToShow = if (name == call.phoneNumber && formatPhoneNumbers) {
-                    SpannableString(name.formatPhoneNumber())
+                    SpannableString(name.formatPhoneNumber(callLogRegion))
                 } else {
                     SpannableString(name)
                 }
@@ -670,7 +670,7 @@ class RecentCallsAdapter(
 
                     val numPart = call.specificNumber
                         .takeIf { it.isNotBlank() }
-                        ?.let { if (formatPhoneNumbers) it.formatPhoneNumber() else it }
+                        ?.let { if (formatPhoneNumbers) it.formatPhoneNumber(callLogRegion) else it }
                         ?.let { ", $it" }
                         .orEmpty()
 
@@ -876,7 +876,11 @@ class RecentCallsAdapter(
                 applyLine(itemDialpadContactDivider, callDividerColor, callDividerThicknessDp)
 
                 val name = item.contact.getNameToDisplay()
-                val number = if (activity.config.formatPhoneNumbers) item.number.formatPhoneNumber() else item.number
+                val number = if (activity.config.formatPhoneNumbers) {
+                    item.number.formatPhoneNumber(callLogRegion)
+                } else {
+                    item.number
+                }
 
                 itemDialpadContactName.apply {
                     text = name.highlightTextPart(textToHighlight, properPrimaryColor)
