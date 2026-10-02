@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The embedded caller-block field editor (tick / order / columns). Lives in the "In-call screen" section. -->
+<androidx.recyclerview.widget.RecyclerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fields_order_list"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:nestedScrollingEnabled="false"
+    android:overScrollMode="never"
+    android:paddingBottom="@dimen/small_margin" />

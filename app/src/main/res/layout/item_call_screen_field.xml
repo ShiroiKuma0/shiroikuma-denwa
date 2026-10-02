@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One row of the caller-block field editor: checkbox + label, move-left/right column buttons, drag handle. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/list_touch_target_min"
+    android:orientation="horizontal"
+    android:paddingStart="0dp"
+    android:paddingEnd="@dimen/tiny_margin">
+
+    <org.fossify.commons.views.MyAppCompatCheckbox
+        android:id="@+id/field_checkbox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:paddingStart="@dimen/medium_margin"
+        android:paddingEnd="0dp"
+        android:textSize="@dimen/normal_text_size"
+        tools:text="Company" />
+
+    <ImageView
+        android:id="@+id/field_move_left"
+        android:layout_width="@dimen/list_touch_target_min"
+        android:layout_height="@dimen/list_touch_target_min"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/move_field_left"
+        android:padding="@dimen/medium_margin"
+        android:src="@drawable/ic_chevron_left_vector" />
+
+    <ImageView
+        android:id="@+id/field_move_right"
+        android:layout_width="@dimen/list_touch_target_min"
+        android:layout_height="@dimen/list_touch_target_min"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/move_field_right"
+        android:padding="@dimen/medium_margin"
+        android:src="@drawable/ic_chevron_right_vector" />
+
+    <ImageView
+        android:id="@+id/field_drag_handle"
+        android:layout_width="@dimen/list_touch_target_min"
+        android:layout_height="@dimen/list_touch_target_min"
+        android:contentDescription="@string/reorder"
+        android:padding="@dimen/medium_margin"
+        android:src="@drawable/ic_drag_handle_vector" />
+
+</LinearLayout>

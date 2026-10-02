@@ -12,11 +12,14 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.recyclerview.widget.LinearLayoutManager
 import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
 import org.fossify.commons.extensions.adjustAlpha
@@ -31,9 +34,11 @@ import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.helpers.isRPlus
 import org.fossify.commons.models.RadioItem
 import org.fossify.phone.R
+import org.fossify.phone.adapters.CallScreenFieldsAdapter
 import org.fossify.phone.databinding.ActivityThemeBinding
 import org.fossify.phone.databinding.ItemThemeColorBinding
 import org.fossify.phone.databinding.ItemThemeDimenBinding
+import org.fossify.phone.databinding.ItemThemeFieldsOrderBinding
 import org.fossify.phone.databinding.ItemThemeSectionBinding
 import org.fossify.phone.databinding.ItemThemeSubgroupBinding
 import org.fossify.phone.databinding.ItemThemeSwitchBinding
@@ -64,6 +69,8 @@ import org.fossify.phone.extensions.simColor
 import org.fossify.phone.extensions.showFontSample
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.themeDimenDp
+import org.fossify.phone.helpers.CallFieldEntry
+import org.fossify.phone.helpers.CallScreenConfig
 import org.fossify.phone.helpers.MAX_FONT_SIZE_SP
 import org.fossify.phone.helpers.SIM_COLOR_UNSET
 import org.fossify.phone.helpers.SettingsExport
@@ -98,6 +105,9 @@ class ThemeActivity : SimpleActivity() {
 
     // Only the first section skips the hairline above it — it has nothing to be parted from.
     private var sectionCount = 0
+
+    // Rebuilt whenever the caller-block order box changes: one styling row per ticked field.
+    private var callFieldStylingContainer: LinearLayout? = null
 
     private var pendingFontSlot: ThemeSlot? = null
     private var pendingFontBinding: ItemThemeTextBinding? = null
@@ -221,9 +231,10 @@ class ThemeActivity : SimpleActivity() {
         addSection(R.string.theme_group_dialpad, primaryColor)
         slotRowsFor(ThemeGroup.DIALPAD, rowIndent)
 
-        // In-call screen
+        // In-call screen — the buttons, then the caller block's own fields and their styling
         addSection(R.string.theme_group_in_call, primaryColor)
         slotRowsFor(ThemeGroup.IN_CALL, rowIndent)
+        addCallerFieldsSubgroup(primaryColor, subRowIndent)
 
         // Contacts
         addSection(R.string.theme_group_contacts, primaryColor)
@@ -518,6 +529,56 @@ class ThemeActivity : SimpleActivity() {
         if (slot.hasFont) addTextSlot(slot, indent) else addColorRow(slot, indent)
     }
 
+    /**
+     * The caller block on the call screen (and on the car one): the order box that ticks which of the
+     * caller's fields it shows, in what order and on which lines; the nickname switch; and — rebuilt as
+     * the box is ticked — the font / weight / size / colour of each field that is actually shown. The
+     * same editor renrakusaki carries under "Contacts' list", on this app's own field catalog.
+     */
+    private fun addCallerFieldsSubgroup(primaryColor: Int, indent: Int) {
+        addSubgroup(R.string.theme_subgroup_caller_details, primaryColor)
+        addSwitchRow(
+            R.string.call_prefer_nickname,
+            config.callScreenPreferNickname,
+            indent,
+            getString(R.string.call_prefer_nickname_description),
+        ) { config.callScreenPreferNickname = it }
+
+        val entries = CallScreenConfig.parse(config.callScreenFields).toMutableList()
+        val orderList = ItemThemeFieldsOrderBinding.inflate(layoutInflater, binding.themeHolder, false).root
+        orderList.setPaddingRelative(indent, orderList.paddingTop, orderList.paddingEnd, orderList.paddingBottom)
+        orderList.layoutManager = LinearLayoutManager(this)
+        val adapter = CallScreenFieldsAdapter(this, entries) {
+            config.callScreenFields = CallScreenConfig.serialize(entries)
+            rebuildCallFieldStyling(entries, indent)
+        }
+        orderList.adapter = adapter
+        adapter.attachTo(orderList)
+        binding.themeHolder.addView(orderList)
+
+        callFieldStylingContainer = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT,
+            )
+        }
+        binding.themeHolder.addView(callFieldStylingContainer)
+        rebuildCallFieldStyling(entries, indent)
+    }
+
+    // One styling block per ticked field, in the order the caller block draws them.
+    private fun rebuildCallFieldStyling(entries: List<CallFieldEntry>, indent: Int) {
+        val container = callFieldStylingContainer ?: return
+        container.removeAllViews()
+        val shown = entries.filter { it.checked }
+        if (shown.isEmpty()) {
+            return
+        }
+
+        addSubgroup(R.string.theme_subgroup_caller_styling, getProperPrimaryColor(), container)
+        shown.forEach { addTextSlot(it.field.slot, indent, container) }
+    }
+
     private fun addSection(@StringRes labelRes: Int, primaryColor: Int) {
         val section = ItemThemeSectionBinding.inflate(layoutInflater, binding.themeHolder, false)
         section.themeSectionLabel.text = getString(labelRes)
@@ -533,13 +594,13 @@ class ThemeActivity : SimpleActivity() {
         binding.themeHolder.addView(section.root)
     }
 
-    private fun addSubgroup(@StringRes labelRes: Int, primaryColor: Int) {
-        val sub = ItemThemeSubgroupBinding.inflate(layoutInflater, binding.themeHolder, false)
+    private fun addSubgroup(@StringRes labelRes: Int, primaryColor: Int, parent: ViewGroup = binding.themeHolder) {
+        val sub = ItemThemeSubgroupBinding.inflate(layoutInflater, parent, false)
         sub.themeSubgroupLabel.text = getString(labelRes)
         sub.themeSubgroupLabel.setTextColor(primaryColor)
         sub.themeSubgroupRule.setBackgroundColor(primaryColor)
         sub.root.setPaddingRelative(subgroupIndent, sub.root.paddingTop, sub.root.paddingEnd, sub.root.paddingBottom)
-        binding.themeHolder.addView(sub.root)
+        parent.addView(sub.root)
     }
 
     private fun addColorRow(slot: ThemeSlot, indent: Int) {
@@ -555,9 +616,9 @@ class ThemeActivity : SimpleActivity() {
 
     // A concrete text element: its colour, font family, weight, size and a live sample of all four.
     @Suppress("EmptyFunctionBlock") // SeekBar's start/stop-tracking callbacks are intentionally no-ops
-    private fun addTextSlot(slot: ThemeSlot, indent: Int) {
+    private fun addTextSlot(slot: ThemeSlot, indent: Int, parent: ViewGroup = binding.themeHolder) {
         val textColor = getProperTextColor()
-        val b = ItemThemeTextBinding.inflate(layoutInflater, binding.themeHolder, false)
+        val b = ItemThemeTextBinding.inflate(layoutInflater, parent, false)
         b.themeTextLabel.text = getString(slot.labelRes)
         listOf(
             b.themeTextLabel, b.themeTextFontTitle, b.themeTextFontValue,
@@ -592,7 +653,7 @@ class ThemeActivity : SimpleActivity() {
         indentRow(b.themeTextWeightRow, indent + stepPx)
         indentRow(b.themeTextSizeRow, indent + stepPx)
         indentRow(b.themeTextSample, indent + stepPx)
-        binding.themeHolder.addView(b.root)
+        parent.addView(b.root)
     }
 
     private fun addDimenRow(dimen: ThemeDimen, indent: Int) {

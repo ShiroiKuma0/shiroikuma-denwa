@@ -10,7 +10,6 @@
     <ID>CyclomaticComplexMethod:RecentCallsAdapter.kt$RecentCallsAdapter.RecentCallViewHolder$fun bind(call: RecentCall)</ID>
     <ID>CyclomaticComplexMethod:RecentCallsAdapter.kt$RecentCallsDiffCallback$override fun areContentsTheSame(oldItem: CallLogItem, newItem: CallLogItem): Boolean</ID>
     <ID>CyclomaticComplexMethod:RecentsHelper.kt$RecentsHelper$@SuppressLint("NewApi") private fun getRecents( contacts: List&lt;Contact&gt;, selection: String? = null, selectionParams: Array&lt;String&gt;? = null, ): List&lt;RecentCall&gt;</ID>
-    <ID>DestructuringDeclarationWithTooManyEntries:CallActivity.kt$CallActivity$val (name, _, number, numberLabel) = callContact!!</ID>
     <ID>EmptyCatchBlock:CallActivity.kt$CallActivity${ }</ID>
     <ID>EmptyFunctionBlock:ConferenceCallsAdapter.kt$ConferenceCallsAdapter${}</ID>
     <ID>EmptyFunctionBlock:ContactsAdapter.kt$ContactsAdapter${}</ID>

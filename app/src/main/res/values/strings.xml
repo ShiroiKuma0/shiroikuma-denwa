@@ -127,6 +127,32 @@
     <string name="theme_call_decline">Decline call</string>
     <string name="theme_call_control_active">Control button (active)</string>
     <string name="theme_call_control_inactive">Control button (inactive)</string>
+
+    <!-- The caller block on the call screen (and on the car one): which of the caller's fields it
+         shows, in what order and on which lines. See helpers/CallScreenFields. -->
+    <string name="theme_subgroup_caller_details">Caller details</string>
+    <string name="theme_subgroup_caller_styling">Field styling</string>
+    <string name="call_prefer_nickname">Show the nickname instead of the name</string>
+    <string name="call_prefer_nickname_description">A caller who has a nickname is known by it; everyone else keeps the name shape below.</string>
+    <string name="move_field_left">Move left</string>
+    <string name="move_field_right">Move right</string>
+    <string name="reorder">Reorder</string>
+    <string name="field_display_name">Name</string>
+    <string name="field_surname_first">Lastname, Firstname</string>
+    <string name="field_first_surname">Firstname Lastname</string>
+    <string name="field_first_surname_caps">Firstname LASTNAME</string>
+    <string name="field_surname_caps_first">LASTNAME Firstname</string>
+    <string name="field_prefix">Prefix</string>
+    <string name="field_first_name">First name</string>
+    <string name="field_middle_name">Middle name</string>
+    <string name="field_surname">Surname</string>
+    <string name="field_suffix">Suffix</string>
+    <string name="field_nickname">Nickname</string>
+    <string name="field_phone">Phone number</string>
+    <string name="field_number_label">Number type</string>
+    <string name="field_company">Company</string>
+    <string name="field_position">Position</string>
+    <string name="field_note">Note</string>
     <string name="theme_group_contacts">Contacts</string>
     <string name="theme_group_favorites">Favorites</string>
     <string name="theme_contact_name">Contact name</string>

@@ -33,6 +33,11 @@ const val SWIPE_TO_CALL = "swipe_to_call"
 const val USE_IMPERIAL_DATE = "use_imperial_date"
 const val CALL_TIME_FORMAT = "call_time_format"
 const val CALL_DURATION_FORMAT = "call_duration_format"
+// The caller block on the call screen: which contact fields it shows, in what order and on which
+// lines (see helpers/CallScreenFields), plus whether a nickname stands in for the name shape when the
+// caller has one. Named "theme_…" so a backup files them under Appearance with the rest of the look.
+const val CALL_SCREEN_FIELDS = "theme_call_screen_fields"
+const val CALL_SCREEN_PREFER_NICKNAME = "theme_call_screen_prefer_nickname"
 const val THEME_V1_SEEDED = "theme_v1_seeded"
 const val PURE_YELLOW_MIGRATED = "pure_yellow_migrated"
 const val OPEN_CONTACTS_APP_FOR_TAB = "open_contacts_app_for_tab"

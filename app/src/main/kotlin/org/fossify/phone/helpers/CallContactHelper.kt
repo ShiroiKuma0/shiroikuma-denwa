@@ -86,6 +86,17 @@ private fun lookUpNumber(
         if (contact != null) {
             callContact.name = contact.getNameToDisplay()
             callContact.photoUri = contact.photoUri
+            // The rest of what the caller block may be asked to show. The contacts were read whole
+            // anyway, so this is only a matter of not throwing the fields away here.
+            callContact.prefix = contact.prefix
+            callContact.firstName = contact.firstName
+            callContact.middleName = contact.middleName
+            callContact.surname = contact.surname
+            callContact.suffix = contact.suffix
+            callContact.nickname = contact.nickname
+            callContact.company = contact.organization.company
+            callContact.jobPosition = contact.organization.jobPosition
+            callContact.note = contact.notes
 
             if (contact.phoneNumbers.size > 1) {
                 val specificPhoneNumber = contact.phoneNumbers.firstOrNull { it.value == number }

@@ -20,7 +20,9 @@ import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.simColor
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.simTextColor
+import org.fossify.phone.extensions.showCallerDetails
 import org.fossify.phone.extensions.simTextStyle
+import org.fossify.phone.models.CallContact
 import org.fossify.phone.services.CarCallService
 
 /**
@@ -113,15 +115,16 @@ class CarCallActivity : SimpleActivity() {
 
     private fun refresh() {
         binding.apply {
-            val name = CarCallService.contactName
             // the app-formatted number once the lookup has run, the raw one until then
             val number = CarCallService.displayNumber ?: CarCallService.number.orEmpty()
 
-            // A known caller reads as name over number; an unknown one gets the number in the large
-            // slot, with nothing repeated underneath it.
-            carCallerName.text = name ?: number.ifEmpty { getString(R.string.unknown_caller) }
-            carCallerNumber.text = number
-            carCallerNumber.beVisibleIf(name != null && number.isNotEmpty())
+            // The caller block, exactly as the phone's own call screen is configured to draw it. Until
+            // the lookup has answered there is only the raw number to go on, which the block reads as an
+            // unknown caller: the number in the large slot, with nothing repeated underneath it.
+            carCallerDetails.showCallerDetails(
+                CarCallService.callContact ?: CallContact("", "", number, ""),
+                getString(R.string.unknown_caller),
+            )
             loadPhoto(CarCallService.contactPhotoUri)
 
             val ringing = CarCallService.isRinging

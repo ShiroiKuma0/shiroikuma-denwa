@@ -177,4 +177,29 @@
     <string name="faq_2_text">システムの制限により、緊急通報はシステムのデフォルトのダイヤラーまたは電話アプリからのみ可能です。緊急通報が正しく機能するには、システムアプリをインストールし、有効にしておく必要があります。</string>
     <string name="faq_3_title">一部の連絡先がアプリから消えてしまうのはなぜですか?</string>
     <string name="faq_3_text">Fossify Phone は、電話番号が関連付けられている連絡先のみを表示します。電話番号が関連付けられていない連絡先はアプリに表示されませ ん 。</string>
+
+    <!-- 通話画面の発信者ブロック -->
+    <string name="theme_subgroup_caller_details">発信者の表示項目</string>
+    <string name="theme_subgroup_caller_styling">項目のスタイル</string>
+    <string name="call_prefer_nickname">名前の代わりにニックネームを表示する</string>
+    <string name="call_prefer_nickname_description">ニックネームのある相手はニックネームで、ない相手は下の名前の形式で表示します。</string>
+    <string name="move_field_left">左へ</string>
+    <string name="move_field_right">右へ</string>
+    <string name="reorder">並べ替え</string>
+    <string name="field_display_name">名前</string>
+    <string name="field_surname_first">姓、名</string>
+    <string name="field_first_surname">名 姓</string>
+    <string name="field_first_surname_caps">名 姓（大文字）</string>
+    <string name="field_surname_caps_first">姓（大文字） 名</string>
+    <string name="field_prefix">敬称（前）</string>
+    <string name="field_first_name">名</string>
+    <string name="field_middle_name">ミドルネーム</string>
+    <string name="field_surname">姓</string>
+    <string name="field_suffix">敬称（後）</string>
+    <string name="field_nickname">ニックネーム</string>
+    <string name="field_phone">電話番号</string>
+    <string name="field_number_label">番号の種類</string>
+    <string name="field_company">会社</string>
+    <string name="field_position">役職</string>
+    <string name="field_note">メモ</string>
 </resources>
