@@ -2,6 +2,7 @@ package org.fossify.phone.extensions
 
 import android.content.Context
 import android.telecom.PhoneAccountHandle
+import android.telephony.PhoneNumberUtils
 import android.telephony.TelephonyManager
 import java.util.Locale
 
@@ -40,6 +41,24 @@ fun Context.getCallLogRegion(): String {
         .firstOrNull { it.isNotEmpty() }
         ?.uppercase(Locale.US)
         ?: Locale.getDefault().country
+}
+
+/**
+ * Format a phone number for display, grouped the way [region] groups its numbers.
+ *
+ * Commons' own `String.formatPhoneNumber()` asks `Locale.getDefault().country`, and that is the same
+ * trap [getCallLogRegion] exists for: a Japanese UI locale over Czech SIMs made the nine-digit Czech
+ * number 266310574 come out as the Japanese landline 266-31-0574 instead of 266 310 574. Pass a
+ * region from [getCallLogRegion] — never the locale — and both the call screen and the call log group
+ * a number the way the country it was dialled in writes it.
+ *
+ * A number shorter than [minimumLength] is left alone: too short to be a real number, and the
+ * formatter would only mangle a service code.
+ */
+fun String.formatPhoneNumber(region: String, minimumLength: Int = 4): String = if (length >= minimumLength) {
+    PhoneNumberUtils.formatNumber(this, region) ?: this
+} else {
+    this
 }
 
 /**

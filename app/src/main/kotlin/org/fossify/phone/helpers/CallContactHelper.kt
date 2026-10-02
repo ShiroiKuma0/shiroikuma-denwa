@@ -4,7 +4,6 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.telecom.Call
-import org.fossify.commons.extensions.formatPhoneNumber
 import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getPhoneNumberTypeText
 import org.fossify.commons.helpers.ContactsHelper
@@ -12,6 +11,8 @@ import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.phone.R
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.formatPhoneNumber
+import org.fossify.phone.extensions.getCallLogRegion
 import org.fossify.phone.extensions.isConference
 import org.fossify.phone.models.CallContact
 
@@ -77,7 +78,8 @@ private fun lookUpNumber(
         }
 
         callContact.number = if (context.config.formatPhoneNumbers) {
-            number.formatPhoneNumber()
+            // grouped for the region the phone dials in, not for the UI locale — see SimExt
+            number.formatPhoneNumber(context.getCallLogRegion())
         } else {
             number
         }
