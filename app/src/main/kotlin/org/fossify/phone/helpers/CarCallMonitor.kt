@@ -1,5 +1,6 @@
 package org.fossify.phone.helpers
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
@@ -76,6 +77,15 @@ object CarCallMonitor {
         // The whole point: commit now, while the caller is still foreground and allowed to start
         // things. Waiting to be sure would mean being sure from the background, where we can act on
         // nothing.
+        // A VoIP app's own call (Jami) is not ours to screen, car or no car — its ringing still
+        // reaches PHONE_STATE on this ROM. Only skip when Telecom positively says so: an empty answer
+        // can be a SIM call that is not registered yet, and CarCallService withdraws on its own if
+        // no managed call ever shows up.
+        if (incoming && isOnlySelfManagedCall(app)) {
+            CarCallLog.write(app, "ringing call is self-managed (VoIP) -> not ours, ignored")
+            return
+        }
+
         if (app.isCarProjectionActive()) {
             CarCallLog.write(app, "projecting at dial time -> starting car call screen for ${number.orEmpty()}")
             CarCallService.start(app, number, simSlot, incoming)
@@ -149,8 +159,24 @@ object CarCallMonitor {
         inCallSince = 0L
     }
 
+    /**
+     * Whether Telecom holds a call through a *managed* ConnectionService — a SIM call, which is the
+     * only kind Android Auto can take from us. `isInCall` would be wrong here: it also counts
+     * self-managed calls (Jami and other VoIP apps), which never reach any InCallService of ours, so
+     * an incoming Jami call looked exactly like "the car has the call" and raised this screen over
+     * it, with buttons that cannot answer it.
+     */
+    @SuppressLint("MissingPermission")
     fun isInCall(context: Context): Boolean = try {
-        context.telecomManager.isInCall
+        context.telecomManager.isInManagedCall
+    } catch (ignored: Exception) {
+        false
+    }
+
+    /** A call is up, and every call that is up belongs to a self-managed (VoIP) app. */
+    @SuppressLint("MissingPermission")
+    private fun isOnlySelfManagedCall(context: Context): Boolean = try {
+        context.telecomManager.isInCall && !context.telecomManager.isInManagedCall
     } catch (ignored: Exception) {
         false
     }
