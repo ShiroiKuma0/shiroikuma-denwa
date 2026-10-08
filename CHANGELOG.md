@@ -3,6 +3,19 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+085 — 2026-10-08
+Built on Fossify Phone 1.11.1.
+
+### Fixed
+- **A Jami call no longer brings up the car's call screen.** An incoming Jami call raised the screen
+  meant for calls Android Auto has taken over — "unknown caller is calling", with Accept and Decline
+  that could do nothing to it. Jami, like every VoIP app built on Android's self-managed calling,
+  never hands its calls to the dialer, yet on this phone its ringing still reaches the system's
+  phone-state broadcast; the car-call watch asked Telecom whether *any* call was up, which counts
+  VoIP calls too, and that looked exactly like a call the car was holding. The watch now counts only
+  SIM calls — the only kind Android Auto can take — and a ring that belongs to a VoIP app alone is
+  ignored outright, so the car screen is unaffected and VoIP apps show their own call screens.
+
 ## 白い熊 電話 1.11.1+084 — 2026-10-02
 Built on Fossify Phone 1.11.1.
 
