@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_decline_msg">メッセージ</string>
+    <string name="sk_decline_msg_desc">着信音を止めて、メッセージを送って拒否します</string>
+    <string name="sk_decline_title">メッセージで拒否</string>
+    <string name="sk_decline_for_caller">%1$s専用</string>
+    <string name="sk_decline_general">共通</string>
+    <string name="sk_decline_hint">メッセージを入力…</string>
+    <string name="sk_decline_send">拒否して送信</string>
+    <string name="sk_decline_save_title">このメッセージを保存しますか？</string>
+    <string name="sk_decline_save_everyone">全員に使う</string>
+    <string name="sk_decline_save_caller">%1$s専用</string>
+    <string name="sk_decline_save_no">保存しない</string>
+    <string name="sk_decline_sent">拒否してメッセージを送りました</string>
+    <string name="sk_decline_sent_by_system">拒否して、メッセージの送信をシステムに任せました</string>
+    <string name="sk_decline_failed">%1$sへのメッセージを送れませんでした</string>
+    <string name="sk_decline_not_sent">拒否しましたが、メッセージを送れませんでした</string>
+    <string name="sk_decline_editor_title">拒否メッセージ</string>
+    <string name="sk_decline_editor_caller_title">%1$sへの拒否メッセージ</string>
+    <string name="sk_decline_editor_empty">専用のメッセージはまだありません。共通のメッセージが表示されます。</string>
+    <string name="sk_decline_add">＋ メッセージを追加</string>
+    <string name="sk_decline_edit">編集</string>
+    <string name="sk_decline_move_up">上へ</string>
+    <string name="sk_decline_move_down">下へ</string>
+    <string name="sk_decline_delete">削除</string>
+    <string name="sk_decline_delete_all">この発信者の分をすべて削除</string>
+    <string name="sk_decline_settings">着信拒否メッセージ</string>
+    <string name="sk_decline_settings_callers">発信者ごと</string>
+    <string name="sk_decline_settings_add_caller">＋ 発信者を追加…</string>
+    <string name="sk_decline_settings_sms_permission">送信にはSMSの権限が必要です — タップして許可</string>
+    <plurals name="sk_decline_message_count">
+        <item quantity="other">%d件</item>
+    </plurals>
+</resources>

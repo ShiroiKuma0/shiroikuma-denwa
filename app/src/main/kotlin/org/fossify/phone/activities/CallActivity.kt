@@ -21,6 +21,8 @@ import android.view.WindowManager
 import android.view.animation.AccelerateDecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
+import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.core.os.postDelayed
 import androidx.core.view.children
 import androidx.core.view.setPadding
@@ -32,6 +34,7 @@ import org.fossify.commons.helpers.*
 import org.fossify.commons.models.SimpleListItem
 import org.fossify.phone.R
 import org.fossify.phone.databinding.ActivityCallBinding
+import org.fossify.phone.dialogs.DeclineMessageViews
 import org.fossify.phone.dialogs.DynamicBottomSheetChooserDialog
 import org.fossify.phone.extensions.*
 import org.fossify.phone.extensions.ThemeSlot
@@ -50,6 +53,16 @@ class CallActivity : SimpleActivity() {
             openAppIntent.flags = Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT or Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT
             return openAppIntent
         }
+
+        /** The call screen, opened straight on the decline-message picker (the notification's Message). */
+        fun getDeclineMessageIntent(context: Context): Intent =
+            getStartIntent(context).putExtra(OPEN_DECLINE_PICKER, true)
+
+        private const val OPEN_DECLINE_PICKER = "open_decline_picker"
+
+        // the decline picker's list never covers more of the screen than this — the keyboard and
+        // the compose box need the rest
+        private const val DECLINE_PICKER_MAX_HEIGHT = 0.45f
 
         // long enough to notice the bar and react, short enough that the screen does not linger
         private const val BLOCK_UNDO_TIMEOUT_MS = 6000L
@@ -75,6 +88,12 @@ class CallActivity : SimpleActivity() {
     private var isBlockingCaller = false
     private val blockUndoHandler = Handler(Looper.getMainLooper())
 
+    // decline with a message: the open picker, "open it once the call rings" (the notification's
+    // Message action), and the finish held back while "save this message?" is up
+    private var declineDialog: AlertDialog? = null
+    private var openDeclineOnRinging = false
+    private var isSavingDeclineMessage = false
+
     private var audioRouteChooserDialog: DynamicBottomSheetChooserDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,7 +115,9 @@ class CallActivity : SimpleActivity() {
         initButtons()
         setupSilenceButton()
         setupBlockButton()
+        setupDeclineMessageButton()
         setupBlockUndoBar()
+        takeDeclinePickerRequest(intent)
         audioManager.mode = AudioManager.MODE_IN_CALL
         addLockScreenFlags()
         CallManager.addListener(callCallback)
@@ -105,6 +126,7 @@ class CallActivity : SimpleActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        takeDeclinePickerRequest(intent)
         updateState()
     }
 
@@ -625,6 +647,9 @@ class CallActivity : SimpleActivity() {
             val canBlock = CallManager.getPrimaryCall().getRawNumber().isNotEmpty()
             callBlock.beVisibleIf(canBlock)
             callBlockLabel.beVisibleIf(canBlock)
+            // the same test decides the Message button: a withheld caller has no number to text
+            callDeclineMessage.beVisibleIf(canBlock)
+            callDeclineMessageLabel.beVisibleIf(canBlock)
             callerDetails.showCallerDetails(callContact, getString(R.string.unknown_caller))
 
             callerAvatar.apply {
@@ -778,14 +803,18 @@ class CallActivity : SimpleActivity() {
      * colors: app background fill, primary-color ring and glyph.
      */
     private fun setupSilenceButton() = binding.apply {
-        val ringColor = themeColor(ThemeSlot.PRIMARY)
-        val strokeWidth = resources.getDimensionPixelSize(R.dimen.silence_call_stroke_width)
         callSilenceRinger.setOnClickListener {
             silenceRinger()
         }
 
-        callSilenceRinger.applyColorFilter(ringColor)
-        (callSilenceRinger.background as? RippleDrawable)
+        styleRingButton(callSilenceRinger, callSilenceRingerLabel)
+    }
+
+    private fun styleRingButton(button: ImageView, label: android.widget.TextView) {
+        val ringColor = themeColor(ThemeSlot.PRIMARY)
+        val strokeWidth = resources.getDimensionPixelSize(R.dimen.silence_call_stroke_width)
+        button.applyColorFilter(ringColor)
+        (button.background?.mutate() as? RippleDrawable)
             ?.findDrawableByLayerId(R.id.silence_call_background)
             ?.let { it as? GradientDrawable }
             ?.apply {
@@ -793,7 +822,216 @@ class CallActivity : SimpleActivity() {
                 setStroke(strokeWidth, ringColor)
             }
 
-        callSilenceRingerLabel.setTextColor(ringColor)
+        label.setTextColor(ringColor)
+    }
+
+    /** Message: the silence circle again — it silences first, then offers the replies. */
+    private fun setupDeclineMessageButton() = binding.apply {
+        callDeclineMessage.setOnClickListener {
+            openDeclinePicker()
+        }
+
+        styleRingButton(callDeclineMessage, callDeclineMessageLabel)
+    }
+
+    private fun takeDeclinePickerRequest(intent: Intent?) {
+        if (intent?.getBooleanExtra(OPEN_DECLINE_PICKER, false) == true) {
+            intent.removeExtra(OPEN_DECLINE_PICKER)
+            openDeclineOnRinging = true
+        }
+    }
+
+    /**
+     * The Message button (and the notification's Message action). Silences the ringing at once, then
+     * offers the caller's own replies, the general ones, and a box for a new one. Cancelling leaves
+     * the call ringing — silently — so Decline and Accept still work.
+     */
+    private fun openDeclinePicker() {
+        if (declineDialog?.isShowing == true || CallManager.getState() != Call.STATE_RINGING) {
+            return
+        }
+
+        if (CallManager.getPrimaryCall().getRawNumber().isEmpty()) {
+            return
+        }
+
+        silenceRinger()
+        if (hasPermission(PERMISSION_SEND_SMS)) {
+            showDeclinePicker()
+        } else {
+            // without the permission Telecom's own respond-via-SMS still sends it, so the picker
+            // opens either way
+            handlePermission(PERMISSION_SEND_SMS) { showDeclinePicker() }
+        }
+    }
+
+    /** Whether the picker may (still) open: a live, ringing call from a number, and no picker up yet. */
+    private fun canOfferDeclinePicker(call: Call): Boolean {
+        val isOpen = isFinishing || isDestroyed || declineDialog?.isShowing == true
+        return !isOpen && call.getRawNumber().isNotEmpty() && call.getStateCompat() == Call.STATE_RINGING
+    }
+
+    private fun showDeclinePicker() {
+        val call = CallManager.getPrimaryCall() ?: return
+        if (!canOfferDeclinePicker(call)) {
+            return
+        }
+
+        val number = call.getRawNumber()
+        val name = callContact?.name?.takeIf { it.isNotEmpty() } ?: number
+        val content = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            val rows = declinePickerRows(number, name)
+            addView(DeclineMessageViews.cappedScroll(this@CallActivity, rows, DECLINE_PICKER_MAX_HEIGHT))
+            addView(declinePickerCompose(number, name))
+        }
+
+        val builder = getAlertDialogBuilder().setNegativeButton(R.string.cancel, null)
+        setupDialogStuff(content, builder, titleText = "${getString(R.string.sk_decline_title)} — $name") { dialog ->
+            declineDialog = dialog
+            dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            dialog.setOnDismissListener {
+                if (declineDialog === dialog) {
+                    declineDialog = null
+                }
+            }
+        }
+    }
+
+    /** The caller's own replies under "For <name>", then the general ones. */
+    private fun declinePickerRows(number: String, name: String): View {
+        val (own, general) = DeclineMessagesPrefs.listFor(this, number)
+        if (own.isNotEmpty() && name != number) {
+            DeclineMessagesPrefs.setCallerName(this, number, name)
+        }
+
+        val rows = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+        fun row(text: String) = rows.addView(DeclineMessageViews.rowView(this, text) {
+            sendDeclineMessage(number, name, text, typed = false)
+        })
+
+        if (own.isNotEmpty()) {
+            rows.addView(DeclineMessageViews.headerView(this, getString(R.string.sk_decline_for_caller, name)))
+            own.forEach { row(it) }
+            if (general.isNotEmpty()) {
+                rows.addView(DeclineMessageViews.headerView(this, getString(R.string.sk_decline_general)))
+            }
+        }
+        general.forEach { row(it) }
+        return rows
+    }
+
+    /** The box for a new message, with its send button. */
+    private fun declinePickerCompose(number: String, name: String): View {
+        val input = DeclineMessageViews.messageInput(this).apply {
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val send = ImageView(this).apply {
+            setImageResource(R.drawable.ic_send_vector)
+            applyColorFilter(themeColor(ThemeSlot.PRIMARY))
+            contentDescription = getString(R.string.sk_decline_send)
+            setPadding(resources.getDimensionPixelSize(R.dimen.decline_send_padding))
+            setOnClickListener {
+                val text = input.text.toString().trim()
+                if (text.isNotEmpty()) {
+                    sendDeclineMessage(number, name, text, typed = true)
+                }
+            }
+        }
+
+        val pad = resources.getDimensionPixelSize(R.dimen.decline_compose_padding)
+        return LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+            setPadding(resources.getDimensionPixelSize(R.dimen.decline_compose_padding_start), pad, pad, pad / 2)
+            addView(input)
+            addView(send)
+        }
+    }
+
+    /**
+     * Declines the call and sends [text] from the SIM the call came in on — ourselves through that
+     * SIM's SmsManager when we hold SEND_SMS, otherwise through Telecom's respond-via-SMS, which
+     * knows the call's account too. A newly typed message is then offered for keeping, with the
+     * screen held until that is answered.
+     */
+    private fun sendDeclineMessage(number: String, name: String, text: String, typed: Boolean) {
+        declineDialog?.let {
+            declineDialog = null
+            it.dismiss()
+        }
+
+        val call = CallManager.getPrimaryCall()
+        if (call == null || call.getStateCompat() != Call.STATE_RINGING) {
+            return
+        }
+
+        val (own, general) = DeclineMessagesPrefs.listFor(this, number)
+        val isNew = typed && text !in own && text !in general
+        isSavingDeclineMessage = isNew
+        binding.incomingCallHolder.beGone()
+
+        val handle = runCatching { call.details?.accountHandle }.getOrNull()
+        val canSendOurselves = hasPermission(PERMISSION_SEND_SMS) &&
+            DeclineSms.subscriptionIdFor(this, handle) != android.telephony.SubscriptionManager.INVALID_SUBSCRIPTION_ID
+        val canTelecomSend = call.details?.can(Call.Details.CAPABILITY_RESPOND_VIA_TEXT) == true
+
+        when {
+            canSendOurselves -> {
+                endCall()
+                val sent = DeclineSms.send(this, handle, number, text)
+                toast(if (sent) R.string.sk_decline_sent else R.string.sk_decline_not_sent)
+            }
+
+            canTelecomSend -> {
+                call.reject(true, text)
+                endCall(reject = false)
+                toast(R.string.sk_decline_sent_by_system)
+            }
+
+            else -> {
+                endCall()
+                toast(R.string.sk_decline_not_sent)
+            }
+        }
+
+        if (isNew) {
+            askToSaveDeclineMessage(number, name, text)
+        }
+    }
+
+    private fun askToSaveDeclineMessage(number: String, name: String, text: String) {
+        val choices = listOf<Pair<String, () -> Unit>>(
+            getString(R.string.sk_decline_save_everyone) to { DeclineMessagesPrefs.addGlobal(this, text) },
+            getString(R.string.sk_decline_save_caller, name) to {
+                if (name != number) {
+                    DeclineMessagesPrefs.setCallerName(this, number, name)
+                }
+                DeclineMessagesPrefs.addForNumber(this, number, text)
+            },
+            getString(R.string.sk_decline_save_no) to {}
+        )
+
+        var dialog: AlertDialog? = null
+        val view = DeclineMessageViews.rowsView(this, choices.map { it.first }, DECLINE_PICKER_MAX_HEIGHT) { which ->
+            choices[which].second()
+            dialog?.dismiss()
+        }
+
+        setupDialogStuff(view, getAlertDialogBuilder(), titleText = getString(R.string.sk_decline_save_title)) {
+            dialog = it
+            it.setOnDismissListener {
+                isSavingDeclineMessage = false
+                safeFinishAndRemoveTask()
+            }
+        }
+
+        // the activity may already be finishing on some path; never leave the screen stuck
+        if (dialog == null) {
+            isSavingDeclineMessage = false
+            safeFinishAndRemoveTask()
+        }
     }
 
     /**
@@ -961,11 +1199,20 @@ class CallActivity : SimpleActivity() {
     }
 
     private fun callRinging() {
-        binding.incomingCallHolder.beVisible()
+        if (!isCallEnded) {
+            binding.incomingCallHolder.beVisible()
+        }
         updateRingerSilencedState()
+
+        // opened from the notification's Message action — go straight to the picker
+        if (openDeclineOnRinging) {
+            openDeclineOnRinging = false
+            binding.root.post { openDeclinePicker() }
+        }
     }
 
     private fun callStarted() {
+        declineDialog?.dismiss()   // answered (here or elsewhere) — nothing to decline
         enableProximitySensor()
         binding.incomingCallHolder.beGone()
         binding.ongoingCallHolder.beVisible()
@@ -982,8 +1229,11 @@ class CallActivity : SimpleActivity() {
         }
     }
 
-    private fun endCall() {
-        CallManager.reject()
+    private fun endCall(reject: Boolean = true) {
+        if (reject) {
+            CallManager.reject()
+        }
+        declineDialog?.dismiss()
         disableProximitySensor()
         audioRouteChooserDialog?.dismissAllowingStateLoss()
 
@@ -1009,7 +1259,7 @@ class CallActivity : SimpleActivity() {
             } else {
                 disableAllActionButtons()
                 binding.callStatusLabel.text = getString(R.string.call_ended)
-                if (!isBlockingCaller) {
+                if (!isBlockingCaller && !isSavingDeclineMessage) {
                     finish()
                 }
             }
@@ -1017,8 +1267,9 @@ class CallActivity : SimpleActivity() {
     }
 
     private fun safeFinishAndRemoveTask() {
-        // while the undo bar is up it owns the finish, so the screen outlives the rejected call
-        if (isBlockingCaller) {
+        // while the undo bar (or the "save this message?" prompt) is up it owns the finish, so the
+        // screen outlives the rejected call
+        if (isBlockingCaller || isSavingDeclineMessage) {
             return
         }
 

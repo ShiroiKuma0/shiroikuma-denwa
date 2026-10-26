@@ -25,13 +25,20 @@ import org.fossify.commons.dialogs.RadioGroupDialog
 import org.fossify.commons.extensions.adjustAlpha
 import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.getProperPrimaryColor
+import org.fossify.commons.extensions.getMyContactsCursor
+import org.fossify.commons.extensions.getPhoneNumberTypeText
 import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.extensions.showErrorToast
 import org.fossify.commons.extensions.toast
 import org.fossify.commons.extensions.viewBinding
+import org.fossify.commons.helpers.ContactsHelper
+import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.NavigationIcon
+import org.fossify.commons.helpers.PERMISSION_SEND_SMS
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.helpers.isRPlus
+import org.fossify.commons.models.PhoneNumber
 import org.fossify.commons.models.RadioItem
 import org.fossify.phone.R
 import org.fossify.phone.adapters.CallScreenFieldsAdapter
@@ -46,9 +53,11 @@ import org.fossify.phone.databinding.ItemThemeTextBinding
 import org.fossify.phone.databinding.ItemThemeTokenBinding
 import org.fossify.phone.databinding.ItemThemeValueBinding
 import org.fossify.phone.dialogs.AlphaColorPickerDialog
+import org.fossify.phone.dialogs.DeclineMessagesEditor
 import org.fossify.phone.dialogs.EXPORT_WARN_COLOR
 import org.fossify.phone.dialogs.ExportImportDialog
 import org.fossify.phone.dialogs.FontPickerDialog
+import org.fossify.phone.dialogs.SelectContactDialog
 import org.fossify.phone.extensions.CallDurationFormat
 import org.fossify.phone.extensions.CallTimeFormat
 import org.fossify.phone.extensions.FontWeightOption
@@ -70,6 +79,7 @@ import org.fossify.phone.extensions.showFontSample
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.themeDimenDp
 import org.fossify.phone.helpers.CallFieldEntry
+import org.fossify.phone.helpers.DeclineMessagesPrefs
 import org.fossify.phone.helpers.CallScreenConfig
 import org.fossify.phone.helpers.MAX_FONT_SIZE_SP
 import org.fossify.phone.helpers.SIM_COLOR_UNSET
@@ -166,6 +176,10 @@ class ThemeActivity : SimpleActivity() {
         // Export / Import — the first section on the page, as in every sister app: this is where the
         // app is saved and restored, so it comes before anything it can save.
         addExportImportSection(primaryColor)
+
+        // Call decline messages — the incoming-call screen's Message replies, placed as shiroikuma-jami
+        // places its own on its UI page
+        addDeclineMessagesSection(primaryColor)
 
         // Foundation
         addSection(R.string.theme_group_foundation, primaryColor)
@@ -416,6 +430,86 @@ class ThemeActivity : SimpleActivity() {
         val intent = packageManager.getLaunchIntentForPackage(packageName) ?: return
         startActivity(Intent.makeRestartActivityTask(intent.component))
         Runtime.getRuntime().exit(0)
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Call decline messages
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * The replies offered by the incoming-call screen's Message button. The general list is shown
+     * inline; each caller with replies of their own gets one row that opens the shared editor
+     * (DeclineMessagesEditor — the call log's per-entry action opens the very same dialogs). Laid out
+     * like the section of the same name on shiroikuma-jami's UI page.
+     */
+    private fun addDeclineMessagesSection(primaryColor: Int) {
+        addSection(R.string.sk_decline_settings, primaryColor)
+        val indent = rowIndent + stepPx
+
+        // without SEND_SMS the reply still goes out through Telecom, so this is a warning, not a gate
+        if (!hasPermission(PERMISSION_SEND_SMS)) {
+            addValueRow(
+                title = getString(R.string.sk_decline_settings_sms_permission),
+                value = "",
+                indent = rowIndent,
+                valueColor = EXPORT_WARN_COLOR,
+            ) { handlePermission(PERMISSION_SEND_SMS) { buildRows() } }
+        }
+
+        addSubgroup(R.string.sk_decline_general, primaryColor)
+        DeclineMessagesPrefs.global(this).forEachIndexed { index, message ->
+            addValueRow("•  $message", "", indent) {
+                DeclineMessagesEditor.showItemActions(this, null, index, { buildRows() })
+            }
+        }
+        addValueRow(getString(R.string.sk_decline_add), "", indent) {
+            DeclineMessagesEditor.showEdit(this, getString(R.string.sk_decline_add), "") { text ->
+                DeclineMessagesPrefs.addGlobal(this, text)
+                buildRows()
+            }
+        }
+
+        addSubgroup(R.string.sk_decline_settings_callers, primaryColor)
+        for (number in DeclineMessagesPrefs.callersWithOwn(this)) {
+            val name = DeclineMessagesPrefs.callerName(this, number)
+            val count = DeclineMessagesPrefs.forNumber(this, number).size
+            addValueRow(
+                title = name?.let { "$it ($number)" } ?: number,
+                value = resources.getQuantityString(R.plurals.sk_decline_message_count, count, count),
+                indent = indent,
+            ) { DeclineMessagesEditor.showList(this, number, name) { buildRows() } }
+        }
+        addValueRow(getString(R.string.sk_decline_settings_add_caller), "", indent) { pickDeclineCaller() }
+    }
+
+    /** A contact, then — when it has several — which of its numbers; the lists are kept per number. */
+    private fun pickDeclineCaller() {
+        ContactsHelper(this).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
+            val all = contacts.toMutableList()
+            val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+            all.addAll(MyContactsContentProvider.getContacts(this, privateCursor))
+            all.sort()
+            if (all.isEmpty()) {
+                return@getContacts
+            }
+
+            SelectContactDialog(this, all) { contact ->
+                val name = contact.getNameToDisplay()
+                val numbers = contact.phoneNumbers
+                if (numbers.size > 1) {
+                    val items = numbers.mapIndexed { index, item ->
+                        RadioItem(index, "${item.value} (${getPhoneNumberTypeText(item.type, item.label)})", item)
+                    }
+                    RadioGroupDialog(this, ArrayList(items)) { picked ->
+                        DeclineMessagesEditor.showList(this, (picked as PhoneNumber).value, name) { buildRows() }
+                    }
+                } else {
+                    numbers.firstOrNull()?.let {
+                        DeclineMessagesEditor.showList(this, it.value, name) { buildRows() }
+                    }
+                }
+            }
+        }
     }
 
     // ---------------------------------------------------------------------------------------------

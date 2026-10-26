@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- shiroikuma fork: decline an incoming call with a predefined message (as in shiroikuma-jami). -->
+<resources>
+    <string name="sk_decline_msg">Message</string>
+    <string name="sk_decline_msg_desc">Silence the call, then decline it with a message</string>
+    <string name="sk_decline_title">Decline with a message</string>
+    <string name="sk_decline_for_caller">For %1$s</string>
+    <string name="sk_decline_general">General</string>
+    <string name="sk_decline_hint">Write a message…</string>
+    <string name="sk_decline_send">Decline and send</string>
+    <string name="sk_decline_save_title">Save this message?</string>
+    <string name="sk_decline_save_everyone">For everyone</string>
+    <string name="sk_decline_save_caller">Only for %1$s</string>
+    <string name="sk_decline_save_no">Don’t save</string>
+    <string name="sk_decline_sent">Call declined, message sent</string>
+    <string name="sk_decline_sent_by_system">Call declined, message handed to the system</string>
+    <string name="sk_decline_failed">The message to %1$s could not be sent</string>
+    <string name="sk_decline_not_sent">Call declined, but the message could not be sent</string>
+    <string name="sk_decline_editor_title">Decline messages</string>
+    <string name="sk_decline_editor_caller_title">Decline messages for %1$s</string>
+    <string name="sk_decline_editor_empty">No messages of their own yet — the general ones are offered.</string>
+    <string name="sk_decline_add">+ Add message</string>
+    <string name="sk_decline_edit">Edit</string>
+    <string name="sk_decline_move_up">Move up</string>
+    <string name="sk_decline_move_down">Move down</string>
+    <string name="sk_decline_delete">Delete</string>
+    <string name="sk_decline_delete_all">Delete all for this caller</string>
+    <!-- The starter replies are English on every locale — they are sent to callers, not shown to the
+         user, so they follow no UI language; edit them on the 白い熊 電話 UI page. -->
+    <string name="sk_decline_default_1" translatable="false">Can’t talk now — I’ll call you back.</string>
+    <string name="sk_decline_default_2" translatable="false">I’m in a meeting.</string>
+    <string name="sk_decline_default_3" translatable="false">Please send me a text.</string>
+    <string name="sk_decline_default_4" translatable="false">I’ll call you later.</string>
+    <!-- the 白い熊 電話 UI page section -->
+    <string name="sk_decline_settings">Call decline messages</string>
+    <string name="sk_decline_settings_callers">Per caller</string>
+    <string name="sk_decline_settings_add_caller">+ Add caller…</string>
+    <string name="sk_decline_settings_sms_permission">Sending needs the SMS permission — tap to allow</string>
+    <plurals name="sk_decline_message_count">
+        <item quantity="one">%d message</item>
+        <item quantity="other">%d messages</item>
+    </plurals>
+</resources>

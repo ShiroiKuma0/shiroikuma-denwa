@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.CALL_PRIVILEGED" />
+    <!-- decline an incoming call with a message, sent from the SIM the call came in on -->
+    <uses-permission
+        android:name="android.permission.SEND_SMS"
+        tools:ignore="PermissionImpliesUnsupportedChromeOsHardware" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.WRITE_CALL_LOG" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -265,6 +269,11 @@
         <receiver
             android:name=".receivers.CallActionReceiver"
             android:enabled="true"
+            android:exported="false" />
+
+        <!-- the radio's verdict on a decline message (helpers/DeclineSms) -->
+        <receiver
+            android:name=".receivers.DeclineSmsResultReceiver"
             android:exported="false" />
 
         <!-- Incoming calls while Android Auto owns the in-call UI: nothing else tells us they exist.

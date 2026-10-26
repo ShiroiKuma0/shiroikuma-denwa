@@ -50,6 +50,17 @@
             android:src="@drawable/ic_phone_down_red_vector" />
 
         <ImageView
+            android:id="@+id/notification_decline_message"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/call_notification_button_size"
+            android:layout_weight="1"
+            android:background="@drawable/ripple_background"
+            android:contentDescription="@string/sk_decline_msg_desc"
+            android:padding="@dimen/small_margin"
+            android:src="@drawable/ic_sms_vector"
+            android:visibility="gone" />
+
+        <ImageView
             android:id="@+id/notification_accept_call"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/call_notification_button_size"

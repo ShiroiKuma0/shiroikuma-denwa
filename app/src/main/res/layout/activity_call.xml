@@ -308,7 +308,7 @@
             android:padding="@dimen/bigger_margin"
             android:src="@drawable/ic_bell_off_vector"
             app:layout_constraintBottom_toTopOf="@+id/call_silence_ringer_label"
-            app:layout_constraintEnd_toStartOf="@+id/call_block"
+            app:layout_constraintEnd_toStartOf="@+id/call_decline_message"
             app:layout_constraintHorizontal_chainStyle="packed"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -323,6 +323,37 @@
             app:layout_constraintEnd_toEndOf="@+id/call_silence_ringer"
             app:layout_constraintStart_toStartOf="@+id/call_silence_ringer" />
 
+        <!-- Decline with a message: the silence circle again, between Silence and Block. Shown only
+             for a caller with a number, like Block — a withheld caller cannot be texted. -->
+        <ImageView
+            android:id="@+id/call_decline_message"
+            android:layout_width="@dimen/incoming_call_button_size"
+            android:layout_height="@dimen/incoming_call_button_size"
+            android:layout_marginStart="@dimen/incoming_call_pair_gap"
+            android:background="@drawable/ic_call_silence"
+            android:contentDescription="@string/sk_decline_msg_desc"
+            android:padding="@dimen/bigger_margin"
+            android:src="@drawable/ic_sms_vector"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/call_silence_ringer"
+            app:layout_constraintEnd_toStartOf="@+id/call_block"
+            app:layout_constraintStart_toEndOf="@+id/call_silence_ringer"
+            app:layout_constraintTop_toTopOf="@+id/call_silence_ringer"
+            tools:visibility="visible" />
+
+        <org.fossify.commons.views.MyTextView
+            android:id="@+id/call_decline_message_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sk_decline_msg"
+            android:textSize="@dimen/bigger_text_size"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/call_silence_ringer_label"
+            app:layout_constraintEnd_toEndOf="@+id/call_decline_message"
+            app:layout_constraintStart_toStartOf="@+id/call_decline_message"
+            app:layout_constraintTop_toTopOf="@+id/call_silence_ringer_label"
+            tools:visibility="visible" />
+
         <ImageView
             android:id="@+id/call_block"
             android:layout_width="@dimen/incoming_call_button_size"
@@ -335,7 +366,7 @@
             android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/call_silence_ringer"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/call_silence_ringer"
+            app:layout_constraintStart_toEndOf="@+id/call_decline_message"
             app:layout_constraintTop_toTopOf="@+id/call_silence_ringer"
             tools:visibility="visible" />
 
