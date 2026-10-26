@@ -3,6 +3,33 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+088 — 2026-10-26
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **Decline a call with a text message.** A **Message** button now sits between Silence and Block on
+  the incoming‑call screen, and a Message action on the ringing notification opens the call screen
+  straight on it. It silences the ringing at once and offers predefined replies — the caller's own
+  first, under "For <name>", then the general ones — and a box for writing a new one. Picking or
+  sending one declines the call and texts the caller. Cancelling leaves the call ringing, silently,
+  so Accept and Decline still work. The button is hidden for a withheld number, like Block.
+- **The reply comes from the SIM that was called.** The call's phone account is resolved to its SIM
+  subscription and the text goes out through that SIM alone — never the default one. When the SIM
+  cannot be worked out, or the SMS permission is refused, Android's own reply‑by‑SMS sends it, which
+  also uses the call's SIM. A text the network rejects raises a "could not be sent" notice.
+- **Keep what you typed.** A message written on the spot can afterwards be saved for everyone, for
+  that caller only, or not at all; the screen waits for the answer.
+- **Per‑caller replies.** Besides the general list, any caller can have their own, keyed by the
+  number in international form (read in the SIM's country), so the same number written with or
+  without its country code is one caller.
+- **Call decline messages on the 白い熊 UI page.** A new section, right after Export / Import, lists
+  the general replies (tap one to edit, move or delete it; "+ Add message"), one row per caller with
+  their own replies, and "+ Add caller…" to pick a contact — and the number, when it has several. A
+  call‑log entry's **Decline messages** action opens that number's list directly. Laid out after
+  白い熊 GNU Jami's version of the same feature, so the two apps behave alike. The general list starts
+  with four English replies on every language, since they are what callers receive. All of it travels
+  in the settings backup.
+
 ## 白い熊 電話 1.11.1+085 — 2026-10-08
 Built on Fossify Phone 1.11.1.
 
