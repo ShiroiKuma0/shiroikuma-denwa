@@ -56,6 +56,7 @@ import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.databinding.ItemDialpadContactBinding
 import org.fossify.phone.databinding.ItemRecentCallBinding
 import org.fossify.phone.databinding.ItemRecentsDateBinding
+import org.fossify.phone.dialogs.DeclineMessagesEditor
 import org.fossify.phone.dialogs.ShowGroupedCallsDialog
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
@@ -180,11 +181,13 @@ class RecentCallsAdapter(
             findItem(R.id.cab_show_call_details).isVisible = isOneItemSelected
             findItem(R.id.cab_view_details).isVisible = selectedContact != null
             findItem(R.id.cab_edit_contact).isVisible = selectedContact != null
+            findItem(R.id.cab_decline_messages).isVisible = isOneItemSelected && !selectedItems.first().isUnknownNumber
         }
 
         activity.styleContextualActionBar(actMode, menu)
     }
 
+    @Suppress("CyclomaticComplexMethod") // a flat dispatch: one branch per menu item, by design
     override fun actionItemPressed(id: Int) {
         if (selectedKeys.isEmpty()) {
             return
@@ -203,6 +206,7 @@ class RecentCallsAdapter(
             R.id.cab_select_all -> selectAll()
             R.id.cab_view_details -> launchContactDetailsIntent(findContactByCall(getSelectedItems().first()))
             R.id.cab_edit_contact -> launchEditContactIntent(findContactByCall(getSelectedItems().first()))
+            R.id.cab_decline_messages -> editDeclineMessages(getSelectedItems().first())
         }
     }
 
@@ -488,6 +492,13 @@ class RecentCallsAdapter(
         }
     }
 
+    /** This caller's own decline-message replies — the same editor as the 白い熊 電話 UI page. */
+    private fun editDeclineMessages(call: RecentCall) {
+        finishActMode()
+        val name = findContactByCall(call)?.getNameToDisplay() ?: call.name.takeIf { it != call.phoneNumber }
+        DeclineMessagesEditor.showList(activity, call.phoneNumber, name)
+    }
+
     private fun launchEditContactIntent(contact: Contact?) {
         if (contact != null) {
             activity.startEditContactIntent(contact)
@@ -551,6 +562,7 @@ class RecentCallsAdapter(
                 findItem(R.id.cab_block_number).title = activity.addLockedLabelIfNeeded(R.string.block_number)
                 findItem(R.id.cab_block_number).isVisible = isNougatPlus() && !call.isUnknownNumber
                 findItem(R.id.cab_remove_default_sim).isVisible = (activity.config.getCustomSIM(selectedNumber) ?: "") != "" && !call.isUnknownNumber
+                findItem(R.id.cab_decline_messages).isVisible = !call.isUnknownNumber
                 colorItemTitles(activity.themeColor(ThemeSlot.MENU_TEXT))
             }
 
@@ -628,6 +640,8 @@ class RecentCallsAdapter(
                             removeDefaultSIM()
                         }
                     }
+
+                    R.id.cab_decline_messages -> editDeclineMessages(call)
                 }
                 true
             }

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_decline_msg">Zpráva</string>
+    <string name="sk_decline_msg_desc">Ztiší hovor a odmítne ho se zprávou</string>
+    <string name="sk_decline_title">Odmítnout se zprávou</string>
+    <string name="sk_decline_for_caller">Pro: %1$s</string>
+    <string name="sk_decline_general">Obecné</string>
+    <string name="sk_decline_hint">Napište zprávu…</string>
+    <string name="sk_decline_send">Odmítnout a odeslat</string>
+    <string name="sk_decline_save_title">Uložit tuto zprávu?</string>
+    <string name="sk_decline_save_everyone">Pro všechny</string>
+    <string name="sk_decline_save_caller">Jen pro: %1$s</string>
+    <string name="sk_decline_save_no">Neukládat</string>
+    <string name="sk_decline_sent">Hovor odmítnut, zpráva odeslána</string>
+    <string name="sk_decline_sent_by_system">Hovor odmítnut, zprávu odesílá systém</string>
+    <string name="sk_decline_failed">Zprávu pro %1$s se nepodařilo odeslat</string>
+    <string name="sk_decline_not_sent">Hovor odmítnut, ale zprávu se nepodařilo odeslat</string>
+    <string name="sk_decline_editor_title">Zprávy při odmítnutí</string>
+    <string name="sk_decline_editor_caller_title">Zprávy při odmítnutí: %1$s</string>
+    <string name="sk_decline_editor_empty">Zatím žádné vlastní zprávy — nabízejí se obecné.</string>
+    <string name="sk_decline_add">+ Přidat zprávu</string>
+    <string name="sk_decline_edit">Upravit</string>
+    <string name="sk_decline_move_up">Posunout nahoru</string>
+    <string name="sk_decline_move_down">Posunout dolů</string>
+    <string name="sk_decline_delete">Smazat</string>
+    <string name="sk_decline_delete_all">Smazat vše pro tohoto volajícího</string>
+    <string name="sk_decline_settings">Zprávy při odmítnutí hovoru</string>
+    <string name="sk_decline_settings_callers">Pro jednotlivé volající</string>
+    <string name="sk_decline_settings_add_caller">+ Přidat volajícího…</string>
+    <string name="sk_decline_settings_sms_permission">Odesílání potřebuje oprávnění k SMS — klepnutím povolíte</string>
+    <plurals name="sk_decline_message_count">
+        <item quantity="one">%d zpráva</item>
+        <item quantity="few">%d zprávy</item>
+        <item quantity="many">%d zprávy</item>
+        <item quantity="other">%d zpráv</item>
+    </plurals>
+</resources>

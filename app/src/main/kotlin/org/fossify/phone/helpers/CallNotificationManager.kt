@@ -15,6 +15,7 @@ import org.fossify.commons.extensions.setText
 import org.fossify.commons.extensions.setVisibleIf
 import org.fossify.phone.R
 import org.fossify.phone.activities.CallActivity
+import org.fossify.phone.extensions.getRawNumber
 import org.fossify.phone.receivers.CallActionReceiver
 
 class CallNotificationManager(private val context: Context) {
@@ -22,6 +23,10 @@ class CallNotificationManager(private val context: Context) {
         private const val CALL_NOTIFICATION_ID = 42
         private const val ACCEPT_CALL_CODE = 0
         private const val DECLINE_CALL_CODE = 1
+        private const val DECLINE_MESSAGE_CODE = 2
+
+        // the SMS glyph is drawn white; a mid grey reads on both light and dark notification shades
+        private const val DECLINE_MESSAGE_TINT = 0xFF757575.toInt()
     }
 
     private val notificationManager = context.notificationManager
@@ -78,6 +83,7 @@ class CallNotificationManager(private val context: Context) {
                 setText(R.id.notification_caller_name, callerName)
                 setText(R.id.notification_call_status, context.getString(contentTextId))
                 setVisibleIf(R.id.notification_accept_call, callState == Call.STATE_RINGING)
+                setupDeclineMessageAction(callState)
 
                 setOnClickPendingIntent(R.id.notification_decline_call, declinePendingIntent)
                 setOnClickPendingIntent(R.id.notification_accept_call, acceptPendingIntent)
@@ -113,6 +119,25 @@ class CallNotificationManager(private val context: Context) {
                 notificationManager.notify(CALL_NOTIFICATION_ID, notification)
             }
         }
+    }
+
+    /**
+     * Message: opens the call screen on the decline-message picker. The replies cannot be listed inside
+     * a notification, so this is an activity, not a RemoteInput (as in shiroikuma-jami). Only for a
+     * ringing call from a number — a withheld caller cannot be texted.
+     */
+    private fun RemoteViews.setupDeclineMessageAction(callState: Int?) {
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            DECLINE_MESSAGE_CODE,
+            CallActivity.getDeclineMessageIntent(context),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val canDecline = callState == Call.STATE_RINGING && CallManager.getPrimaryCall().getRawNumber().isNotEmpty()
+        setVisibleIf(R.id.notification_decline_message, canDecline)
+        setInt(R.id.notification_decline_message, "setColorFilter", DECLINE_MESSAGE_TINT)
+        setOnClickPendingIntent(R.id.notification_decline_message, pendingIntent)
     }
 
     fun createNotificationChannel(isHighPriority: Boolean, channelId: String) {

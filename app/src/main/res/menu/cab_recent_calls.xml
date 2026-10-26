@@ -64,6 +64,12 @@
         android:title="@string/unset_default_sim"
         app:showAsAction="never" />
     <item
+        android:id="@+id/cab_decline_messages"
+        android:icon="@drawable/ic_sms_vector"
+        android:showAsAction="never"
+        android:title="@string/sk_decline_editor_title"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/cab_select_all"
         android:showAsAction="never"
         android:title="@string/select_all"

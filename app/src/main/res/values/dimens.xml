@@ -19,6 +19,18 @@
     <dimen name="block_undo_stroke_width">2dp</dimen>
     <dimen name="block_undo_corner_radius">8dp</dimen>
     <dimen name="call_notification_button_size">40dp</dimen>
+    <!-- Decline with a message: the picker and editor rows (DeclineMessageViews), laid out as in
+         shiroikuma-jami so the two apps' pickers read alike. -->
+    <dimen name="decline_row_padding_horizontal">24dp</dimen>
+    <dimen name="decline_row_padding_vertical">12dp</dimen>
+    <dimen name="decline_header_padding_top">10dp</dimen>
+    <dimen name="decline_header_padding_bottom">2dp</dimen>
+    <dimen name="decline_compose_padding_start">20dp</dimen>
+    <dimen name="decline_compose_padding">8dp</dimen>
+    <dimen name="decline_send_padding">12dp</dimen>
+    <dimen name="decline_row_text_size">18sp</dimen>
+    <dimen name="decline_body_text_size">16sp</dimen>
+    <dimen name="decline_header_text_size">13sp</dimen>
     <dimen name="caller_avatar_max_size">172dp</dimen>
     <dimen name="end_call_button_margin">34dp</dimen>
     <dimen name="dialpad_bottom_padding">114dp</dimen>
