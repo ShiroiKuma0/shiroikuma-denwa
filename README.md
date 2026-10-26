@@ -6,11 +6,11 @@
 
 **A privacy‑friendly dialer, supercharged for dual‑SIM power users.**
 
-A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a call screen on the phone for the calls the car takes over, a caller block you decide the contents of, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, a one‑zip backup that carries your call history and blocked numbers and cannot lose them on the way back, and a deep hand‑off to our Contacts fork.
+A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major additions**: a per‑contact default SIM that even **Android Auto** obeys, a call screen on the phone for the calls the car takes over, a caller block you decide the contents of, declining a call with a text sent from the SIM that was called, a full black/yellow theming system, swipe‑to‑call per SIM, a richer call log, a one‑zip backup that carries your call history and blocked numbers and cannot lose them on the way back, and a deep hand‑off to our Contacts fork.
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+085`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+088`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -88,11 +88,31 @@ Not every call you want to take is one you want to hear. A **Silence** button si
 
 ---
 
+## 💬 Can't talk? Decline with a text — from the SIM they called
+
+A **Message** button sits between *Silence* and *Block* on the incoming‑call screen, and on the
+ringing notification too. One tap **silences the ringing at once** and opens your replies: the
+caller's own first, under "For <name>", then the general ones, and a box at the bottom for writing
+something new. Pick one, or type and send, and the call is declined and the caller gets the text.
+
+It comes **from the SIM they dialled**. On a dual‑SIM phone the reply to a call on your work number
+must not arrive from your private one, so the message goes out through that call's own SIM and
+never the default — and if that SIM cannot be worked out, Android's own reply‑by‑SMS sends it,
+which knows the call's SIM too. A text the network refuses is reported, not silently lost.
+
+A message you typed on the spot can be **kept** afterwards — for everyone, or only for that caller.
+Both lists are edited in a **Call decline messages** section of the 白い熊 UI page, and a call‑log
+entry's *Decline messages* action opens that caller's own list directly. It starts with four
+English replies and goes along with the rest of the settings in the backup zip. Change your mind
+before choosing and the call simply keeps ringing — silently.
+
+---
+
 ## 🛑 Block a nuisance caller in one tap
 
 Declining a nuisance call leaves the number free to ring again a minute later, and blocking it used
 to mean letting the call ring out, opening Recents, long‑pressing the entry and picking *Block
-number*. A **Block** button now sits beside *Silence* on the incoming‑call screen: one tap hangs up
+number*. A **Block** button now sits beside *Silence* and *Message* on the incoming‑call screen: one tap hangs up
 **and** adds the caller to the blocked list.
 
 It is a red octagon — the stop‑sign silhouette, and the only control on that screen which is not a
