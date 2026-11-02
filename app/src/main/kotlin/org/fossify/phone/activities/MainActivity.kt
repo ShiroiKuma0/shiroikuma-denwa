@@ -42,6 +42,7 @@ import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.applyThemeFont
 import org.fossify.phone.extensions.colorItemTitles
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.dropRenrakusakiCopies
 import org.fossify.phone.extensions.getInstalledContactsAppPackage
 import org.fossify.phone.extensions.handleFullScreenNotificationsPermission
 import org.fossify.phone.extensions.holdsDialerRole
@@ -913,6 +914,7 @@ class MainActivity : SimpleActivity() {
             if (SMT_PRIVATE !in config.ignoredContactSources) {
                 val privateContacts = MyContactsContentProvider.getContacts(this, privateCursor)
                 if (privateContacts.isNotEmpty()) {
+                    contacts.dropRenrakusakiCopies(this, privateContacts)
                     contacts.addAll(privateContacts)
                     contacts.sort()
                 }

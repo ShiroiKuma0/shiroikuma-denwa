@@ -11,6 +11,7 @@ import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getColorStateList
 import org.fossify.commons.extensions.getContrastColor
 import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.dropRenrakusakiCopies
 import org.fossify.phone.extensions.themeColor
 import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.hasPermission
@@ -95,6 +96,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
             if (SMT_PRIVATE !in context.baseConfig.ignoredContactSources) {
                 val privateContacts = MyContactsContentProvider.getContacts(context, privateCursor)
                 if (privateContacts.isNotEmpty()) {
+                    allContacts.dropRenrakusakiCopies(context, privateContacts)
                     allContacts.addAll(privateContacts)
                     allContacts.sort()
                 }

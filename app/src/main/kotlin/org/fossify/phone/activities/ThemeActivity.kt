@@ -68,6 +68,7 @@ import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callDurationFormatOf
 import org.fossify.phone.extensions.callTimeFormatOf
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.dropRenrakusakiCopies
 import org.fossify.phone.extensions.fontDisplayName
 import org.fossify.phone.extensions.importFont
 import org.fossify.phone.extensions.resetThemeColor
@@ -487,7 +488,9 @@ class ThemeActivity : SimpleActivity() {
         ContactsHelper(this).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
             val all = contacts.toMutableList()
             val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-            all.addAll(MyContactsContentProvider.getContacts(this, privateCursor))
+            val privateContacts = MyContactsContentProvider.getContacts(this, privateCursor)
+            all.dropRenrakusakiCopies(this, privateContacts)
+            all.addAll(privateContacts)
             all.sort()
             if (all.isEmpty()) {
                 return@getContacts
