@@ -3,10 +3,10 @@ package org.fossify.phone.services
 import android.telecom.Call
 import android.telecom.CallScreeningService
 import org.fossify.commons.extensions.baseConfig
+import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.isNumberBlocked
 import org.fossify.commons.helpers.ContactLookupResult
 import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.phone.extensions.getPrivateContactsCursor
 
 class SimpleCallScreeningService : CallScreeningService() {
 
@@ -18,7 +18,7 @@ class SimpleCallScreeningService : CallScreeningService() {
             }
 
             number != null && baseConfig.blockUnknownNumbers -> {
-                val privateCursor = getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+                val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
                 val result = SimpleContactsHelper(this).existsSync(number, privateCursor)
                 respondToCall(callDetails, isBlocked = result == ContactLookupResult.NotFound)
             }

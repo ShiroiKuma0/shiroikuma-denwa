@@ -11,8 +11,8 @@ import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getColorStateList
 import org.fossify.commons.extensions.getContrastColor
 import org.fossify.phone.extensions.ThemeSlot
-import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.extensions.themeColor
+import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.extensions.normalizeString
 import org.fossify.commons.extensions.underlineText
@@ -88,7 +88,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
     }
 
     override fun refreshItems(invalidate: Boolean, callback: (() -> Unit)?) {
-        val privateCursor = context?.getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+        val privateCursor = context?.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
         ContactsHelper(context).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
             allContacts = contacts
 

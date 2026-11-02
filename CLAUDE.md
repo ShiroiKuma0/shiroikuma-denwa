@@ -109,7 +109,7 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
 - **Source:** the `shiroikuma-commons` fork (`~/git/shiroikuma-commons`, branch `custom`), which strips
   Commons' anti-tamper "fake version" / sideloading checks out entirely **and** carries fork-package
   fixes for spots where Commons hard-codes `org.fossify.*` (documented in that repo's CLAUDE.md).
-- **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk7"` in
+- **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk10"` in
   `gradle/libs.versions.toml` (`mavenLocal()` is already a repository in `settings.gradle.kts`).
 - Because Commons itself no longer nags, this app carries **no** anti-tamper workaround — no
   `getPackageName` spoof, no `SIDELOADING_FALSE`, no `res/raw/keep.xml`.
@@ -121,9 +121,16 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
   themed one (app background fill, primary-color text and 2dp frame) whenever the toast is raised from
   a live activity — non-activity contexts (services, receivers) still get the plain system toast,
   because API 30+ silently drops custom toast views from a backgrounded app. `-sk7` adds a
-  contacts-import fallback for a stale account source (irrelevant here, but keeps denwa and
-  renrakusaki on one revision). All are pure additions — a bump that drops them shows up as edgeless
-  dialogs, grey menus and white toasts, not as a build failure.
+  contacts-import fallback for a stale account source (irrelevant here); `-sk8` themes the list-adapter
+  contextual action bar and `-sk9` lets a toast from a service or receiver borrow the resumed activity
+  for the themed bubble. **`-sk10` is the one this app depends on for contact names:** commons'
+  `getMyContactsCursor()` used to ask only `org.fossify.commons.contactsprovider`, which nothing on the
+  phone serves, so every renrakusaki private contact ("Phone storage (not visible by other apps)") was
+  invisible — no name on the call screen or in the call log, and "block unknown numbers" rejected them.
+  sk10 asks `shiroikuma.renrakusaki[.debug].contactsprovider` first (our manifest already holds its
+  signature-level `READ_PRIVATE_DATA`). A pin below sk10 silently brings that back. All are pure
+  additions — a bump that drops them shows up as edgeless dialogs, grey menus, white toasts and
+  nameless private contacts, not as a build failure.
 
 ### Commons hard-codes the `org.fossify.phone` package (call-intent fix)
 
@@ -154,7 +161,7 @@ git checkout <new-commons-tag>     # then re-apply all patches (anti-tamper stri
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :commons:publishToMavenLocal -PVERSION=<ver>-skN
 ```
 
-Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk7`; `-skN` is our patch
+Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk10`; `-skN` is our patch
 revision — see the commons fork's CLAUDE.md). The patched AAR lives only in `~/.m2`, not in the repo.
 
 ## Contacts/Favorites tabs hand off to our Contacts fork (renrakusaki)

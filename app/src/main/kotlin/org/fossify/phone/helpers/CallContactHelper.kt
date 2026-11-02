@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.telecom.Call
+import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getPhoneNumberTypeText
 import org.fossify.commons.helpers.ContactsHelper
 import org.fossify.commons.helpers.MyContactsContentProvider
@@ -13,7 +14,6 @@ import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.findByNumber
 import org.fossify.phone.extensions.formatPhoneNumber
 import org.fossify.phone.extensions.getCallLogRegion
-import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.extensions.hasSameTailAs
 import org.fossify.phone.extensions.isConference
 import org.fossify.phone.models.CallContact
@@ -24,7 +24,7 @@ fun getCallContact(context: Context, call: Call?, callback: (CallContact) -> Uni
         return
     }
 
-    val privateCursor = context.getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+    val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
     ensureBackgroundThread {
         val callContact = CallContact("", "", "", "")
         val handle = try {
@@ -51,7 +51,7 @@ fun getCallContact(context: Context, call: Call?, callback: (CallContact) -> Uni
  * [CarCallMonitor].
  */
 fun getCallContactByNumber(context: Context, number: String, callback: (CallContact) -> Unit) {
-    val privateCursor = context.getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+    val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
     ensureBackgroundThread {
         lookUpNumber(context, privateCursor, number, CallContact("", "", "", ""), callback)
     }

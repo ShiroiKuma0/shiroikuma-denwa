@@ -12,7 +12,6 @@ import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.adapters.FilterContactSourcesAdapter
 import org.fossify.phone.databinding.DialogFilterContactSourcesBinding
 import org.fossify.phone.extensions.config
-import org.fossify.phone.extensions.getPrivateContactsCursor
 
 class FilterContactSourcesDialog(val activity: SimpleActivity, private val callback: () -> Unit) {
     private val binding by activity.viewBinding(DialogFilterContactSourcesBinding::inflate)
@@ -33,7 +32,7 @@ class FilterContactSourcesDialog(val activity: SimpleActivity, private val callb
 
         contactHelper.getContacts(getAll = true, showOnlyContactsWithNumbers = true) {
             it.mapTo(contacts) { contact -> contact.copy() }
-            val privateCursor = activity.getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+            val privateCursor = activity.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
             val privateContacts = MyContactsContentProvider.getContacts(activity, privateCursor)
             this.contacts.addAll(privateContacts)
             isContactsReady = true
