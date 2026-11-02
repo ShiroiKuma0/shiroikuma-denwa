@@ -3,6 +3,35 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+095 — 2026-11-02
+Built on Fossify Phone 1.11.1.
+
+### Fixed
+- **Private contacts are no longer nameless.** Contacts kept in 白い熊 連絡先's own storage ("Phone
+  storage (not visible by other apps)") were invisible to the dialer: the shared Commons library asked
+  for them at stock Fossify Contacts' address, which nothing on the phone answers. So a private
+  contact's call showed only the number — on the call screen, the notification and in the call log —
+  and search, speed dial and the Contacts and Favourites tabs left them out. The dialer now reads them
+  from 連絡先 itself (through Commons 6.1.6‑sk10).
+- **"Block unknown numbers" no longer blocks private contacts.** With that setting on, every call from
+  a private contact was rejected as unknown, for the same reason.
+- **A number saved without its country code still finds its contact.** When the exact comparison
+  fails, a number now also matches a contact whose number ends in the same nine digits — on the call
+  screen and in the call log. The call log's own fallback used to look at a contact's first number
+  only; it now checks all of them.
+
+### Added
+- **Contacts made "visible to other apps" are listed once.** 連絡先 1.6.0+092 can give a private
+  contact a copy in the system contacts so that apps like WhatsApp can see it. The dialer recognises
+  those copies and hides them wherever it shows private contacts alongside system ones — the Contacts
+  and Favourites tabs, search, speed dial and the decline‑message contact picker — so the person
+  appears once. A copy is hidden only while its private original is actually readable; if 連絡先 is
+  not sharing, the copy stays.
+
+### Changed
+- Built against Commons 6.1.6‑sk10 (was sk7), which also themes the list‑selection action bar and
+  gives toasts raised from the background the themed bubble while the app is on screen.
+
 ## 白い熊 電話 1.11.1+088 — 2026-10-26
 Built on Fossify Phone 1.11.1.
 
