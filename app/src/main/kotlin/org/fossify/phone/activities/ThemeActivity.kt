@@ -24,6 +24,7 @@ import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
 import org.fossify.commons.extensions.adjustAlpha
 import org.fossify.commons.extensions.beGone
+import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.getPhoneNumberTypeText
 import org.fossify.commons.extensions.getProperTextColor
@@ -68,7 +69,6 @@ import org.fossify.phone.extensions.callDurationFormatOf
 import org.fossify.phone.extensions.callTimeFormatOf
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.fontDisplayName
-import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.extensions.importFont
 import org.fossify.phone.extensions.resetThemeColor
 import org.fossify.phone.extensions.setThemeColor
@@ -486,7 +486,7 @@ class ThemeActivity : SimpleActivity() {
     private fun pickDeclineCaller() {
         ContactsHelper(this).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
             val all = contacts.toMutableList()
-            val privateCursor = getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+            val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
             all.addAll(MyContactsContentProvider.getContacts(this, privateCursor))
             all.sort()
             if (all.isEmpty()) {

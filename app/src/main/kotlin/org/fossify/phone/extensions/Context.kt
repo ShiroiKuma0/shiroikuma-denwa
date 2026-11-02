@@ -186,6 +186,13 @@ fun Context.clearMissedCalls() {
     }
 }
 
+// Our Contacts fork's provider (release, then debug build). Commons (sk10+) reads the private contacts
+// from it; we read the per-contact SIM. Reading needs its signature-level READ_PRIVATE_DATA, which we hold.
+private val RENRAKUSAKI_PROVIDER_AUTHORITIES = arrayOf(
+    "shiroikuma.renrakusaki.contactsprovider",
+    "shiroikuma.renrakusaki.debug.contactsprovider"
+)
+
 // Per-contact default SIM chosen in our Contacts fork (renrakusaki), read from its content provider.
 // Returns the SIM slot (1 or 2) saved for the given number, or 0 if none / unavailable. Reading is
 // gated by renrakusaki's signature-level permission, which we hold (both apps share a signing key).

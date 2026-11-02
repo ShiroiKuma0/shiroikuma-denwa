@@ -14,7 +14,6 @@ import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.extensions.buildSIMAccountLookupMap
 import org.fossify.phone.extensions.findByNumber
-import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.models.RecentCall
 import org.fossify.phone.models.SIMAccount
 
@@ -31,7 +30,7 @@ class RecentsHelper(private val context: Context) {
         queryLimit: Int = QUERY_LIMIT,
         callback: (List<RecentCall>) -> Unit,
     ) {
-        val privateCursor = context.getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+        val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
         if (!context.hasPermission(PERMISSION_READ_CALL_LOG)) {
             callback(ArrayList())
             return
