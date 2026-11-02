@@ -43,6 +43,7 @@ import org.fossify.phone.extensions.applyThemeFont
 import org.fossify.phone.extensions.colorItemTitles
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getInstalledContactsAppPackage
+import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.extensions.handleFullScreenNotificationsPermission
 import org.fossify.phone.extensions.holdsDialerRole
 import org.fossify.phone.extensions.launchContactsApp
@@ -908,7 +909,7 @@ class MainActivity : SimpleActivity() {
     }
 
     fun cacheContacts() {
-        val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+        val privateCursor = getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
         ContactsHelper(this).getContacts(getAll = true, showOnlyContactsWithNumbers = true) { contacts ->
             if (SMT_PRIVATE !in config.ignoredContactSources) {
                 val privateContacts = MyContactsContentProvider.getContacts(this, privateCursor)

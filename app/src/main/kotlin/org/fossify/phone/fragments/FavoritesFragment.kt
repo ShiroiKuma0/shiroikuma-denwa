@@ -12,8 +12,8 @@ import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getColorStateList
 import org.fossify.commons.extensions.getContrastColor
 import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.extensions.themeColor
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.helpers.ContactsHelper
 import org.fossify.commons.helpers.Converters
@@ -75,7 +75,7 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) : MyViewPa
             allContacts = contacts
 
             if (SMT_PRIVATE !in context.baseConfig.ignoredContactSources) {
-                val privateCursor = context?.getMyContactsCursor(favoritesOnly = true, withPhoneNumbersOnly = true)
+                val privateCursor = context?.getPrivateContactsCursor(favoritesOnly = true, withPhoneNumbersOnly = true)
                 val privateContacts = MyContactsContentProvider.getContacts(context, privateCursor).map {
                     it.copy(starred = 1)
                 }

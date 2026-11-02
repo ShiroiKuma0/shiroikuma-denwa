@@ -194,11 +194,7 @@ fun Context.getRenrakusakiSimSlot(number: String): Int {
         return 0
     }
 
-    val authorities = arrayOf(
-        "shiroikuma.renrakusaki.contactsprovider",
-        "shiroikuma.renrakusaki.debug.contactsprovider"
-    )
-    for (authority in authorities) {
+    for (authority in RENRAKUSAKI_PROVIDER_AUTHORITIES) {
         val slot = querySimSlotFromProvider(authority, number)
         if (slot == 1 || slot == 2) {
             return slot

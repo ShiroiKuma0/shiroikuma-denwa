@@ -3,7 +3,6 @@ package org.fossify.phone.activities
 import android.os.Bundle
 import com.google.gson.Gson
 import org.fossify.commons.dialogs.RadioGroupDialog
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getPhoneNumberTypeText
 import org.fossify.commons.extensions.updateTextColors
 import org.fossify.commons.extensions.viewBinding
@@ -17,6 +16,7 @@ import org.fossify.phone.adapters.SpeedDialAdapter
 import org.fossify.phone.databinding.ActivityManageSpeedDialBinding
 import org.fossify.phone.dialogs.SelectContactDialog
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.interfaces.RemoveSpeedDialListener
 import org.fossify.phone.models.SpeedDial
 
@@ -42,7 +42,7 @@ class ManageSpeedDialActivity : SimpleActivity(), RemoveSpeedDialListener {
         ContactsHelper(this).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
             allContacts.addAll(contacts)
 
-            val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+            val privateCursor = getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
             val privateContacts = MyContactsContentProvider.getContacts(this, privateCursor)
             allContacts.addAll(privateContacts)
             allContacts.sort()

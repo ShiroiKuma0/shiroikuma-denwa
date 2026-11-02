@@ -6,7 +6,6 @@ import org.fossify.commons.extensions.baseConfig
 import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.beGoneIf
 import org.fossify.commons.extensions.beVisible
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.extensions.isVisible
 import org.fossify.commons.extensions.trimToComparableNumber
@@ -23,6 +22,8 @@ import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.adapters.RecentCallsAdapter
 import org.fossify.phone.databinding.FragmentRecentsBinding
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.findByNumber
+import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.extensions.runAfterAnimations
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
@@ -265,7 +266,7 @@ class RecentsFragment(
     }
 
     private fun getPrivateContacts(): ArrayList<Contact> {
-        val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+        val privateCursor = context.getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
         return MyContactsContentProvider.getContacts(context, privateCursor)
     }
 
@@ -286,6 +287,7 @@ class RecentsFragment(
         return calls.map { call ->
             if (call.phoneNumber == call.name) {
                 val privateContact = privateContacts.firstOrNull { it.doesContainPhoneNumber(call.phoneNumber) }
+                    ?: privateContacts.findByNumber(call.phoneNumber)
                 val contact = contactsWithNumbers.firstOrNull { it.phoneNumbers.first().normalizedNumber == call.phoneNumber }
 
                 when {

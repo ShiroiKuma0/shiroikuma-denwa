@@ -13,12 +13,13 @@ import org.fossify.commons.models.contacts.Contact
 import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.extensions.buildSIMAccountLookupMap
+import org.fossify.phone.extensions.findByNumber
+import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.models.RecentCall
 import org.fossify.phone.models.SIMAccount
 
 class RecentsHelper(private val context: Context) {
     companion object {
-        private const val COMPARABLE_PHONE_NUMBER_LENGTH = 9
         const val QUERY_LIMIT = 100
     }
 
@@ -30,7 +31,7 @@ class RecentsHelper(private val context: Context) {
         queryLimit: Int = QUERY_LIMIT,
         callback: (List<RecentCall>) -> Unit,
     ) {
-        val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+        val privateCursor = context.getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
         if (!context.hasPermission(PERMISSION_READ_CALL_LOG)) {
             callback(ArrayList())
             return
@@ -198,21 +199,12 @@ class RecentsHelper(private val context: Context) {
                     if (contactsNumbersMap.containsKey(number)) {
                         name = contactsNumbersMap[number]!!
                     } else {
-                        val normalizedNumber = number.normalizePhoneNumber()
-                        if (normalizedNumber!!.length >= COMPARABLE_PHONE_NUMBER_LENGTH) {
-                            name = contacts.filter { it.phoneNumbers.isNotEmpty() }.firstOrNull { contact ->
-                                val curNumber = contact.phoneNumbers.first().normalizedNumber
-                                if (curNumber.length >= COMPARABLE_PHONE_NUMBER_LENGTH) {
-                                    if (curNumber.substring(curNumber.length - COMPARABLE_PHONE_NUMBER_LENGTH) == normalizedNumber.substring(
-                                            normalizedNumber.length - COMPARABLE_PHONE_NUMBER_LENGTH
-                                        )
-                                    ) {
-                                        contactsNumbersMap[number] = contact.getNameToDisplay()
-                                        return@firstOrNull true
-                                    }
-                                }
-                                false
-                            }?.name ?: number
+                        // Commons' exact match first, then the last nine digits of ANY of the
+                        // contact's numbers (this used to look at the first number only).
+                        val contact = contacts.findByNumber(number!!)
+                        if (contact != null) {
+                            name = contact.getNameToDisplay()
+                            contactsNumbersMap[number] = name
                         }
                     }
                 }
@@ -226,7 +218,7 @@ class RecentsHelper(private val context: Context) {
                     if (contactPhotosMap.containsKey(number)) {
                         photoUri = contactPhotosMap[number]!!
                     } else {
-                        val contact = contacts.firstOrNull { it.doesHavePhoneNumber(number) }
+                        val contact = contacts.findByNumber(number)
                         if (contact != null) {
                             photoUri = contact.photoUri
                             contactPhotosMap[number] = contact.photoUri

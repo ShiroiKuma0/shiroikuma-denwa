@@ -9,7 +9,6 @@ import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getColorStateList
 import org.fossify.commons.extensions.getColoredDrawableWithColor
 import org.fossify.commons.extensions.getContrastColor
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.isDefaultDialer
@@ -24,6 +23,7 @@ import org.fossify.phone.R
 import org.fossify.phone.adapters.ContactsAdapter
 import org.fossify.phone.databinding.ActivityDialpadBinding
 import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.getPrivateContactsCursor
 import org.fossify.phone.extensions.setupWithContacts
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
@@ -59,7 +59,7 @@ class DialpadActivity : SimpleActivity() {
         }
 
         setupOptionsMenu()
-        privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+        privateCursor = getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
         dialpadController.setup()
 
         ContactsHelper(this).getContacts(showOnlyContactsWithNumbers = true) { contacts ->
