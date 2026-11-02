@@ -4,15 +4,17 @@ import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.telecom.Call
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getPhoneNumberTypeText
 import org.fossify.commons.helpers.ContactsHelper
 import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.phone.R
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.findByNumber
 import org.fossify.phone.extensions.formatPhoneNumber
 import org.fossify.phone.extensions.getCallLogRegion
+import org.fossify.phone.extensions.getPrivateContactsCursor
+import org.fossify.phone.extensions.hasSameTailAs
 import org.fossify.phone.extensions.isConference
 import org.fossify.phone.models.CallContact
 
@@ -22,7 +24,7 @@ fun getCallContact(context: Context, call: Call?, callback: (CallContact) -> Uni
         return
     }
 
-    val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+    val privateCursor = context.getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
     ensureBackgroundThread {
         val callContact = CallContact("", "", "", "")
         val handle = try {
@@ -49,7 +51,7 @@ fun getCallContact(context: Context, call: Call?, callback: (CallContact) -> Uni
  * [CarCallMonitor].
  */
 fun getCallContactByNumber(context: Context, number: String, callback: (CallContact) -> Unit) {
-    val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+    val privateCursor = context.getPrivateContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
     ensureBackgroundThread {
         lookUpNumber(context, privateCursor, number, CallContact("", "", "", ""), callback)
     }
@@ -84,7 +86,7 @@ private fun lookUpNumber(
             number
         }
 
-        val contact = contacts.firstOrNull { it.doesHavePhoneNumber(number) }
+        val contact = contacts.findByNumber(number)
         if (contact != null) {
             callContact.name = contact.getNameToDisplay()
             callContact.photoUri = contact.photoUri
@@ -102,6 +104,7 @@ private fun lookUpNumber(
 
             if (contact.phoneNumbers.size > 1) {
                 val specificPhoneNumber = contact.phoneNumbers.firstOrNull { it.value == number }
+                    ?: contact.phoneNumbers.firstOrNull { it.hasSameTailAs(number) }
                 if (specificPhoneNumber != null) {
                     callContact.numberLabel = context.getPhoneNumberTypeText(specificPhoneNumber.type, specificPhoneNumber.label)
                 }
@@ -113,3 +116,4 @@ private fun lookUpNumber(
         callback(callContact)
     }
 }
+
