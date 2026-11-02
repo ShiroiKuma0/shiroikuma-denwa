@@ -24,6 +24,7 @@ import org.fossify.phone.R
 import org.fossify.phone.adapters.ContactsAdapter
 import org.fossify.phone.databinding.ActivityDialpadBinding
 import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.dropRenrakusakiCopies
 import org.fossify.phone.extensions.setupWithContacts
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
@@ -125,6 +126,7 @@ class DialpadActivity : SimpleActivity() {
 
         val privateContacts = MyContactsContentProvider.getContacts(this, privateCursor)
         if (privateContacts.isNotEmpty()) {
+            allContacts.dropRenrakusakiCopies(this, privateContacts)
             allContacts.addAll(privateContacts)
             allContacts.sort()
         }

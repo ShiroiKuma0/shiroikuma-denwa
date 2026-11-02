@@ -17,6 +17,7 @@ import org.fossify.phone.adapters.SpeedDialAdapter
 import org.fossify.phone.databinding.ActivityManageSpeedDialBinding
 import org.fossify.phone.dialogs.SelectContactDialog
 import org.fossify.phone.extensions.config
+import org.fossify.phone.extensions.dropRenrakusakiCopies
 import org.fossify.phone.interfaces.RemoveSpeedDialListener
 import org.fossify.phone.models.SpeedDial
 
@@ -44,6 +45,7 @@ class ManageSpeedDialActivity : SimpleActivity(), RemoveSpeedDialListener {
 
             val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
             val privateContacts = MyContactsContentProvider.getContacts(this, privateCursor)
+            allContacts.dropRenrakusakiCopies(this, privateContacts)
             allContacts.addAll(privateContacts)
             allContacts.sort()
         }
