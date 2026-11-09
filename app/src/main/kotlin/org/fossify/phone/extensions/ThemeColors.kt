@@ -12,6 +12,7 @@ import org.fossify.phone.R
 import org.fossify.phone.helpers.LEGACY_PALETTE_YELLOW
 import org.fossify.phone.helpers.PALETTE_BLACK
 import org.fossify.phone.helpers.PALETTE_BLUE
+import org.fossify.phone.helpers.PALETTE_DIM_GOLD
 import org.fossify.phone.helpers.PALETTE_RED
 import org.fossify.phone.helpers.PALETTE_YELLOW
 import org.fossify.phone.helpers.SIM_COLOR_UNSET
@@ -53,6 +54,8 @@ enum class ThemeSlot(
     PRIMARY("theme_primary", ThemeGroup.FOUNDATION, R.string.theme_primary, isFoundation = true),
     TEXT("theme_text", ThemeGroup.FOUNDATION, R.string.theme_text, isFoundation = true),
     TEXT_SECONDARY("theme_text_secondary", ThemeGroup.FOUNDATION, R.string.theme_text_secondary),
+    // The UI page's own explanations and the thin rule beside them — the family's dim gold
+    SETTINGS_NOTE("theme_settings_note", ThemeGroup.FOUNDATION, R.string.theme_settings_note),
 
     // Search bar
     SEARCH_FILL("theme_search_fill", ThemeGroup.SEARCH, R.string.theme_search_fill),
@@ -191,6 +194,7 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.PRIMARY -> getProperPrimaryColor()
     ThemeSlot.TEXT -> getProperTextColor()
     ThemeSlot.TEXT_SECONDARY -> themeColor(ThemeSlot.TEXT).adjustAlpha(0.6f)
+    ThemeSlot.SETTINGS_NOTE -> PALETTE_DIM_GOLD
 
     // Search bar: black fill, yellow text/icon/border by inheriting foundation
     ThemeSlot.SEARCH_FILL -> themeColor(ThemeSlot.BACKGROUND)

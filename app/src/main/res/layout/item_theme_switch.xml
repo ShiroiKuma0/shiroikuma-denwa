@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Toggle row: title on the left, a switch on the right. The whole row is clickable; the switch
-     itself is non-interactive so taps anywhere on the row flip it (mirrors the color/dimen rows). -->
+     itself is non-interactive so taps anywhere on the row flip it (mirrors the color/dimen rows).
+     A row that carries an explanation is drawn as one block per the black-yellow-theme skill: the
+     label bold, the description beneath it in the dim-gold note colour at 13 sp, and a thin dim-gold
+     rule down the block's left edge. Without one, the rule and description stay gone. -->
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/theme_switch_holder"
@@ -8,15 +11,38 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <View
+        android:id="@+id/theme_switch_rule"
+        android:layout_width="@dimen/theme_note_rule_width"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <org.fossify.commons.views.MyTextView
         android:id="@+id/theme_switch_label"
         style="@style/SettingsTextLabelStyle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@+id/theme_switch_description"
+        app:layout_constraintEnd_toStartOf="@+id/theme_switch"
+        app:layout_constraintStart_toEndOf="@+id/theme_switch_rule"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="@dimen/theme_note_rule_gap"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_goneMarginStart="0dp" />
+
+    <org.fossify.commons.views.MyTextView
+        android:id="@+id/theme_switch_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/theme_note_text_size"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/theme_switch"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="@+id/theme_switch_label"
+        app:layout_constraintTop_toBottomOf="@+id/theme_switch_label" />
 
     <org.fossify.commons.views.MyMaterialSwitch
         android:id="@+id/theme_switch"
@@ -25,6 +51,7 @@
         android:layout_marginStart="@dimen/normal_margin"
         android:clickable="false"
         android:focusable="false"
+        android:minHeight="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

@@ -53,6 +53,8 @@ const val PALETTE_YELLOW = 0xFFFFFF00.toInt()
 // SIM badge defaults — pure like the yellow above, so the two SIMs are told apart at a glance
 const val PALETTE_RED = 0xFFFF0000.toInt()
 const val PALETTE_BLUE = 0xFF0000FF.toInt()
+// The family's dim gold: explanations and their left rules on the UI page (ThemeSlot.SETTINGS_NOTE)
+const val PALETTE_DIM_GOLD = 0xFFC8C800.toInt()
 // The material yellow PALETTE_YELLOW used to be; persisted colors carrying its RGB are rewritten
 // once at startup (see migrateToPureYellowIfNeeded)
 const val LEGACY_PALETTE_YELLOW = 0xFFFFEB3B.toInt()

@@ -182,7 +182,7 @@ class SettingsActivity : SimpleActivity() {
 
     private fun setupShiroikumaUi() {
         binding.settingsShiroikumaUiHolder.setOnClickListener {
-            startActivity(Intent(this, ThemeActivity::class.java))
+            startActivity(Intent(this, ThemeActivity::class.java).putExtra(EXTRA_FROM_SETTINGS, true))
         }
     }
 
