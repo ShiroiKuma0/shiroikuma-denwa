@@ -56,4 +56,11 @@
     <dimen name="theme_subgroup_indent">54dp</dimen>
     <dimen name="theme_row_indent">72dp</dimen>
     <dimen name="theme_row_indent_step">18dp</dimen>
+    <!-- inner start/end padding of an action pill; the explanation beneath lines up with its label -->
+    <dimen name="theme_action_pill_padding">16dp</dimen>
+    <dimen name="theme_action_pill_padding_vertical">9dp</dimen>
+    <!-- an explained row: dim-gold description size, and the thin dim-gold rule down its left edge -->
+    <dimen name="theme_note_text_size">13sp</dimen>
+    <dimen name="theme_note_rule_width">2dp</dimen>
+    <dimen name="theme_note_rule_gap">10dp</dimen>
 </resources>

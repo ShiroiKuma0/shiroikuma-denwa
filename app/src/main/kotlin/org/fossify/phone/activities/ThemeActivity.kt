@@ -2,15 +2,16 @@ package org.fossify.phone.activities
 
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.res.ColorStateList
+import android.graphics.Typeface
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.RippleDrawable
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.Settings
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.text.style.RelativeSizeSpan
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -24,9 +25,11 @@ import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
 import org.fossify.commons.extensions.adjustAlpha
 import org.fossify.commons.extensions.beGone
+import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.getPhoneNumberTypeText
+import org.fossify.commons.extensions.getProperBackgroundColor
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.extensions.showErrorToast
@@ -43,6 +46,7 @@ import org.fossify.commons.models.RadioItem
 import org.fossify.phone.R
 import org.fossify.phone.adapters.CallScreenFieldsAdapter
 import org.fossify.phone.databinding.ActivityThemeBinding
+import org.fossify.phone.databinding.ItemThemeActionBinding
 import org.fossify.phone.databinding.ItemThemeColorBinding
 import org.fossify.phone.databinding.ItemThemeDimenBinding
 import org.fossify.phone.databinding.ItemThemeFieldsOrderBinding
@@ -92,16 +96,24 @@ import java.io.OutputStream
 // heading is underlined only as wide as its words, and each cascade level steps in one notch — a
 // section's heading at 36dp, its rows at 72, a subgroup's heading at 54, its rows at 90.
 
-// A row's vertical padding, replacing the commons style's 20dp: the page is a long list of one-liners,
-// so it is packed tight rather than spaced like a handful of preference rows.
-private const val ROW_PADDING_VERTICAL_DP = 5
+// A row's vertical padding, replacing the commons style's 20dp: every row is only as tall as its content
+// (black-yellow-theme skill, "Row padding"), so a page of one-liners never reads double-spaced.
+private const val ROW_PADDING_VERTICAL_DP = 2
 
-// A row description renders at this share of the title's size, dimmed to this alpha.
-private const val DESCRIPTION_TEXT_SCALE = 0.85f
-private const val DESCRIPTION_ALPHA = 0.6f
 
 // How many hex characters of the automation token stay visible at each end.
 private const val TOKEN_ABBREVIATION_EDGE = 8
+
+// The family's action pill (black-yellow-theme skill; the same numbers as commons sk12's pillDrawable):
+// always outlined, never filled — the main action of a section a thick frame, every other one a thin one.
+private const val PILL_RADIUS_DP = 100f
+private const val PILL_STROKE_MAIN_DP = 3f
+private const val PILL_STROKE_DP = 1.25f
+private const val PILL_RIPPLE_ALPHA = 0.3f
+private const val PILL_ROW_PADDING_DP = 3
+
+/** Set by SettingsActivity when it opens this page, so "App settings" goes back to it rather than stacking another. */
+const val EXTRA_FROM_SETTINGS = "shiroikuma_from_settings"
 
 @Suppress("TooManyFunctions", "LargeClass")
 class ThemeActivity : SimpleActivity() {
@@ -173,6 +185,14 @@ class ThemeActivity : SimpleActivity() {
         rowIndent = resources.getDimensionPixelSize(R.dimen.theme_row_indent)
         stepPx = resources.getDimensionPixelSize(R.dimen.theme_row_indent_step)
         val subRowIndent = rowIndent + stepPx
+
+        // The page's link to the app's own settings: right under the title, the first and thick pill.
+        addActionRow(
+            title = getString(R.string.theme_app_settings),
+            summary = getString(R.string.theme_app_settings_desc),
+            indent = resources.getDimensionPixelSize(R.dimen.theme_section_indent),
+            main = true,
+        ) { openAppSettings() }
 
         // Export / Import — the first section on the page, as in every sister app: this is where the
         // app is saved and restored, so it comes before anything it can save.
@@ -292,11 +312,12 @@ class ThemeActivity : SimpleActivity() {
             valueColor = if (dir == null) EXPORT_WARN_COLOR else primaryColor,
         ) { eximFolderPicker.launch(SettingsExport.configuredDirUri(this)) }
 
-        addValueRow(
+        addActionRow(
             title = getString(R.string.eim_open),
-            value = lastExportSummary(),
+            summary = getString(R.string.eim_open_desc) + "\n" + lastExportSummary(),
             indent = rowIndent,
-            valueColor = if (dir == null) EXPORT_WARN_COLOR else null,
+            main = true,
+            summaryColor = if (dir == null) EXPORT_WARN_COLOR else null,
         ) { showExportImportPanel() }
 
         addAutomationSubgroup(primaryColor)
@@ -449,11 +470,12 @@ class ThemeActivity : SimpleActivity() {
 
         // without SEND_SMS the reply still goes out through Telecom, so this is a warning, not a gate
         if (!hasPermission(PERMISSION_SEND_SMS)) {
-            addValueRow(
+            addActionRow(
                 title = getString(R.string.sk_decline_settings_sms_permission),
-                value = "",
+                summary = null,
                 indent = rowIndent,
-                valueColor = EXPORT_WARN_COLOR,
+                main = false,
+                labelColor = EXPORT_WARN_COLOR,
             ) { handlePermission(PERMISSION_SEND_SMS) { buildRows() } }
         }
 
@@ -463,7 +485,7 @@ class ThemeActivity : SimpleActivity() {
                 DeclineMessagesEditor.showItemActions(this, null, index, { buildRows() })
             }
         }
-        addValueRow(getString(R.string.sk_decline_add), "", indent) {
+        addActionRow(getString(R.string.sk_decline_add), null, indent, main = false) {
             DeclineMessagesEditor.showEdit(this, getString(R.string.sk_decline_add), "") { text ->
                 DeclineMessagesPrefs.addGlobal(this, text)
                 buildRows()
@@ -480,7 +502,9 @@ class ThemeActivity : SimpleActivity() {
                 indent = indent,
             ) { DeclineMessagesEditor.showList(this, number, name) { buildRows() } }
         }
-        addValueRow(getString(R.string.sk_decline_settings_add_caller), "", indent) { pickDeclineCaller() }
+        addActionRow(getString(R.string.sk_decline_settings_add_caller), null, indent, main = false) {
+            pickDeclineCaller()
+        }
     }
 
     /** A contact, then — when it has several — which of its numbers; the lists are kept per number. */
@@ -572,6 +596,9 @@ class ThemeActivity : SimpleActivity() {
         b.themeTokenValue.setTextColor(getProperTextColor())
         b.themeTokenRegenerate.text = getString(R.string.automation_token_regenerate)
         b.themeTokenRegenerate.setTextColor(getProperPrimaryColor())
+        // an action, so a (thin) pill — never a bare clickable word
+        b.themeTokenRegenerate.background =
+            pillDrawable(getProperPrimaryColor(), getProperBackgroundColor(), main = false)
         b.root.setOnClickListener { copyAutomationToken() }
         b.themeTokenRegenerate.setOnClickListener {
             ConfirmationDialog(
@@ -750,6 +777,7 @@ class ThemeActivity : SimpleActivity() {
         indentRow(b.themeTextWeightRow, indent + stepPx)
         indentRow(b.themeTextSizeRow, indent + stepPx)
         indentRow(b.themeTextSample, indent + stepPx)
+        tightenRow(b.themeTextColorRow)
         parent.addView(b.root)
     }
 
@@ -788,6 +816,65 @@ class ThemeActivity : SimpleActivity() {
         binding.themeHolder.addView(row.root)
     }
 
+    /**
+     * An action / navigation row: the outlined pill, only as wide as [title], holding it — thick and bold when [main],
+     * with a › when it [opens] something — and [summary] beneath it, aligned with the label. Only the pill
+     * takes the tap; the explanation beneath does not. Rows with a control of their own (a switch, a
+     * swatch, a slider, a value) stay plain rows: their control is the affordance already.
+     */
+    private fun addActionRow(
+        title: String,
+        summary: String?,
+        indent: Int,
+        main: Boolean,
+        opens: Boolean = true,
+        labelColor: Int? = null,
+        summaryColor: Int? = null,
+        onClick: () -> Unit,
+    ) {
+        val accent = getProperPrimaryColor()
+        val row = ItemThemeActionBinding.inflate(layoutInflater, binding.themeHolder, false)
+        row.themeActionPill.background = pillDrawable(accent, getProperBackgroundColor(), main)
+        row.themeActionLabel.text = title
+        row.themeActionLabel.setTextColor(labelColor ?: getProperTextColor())
+        row.themeActionLabel.setTypeface(row.themeActionLabel.typeface, if (main) Typeface.BOLD else Typeface.NORMAL)
+        row.themeActionChevron.setTextColor(accent)
+        if (!opens) row.themeActionChevron.beGone()
+        val explained = !summary.isNullOrEmpty()
+        if (explained) {
+            row.themeActionSummary.text = summary
+            row.themeActionSummary.setTextColor(summaryColor ?: themeColor(ThemeSlot.SETTINGS_NOTE))
+            row.themeActionRule.setBackgroundColor(themeColor(ThemeSlot.SETTINGS_NOTE))
+            row.themeActionRule.beVisible()
+        } else {
+            row.themeActionSummary.beGone()
+        }
+        row.themeActionPill.setOnClickListener { onClick() }
+        // only a hair of space around the pill — its own inner padding already makes it easy to hit
+        val vertical = (PILL_ROW_PADDING_DP * resources.displayMetrics.density).toInt()
+        row.root.setPaddingRelative(ruledStart(indent, explained), vertical, row.root.paddingEnd, vertical)
+        binding.themeHolder.addView(row.root)
+    }
+
+    private fun pillDrawable(accent: Int, background: Int, main: Boolean): Drawable {
+        val density = resources.displayMetrics.density
+        val face = GradientDrawable().apply {
+            cornerRadius = PILL_RADIUS_DP * density
+            setColor(background)
+            setStroke(((if (main) PILL_STROKE_MAIN_DP else PILL_STROKE_DP) * density).toInt().coerceAtLeast(1), accent)
+        }
+        return RippleDrawable(ColorStateList.valueOf(accent.adjustAlpha(PILL_RIPPLE_ALPHA)), face, null)
+    }
+
+    /** Opened from Settings: go back to it. Opened from the main screen's 設 or menu: open Settings over this page. */
+    private fun openAppSettings() {
+        if (intent.getBooleanExtra(EXTRA_FROM_SETTINGS, false)) {
+            finish()
+        } else {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+    }
+
     private fun addSwitchRow(
         @StringRes labelRes: Int,
         checked: Boolean,
@@ -796,31 +883,39 @@ class ThemeActivity : SimpleActivity() {
         onToggle: (Boolean) -> Unit,
     ) {
         val row = ItemThemeSwitchBinding.inflate(layoutInflater, binding.themeHolder, false)
-        val title = getString(labelRes)
-        row.themeSwitchLabel.text = if (description == null) title else titleWithDescription(title, description)
+        row.themeSwitchLabel.text = getString(labelRes)
         row.themeSwitchLabel.setTextColor(getProperTextColor())
         row.themeSwitch.isChecked = checked
+        row.themeSwitch.minimumHeight = 0
+        // An explained item is one block: bold label, dim-gold description, dim-gold rule on its left.
+        val explained = !description.isNullOrEmpty()
+        if (explained) {
+            row.themeSwitchLabel.setTypeface(row.themeSwitchLabel.typeface, Typeface.BOLD)
+            row.themeSwitchDescription.text = description
+            row.themeSwitchDescription.setTextColor(themeColor(ThemeSlot.SETTINGS_NOTE))
+            row.themeSwitchDescription.beVisible()
+            row.themeSwitchRule.setBackgroundColor(themeColor(ThemeSlot.SETTINGS_NOTE))
+            row.themeSwitchRule.beVisible()
+        }
         row.root.setOnClickListener {
             row.themeSwitch.toggle()
             onToggle(row.themeSwitch.isChecked)
         }
         indentRow(row.root, indent)
+        row.root.apply { setPaddingRelative(ruledStart(indent, explained), paddingTop, paddingEnd, paddingBottom) }
         binding.themeHolder.addView(row.root)
     }
 
-    // A row's explanation, as a smaller dimmed line below its title — the value rows' styling, without
-    // needing a second view in the switch layout.
-    private fun titleWithDescription(title: String, description: String): CharSequence =
-        SpannableStringBuilder(title).apply {
-            append("\n")
-            val start = length
-            append(description)
-            setSpan(RelativeSizeSpan(DESCRIPTION_TEXT_SCALE), start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            setSpan(
-                ForegroundColorSpan(getProperTextColor().adjustAlpha(DESCRIPTION_ALPHA)),
-                start, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-        }
+    /**
+     * The start padding of a row that may carry the left rule: the rule and its gap hang in the indent,
+     * so the row's text stays at the same depth as an unexplained neighbour's.
+     */
+    private fun ruledStart(indent: Int, ruled: Boolean): Int {
+        if (!ruled) return indent
+        val inset = resources.getDimensionPixelSize(R.dimen.theme_note_rule_width) +
+            resources.getDimensionPixelSize(R.dimen.theme_note_rule_gap)
+        return (indent - inset).coerceAtLeast(0)
+    }
 
     // The badge fill for one SIM. "Default" in the picker drops the override, so the row falls back to
     // the fork colour for that SIM (1 red, 2 blue) rather than to whatever the system happens to use.
@@ -848,8 +943,15 @@ class ThemeActivity : SimpleActivity() {
      * [ROW_PADDING_VERTICAL_DP].
      */
     private fun indentRow(view: View, indent: Int) {
+        view.setPaddingRelative(indent, view.paddingTop, view.paddingEnd, view.paddingBottom)
+        tightenRow(view)
+    }
+
+    /** Minimal vertical padding and no minimum height, keeping the row's horizontal geometry. */
+    private fun tightenRow(view: View) {
         val vertical = (ROW_PADDING_VERTICAL_DP * resources.displayMetrics.density).toInt()
-        view.setPaddingRelative(indent, vertical, view.paddingEnd, vertical)
+        view.setPaddingRelative(view.paddingStart, vertical, view.paddingEnd, vertical)
+        view.minimumHeight = 0
     }
 
     private fun refreshSample(b: ItemThemeTextBinding, slot: ThemeSlot) {
