@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+095`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+099`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -60,7 +60,7 @@ Empty fields are skipped rather than drawn blank, so the block is as short as th
 
 ## 🎨 Granular black & yellow theming
 
-A full theming page with **per‑slot colours** for the dialpad, in‑call screen, contacts, favourites and call log; **per‑element fonts** (family / weight / size with a live sample); an alpha colour picker; and a **SIM badge palette** — SIM 1 red, SIM 2 blue, the number on them yellow and bold, each settable, and honoured identically in the call log, on the call screen and under a swipe. It seeds to pure black + pure **#FFFF00** yellow — and it reaches the parts a theme usually can't: **every selection toolbar** — the bar, its "1 / N" counter, the back arrow and the text of the menu it opens — **every pop‑up menu** (one black surface with a yellow border, top bar and per‑call "⋮" alike, with every item title in your colour rather than the platform's white), a **yellow frame around every dialog**, which is the only thing giving a dialog an edge against a black screen, and even the **toasts** — the little "Value copied to clipboard" flashes come up black‑on‑yellow instead of the system's white bubble.
+A full theming page with **per‑slot colours** for the dialpad, in‑call screen, contacts, favourites and call log; **per‑element fonts** (family / weight / size with a live sample); an alpha colour picker; and a **SIM badge palette** — SIM 1 red, SIM 2 blue, the number on them yellow and bold, each settable, and honoured identically in the call log, on the call screen and under a swipe. It seeds to pure black + pure **#FFFF00** yellow — and it reaches the parts a theme usually can't: **every selection toolbar** — the bar, its "1 / N" counter, the back arrow and the text of the menu it opens — **every pop‑up menu** (one black surface with a yellow border, top bar and per‑call "⋮" alike, with every item title in your colour rather than the platform's white), a **yellow frame around every dialog**, which is the only thing giving a dialog an edge against a black screen, and even the **toasts** — the little "Value copied to clipboard" flashes come up black‑on‑yellow instead of the system's white bubble. The page itself follows the same rules: every action is an outlined pill, every explanation sits beneath its setting in dim gold beside a thin dim‑gold line, and the rows are packed tight.
 
 ---
 
@@ -124,7 +124,7 @@ button quietly disappears for callers who withhold their number, since there is 
 
 ## ↔️ Swipe to call on the right SIM
 
-Swipe a recent call **left for SIM 1, right for SIM 2** to dial instantly — the swipe backgrounds use your SIM colours.
+Swipe a recent call **left for SIM 1, right for SIM 2**. The row sweeps out in one motion at your finger's speed, trailing your SIM colour to the end of the line, and the call is placed the moment it gets there. A short drag or a quick flick is enough. The row then stays filled with that colour, reading **Dialing…**, until the call screen is in front — so the second or two the system takes to set up the call never looks as if nothing happened.
 
 ---
 

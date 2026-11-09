@@ -3,6 +3,34 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+099 — 2026-11-09
+Built on Fossify Phone 1.11.1.
+
+### Changed
+- **Swipe to call sweeps in one smooth motion, then shows "Dialing…".** Swipe a call‑log row left for
+  SIM 1, right for SIM 2:
+  - A drag past a quarter of the row, or a quick flick, places the call; a shorter nudge springs back.
+  - The SIM colour shows the whole time the row is out of place — while you drag, as it slides out,
+    and as it springs back. Before, a flick could dial with no colour at all.
+  - When you let go, the row carries on at your finger's speed to the end of the line, and the call
+    is placed the moment it gets there, rather than after the list had settled.
+  - The row then stays filled with its SIM colour, reading **Dialing…** in yellow, until the call
+    screen is in front (or for up to 15 s if no call screen comes), so the second or two the system
+    takes to set up the call no longer looks as if nothing happened.
+- **The call log is sized like the Contacts list.** The time, duration and place under each call, and
+  the number on a dialpad contact suggestion, are full size instead of 80 % of the name. The contact
+  picture uses the Contacts list's size and spacing.
+- **The 白い熊 電話 UI page follows the black‑yellow settings rules.**
+  - Every row that does something on tap is an outlined pill as wide as its label, with its
+    explanation beneath and a › where it opens something. **Export / Import…** and the new
+    **App settings** link at the top (back to Settings, or Settings over the page) are thick and
+    bold. The SMS permission warning, "+ Add message", "+ Add caller…" and the token's Regenerate
+    are thin.
+  - A row that carries an explanation reads as one block: bold label, the explanation in dim gold at
+    13 sp, and a thin dim‑gold line down its left side. The dim gold is a new colour, settable under
+    Foundation as "Explanations on this page".
+  - Rows are packed tight: 2 dp above and below, no minimum height.
+
 ## 白い熊 電話 1.11.1+095 — 2026-11-02
 Built on Fossify Phone 1.11.1.
 
