@@ -12,12 +12,12 @@
 
     <ImageView
         android:id="@+id/item_recents_image"
-        android:layout_width="@dimen/normal_icon_size"
-        android:layout_height="@dimen/normal_icon_size"
+        android:layout_width="@dimen/list_icon_size_medium"
+        android:layout_height="@dimen/list_icon_size_medium"
         android:layout_centerVertical="true"
-        android:layout_marginStart="@dimen/normal_margin"
+        android:layout_marginStart="@dimen/list_item_padding_horizontal"
         android:layout_marginEnd="@dimen/small_margin"
-        android:padding="@dimen/small_margin"
+        android:padding="@dimen/tiny_margin"
         android:src="@drawable/ic_person_vector"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

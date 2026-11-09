@@ -710,13 +710,13 @@ class RecentCallsAdapter(
                     }
 
                     setTextColor(if (call.type == Calls.MISSED_TYPE) missedCallColor else dateColor)
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
                     applyThemeFont(ThemeSlot.CALL_LOG_DATE)
                 }
 
                 itemRecentsDateTimeDurationSeparator.apply {
                     text = "•"
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
                     setTextColor(subtitleColor)
                     beVisibleIf(shouldShowDuration)
                 }
@@ -725,7 +725,7 @@ class RecentCallsAdapter(
                     text = call.duration.formatCallDuration(context)
                     setTextColor(subtitleColor)
                     beVisibleIf(shouldShowDuration)
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
                     applyThemeFont(ThemeSlot.CALL_LOG_SUBTITLE)
                     if (!showOverflowMenu) {
                         itemRecentsDuration.setPadding(0, 0, durationPadding, 0)
@@ -753,7 +753,7 @@ class RecentCallsAdapter(
 
                     text = location
                     setTextColor(subtitleColor)
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * 0.8f)
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
                     applyThemeFont(ThemeSlot.CALL_LOG_SUBTITLE)
                     beVisibleIf(
                         phoneNumber != null
@@ -895,7 +895,7 @@ class RecentCallsAdapter(
                 itemDialpadContactNumber.apply {
                     text = number.highlightTextPart(textToHighlight, properPrimaryColor)
                     setTextColor(subtitleColor)
-                    setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * CONTACT_NUMBER_FONT_SCALE)
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
                     applyThemeFont(ThemeSlot.CALL_LOG_SUBTITLE)
                 }
 
@@ -911,7 +911,6 @@ class RecentCallsAdapter(
         private const val VIEW_TYPE_CONTACTS_HEADER = 2
         private const val VIEW_TYPE_CONTACT = 3
         private const val DAY_HEADER_FONT_SCALE = 0.76f
-        private const val CONTACT_NUMBER_FONT_SCALE = 0.8f
     }
 }
 
