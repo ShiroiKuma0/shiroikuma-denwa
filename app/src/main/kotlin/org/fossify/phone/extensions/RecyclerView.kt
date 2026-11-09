@@ -9,6 +9,8 @@ import org.fossify.phone.helpers.SwipeToCallCallback
 fun MyRecyclerView.setupSwipeToCall(callback: SwipeToCallCallback) {
     val itemTouchHelper = ItemTouchHelper(callback)
     itemTouchHelper.attachToRecyclerView(this)
+    // Its own decoration, so resetting the helper never takes the "Dialing…" row away with it.
+    addItemDecoration(callback.dialingDecoration)
 
     // Detaching forces ItemTouchHelper to clearView() every pending recover animation, dropping the
     // per-frame off-screen translation it would otherwise keep re-applying to a swiped row; the
