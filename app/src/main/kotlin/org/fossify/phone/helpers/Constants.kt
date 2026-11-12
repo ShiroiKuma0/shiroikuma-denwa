@@ -74,6 +74,13 @@ const val CONTACTS_APP_OPEN_TAB_EXTRA = "shiroikuma_open_tab"
 // instead of its own for that session, and the mask says which of our tabs to draw.
 // Must match DIALER_TABS_INTENT_EXTRA in the renrakusaki repo.
 const val CONTACTS_APP_DIALER_TABS_EXTRA = "shiroikuma_dialer_tabs"
+
+// Sent with CONTACTS_APP_OPEN_TAB_EXTRA = TAB_CALL_HISTORY by renrakusaki's "電話で全履歴 ›" on a contact
+// screen: the contact's numbers (ArrayList<String>, as stored) and its display name. Recents opens
+// narrowed to calls with any of those numbers, under the "Calls with <name>" banner.
+// Must match the renrakusaki repo's names for the same extras.
+const val RECENTS_FILTER_NUMBERS_EXTRA = "shiroikuma_recents_filter_numbers"
+const val RECENTS_FILTER_NAME_EXTRA = "shiroikuma_recents_filter_name"
 const val CONTACTS_APP_MAIN_ACTIVITY = "org.fossify.contacts.activities.MainActivity"
 
 val tabsList = arrayListOf(TAB_CONTACTS, TAB_FAVORITES, TAB_CALL_HISTORY)

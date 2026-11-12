@@ -1,6 +1,7 @@
 package org.fossify.phone.fragments
 
 import android.content.Context
+import android.telephony.PhoneNumberUtils
 import android.util.AttributeSet
 import org.fossify.commons.extensions.baseConfig
 import org.fossify.commons.extensions.beGone
@@ -9,6 +10,7 @@ import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.extensions.isVisible
+import org.fossify.commons.extensions.normalizePhoneNumber
 import org.fossify.commons.extensions.trimToComparableNumber
 import org.fossify.commons.extensions.underlineText
 import org.fossify.commons.helpers.ContactsHelper
@@ -16,6 +18,7 @@ import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.PERMISSION_READ_CALL_LOG
 import org.fossify.commons.helpers.SMT_PRIVATE
 import org.fossify.commons.helpers.ensureBackgroundThread
+import org.fossify.commons.models.PhoneNumber
 import org.fossify.commons.models.contacts.Contact
 import org.fossify.phone.R
 import org.fossify.phone.activities.MainActivity
@@ -24,6 +27,7 @@ import org.fossify.phone.adapters.RecentCallsAdapter
 import org.fossify.phone.databinding.FragmentRecentsBinding
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.findByNumber
+import org.fossify.phone.extensions.hasSameTailAs
 import org.fossify.phone.extensions.runAfterAnimations
 import org.fossify.phone.extensions.startAddContactIntent
 import org.fossify.phone.extensions.startCallWithConfirmationCheck
@@ -43,7 +47,9 @@ class RecentsFragment(
     private var recentsAdapter: RecentCallsAdapter? = null
 
     private var searchQuery: String? = null
-    private var phoneNumberFilter: String? = null
+    // The numbers the list is narrowed to: one, after a call is tapped, or all of a contact's, when
+    // renrakusaki's "全履歴" asks for its history. Null = the whole log.
+    private var phoneNumberFilter: List<String>? = null
     private var dialpadQuery: String? = null
     private var recentsHelper = RecentsHelper(context)
 
@@ -331,11 +337,20 @@ class RecentsFragment(
         return (activity as MainActivity).cachedContacts.find { it.name == recentCall.name && it.doesHavePhoneNumber(recentCall.phoneNumber) }
     }
 
-    private fun applyPhoneNumberFilter(phoneNumber: String, contactName: String) {
-        phoneNumberFilter = phoneNumber
-        binding.filterBannerLabel.text = context.getString(R.string.calls_with, contactName)
+    private fun applyPhoneNumberFilter(phoneNumber: String, contactName: String) =
+        applyNumbersFilter(listOf(phoneNumber), contactName)
+
+    /**
+     * Narrows the list to calls with any of [numbers], under the "Calls with <name>" banner whose cross
+     * (or Back) puts the whole log back. Safe before the log has loaded: the load applies it.
+     */
+    fun applyNumbersFilter(numbers: List<String>, contactName: String) {
+        val wanted = numbers.filter { it.isNotBlank() }
+        if (wanted.isEmpty()) return
+        phoneNumberFilter = wanted
+        binding.filterBannerLabel.text = context.getString(R.string.calls_with, contactName.ifBlank { wanted.first() })
         binding.filterBanner.beVisible()
-        applyCurrentFilter()
+        if (allRecentCalls.isNotEmpty()) applyCurrentFilter()
     }
 
     private fun applyCurrentFilter() {
@@ -343,14 +358,25 @@ class RecentsFragment(
         ensureBackgroundThread {
             val filtered = allRecentCalls
                 .filterIsInstance<RecentCall>()
-                .filter { it.doesContainPhoneNumber(filter) }
+                .filter { call -> filter.any { call.isWithNumber(it) } }
 
             val grouped = groupCallsByDate(filtered)
             activity?.runOnUiThread {
-                showOrHidePlaceholder(grouped.isEmpty())
-                recentsAdapter?.updateItems(grouped)
+                // gotRecents, not just updateItems: on a cold start the filter is the first thing the
+                // list ever shows, so the adapter may not exist yet
+                gotRecents(grouped)
             }
         }
+    }
+
+    // The tapped-row match the filter always used, plus a whole-number comparison for numbers handed
+    // in from outside, which arrive as stored ("605 282 446", "+420 605…") rather than as digits
+    private fun RecentCall.isWithNumber(number: String): Boolean {
+        if (doesContainPhoneNumber(number)) return true
+        val normalized = number.normalizePhoneNumber()
+        if (normalized.isEmpty()) return false
+        return PhoneNumberUtils.compare(phoneNumber.normalizePhoneNumber(), normalized) ||
+            PhoneNumber(number, 0, "", normalized).hasSameTailAs(phoneNumber)
     }
 
     /**
@@ -421,7 +447,7 @@ class RecentsFragment(
 
         phoneNumberFilter = null
         binding.filterBanner.beGone()
-        showOrHidePlaceholder(allRecentCalls.isEmpty())
-        recentsAdapter?.updateItems(allRecentCalls)
+        // gotRecents rather than updateItems: a filter that matched nothing left the list hidden
+        gotRecents(allRecentCalls)
     }
 }
