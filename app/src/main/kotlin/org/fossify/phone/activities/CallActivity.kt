@@ -1,7 +1,6 @@
 package org.fossify.phone.activities
 
 import android.annotation.SuppressLint
-import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.GradientDrawable
@@ -1316,6 +1315,12 @@ class CallActivity : SimpleActivity() {
         }
     }
 
+    // Shown OVER the lock screen, never asking to dismiss it: a call is answered, declined and run from
+    // here without unlocking. Upstream also called requestDismissKeyguard, which on a secure lock puts
+    // the password bouncer up — and since folding the Mate XT resizes the screen and recreates this
+    // activity, folding a ringing phone replaced the call screen with a password prompt while the
+    // caller waited. Anything launched from here that really needs the phone unlocked (a contact, an
+    // app) gets the system's own unlock prompt at that moment.
     @SuppressLint("NewApi")
     private fun addLockScreenFlags() {
         if (isOreoMr1Plus()) {
@@ -1325,15 +1330,8 @@ class CallActivity : SimpleActivity() {
             window.addFlags(
                 WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
                     or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-                    or WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
                     or WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
             )
-        }
-
-        if (isOreoPlus()) {
-            (getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager).requestDismissKeyguard(this, null)
-        } else {
-            window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
         }
 
         try {
