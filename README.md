@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+099`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+102`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -134,13 +134,15 @@ With our Contacts fork (白い熊 連絡先) installed, tapping or swiping the C
 
 And the tab bar **keeps the dialer's shape while you are over there**: 連絡先 comes up wearing *this* app's tabs — Contacts | Favourites | Recents, its own Groups tab out of the way — so the call log is always one tap away instead of something you have to back out of another app to reach. Hide Favourites here and it disappears there too; the two bars never disagree. Neither app closes the other, so after the first trip the two sit warm side by side and a tap swaps them instantly, with no launch animation to sit through. (Requires 白い熊 連絡先 1.6.0+083 or newer.)
 
+**A contact's calls, on the contact.** 連絡先's contact screen lists that contact's latest calls drawn exactly like this call log — your colours, fonts, SIM badges and time formats, read live from the dialer — and its **電話で全履歴 ›** opens Recents here narrowed to every number that contact has, with a banner to clear it.
+
 **Private contacts stay private — and still have names here.** A contact kept in 連絡先's own storage ("Phone storage (not visible by other apps)") is hidden from every other app on the phone, yet this dialer reads it straight from 連絡先 and names the caller on the call screen, in the call log, in search and in speed dial. Mark one "visible to other apps" in 連絡先 and the system copy it makes is folded away here, so nobody is listed twice.
 
 ---
 
 ## 🕓 A richer call log
 
-Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format. **Edit contact** sits in both of a row's menus, so a number you noted down wrong is corrected from the call it came in on rather than hunted for in another app.
+Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, **every call on its own row with its exact time** (no "(2)" counter hiding when the others came — grouping is a switch away if you want it back), and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format. **Edit contact** sits in both of a row's menus, so a number you noted down wrong is corrected from the call it came in on rather than hunted for in another app.
 
 ---
 

@@ -3,6 +3,36 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+102 — 2026-11-12
+Built on Fossify Phone 1.11.1.
+
+### Fixed
+- **Folding a ringing phone no longer throws up the password screen.** With the phone half‑open and
+  its screen off, an incoming call shows the call screen; folding it to answer used to replace that
+  screen with the lock screen's password prompt while the phone kept ringing. Folding resizes the
+  screen, which rebuilds the call screen, and the call screen asked the system to unlock every time
+  it was built. It now only shows over the lock screen and never asks to unlock: answer, decline and
+  the in‑call controls all work while the phone stays locked. Anything opened from the call screen
+  that genuinely needs the phone unlocked asks for the password at that point.
+
+### Changed
+- **Every call has its own row.** Calls from the same party on the same day are no longer folded into
+  one row with a "(2)" counter: each one is listed with its own exact time. The counter also merged
+  missed and answered calls under one arrow. "Group subsequent calls with the same number" in
+  Settings is now off by default and brings the grouping back when switched on; a phone where it was
+  switched on by hand keeps it on.
+
+### Added
+- **A contact's call history in 白い熊 連絡先.** 連絡先's contact screen can now show that contact's
+  latest calls drawn exactly like this call log:
+  - The dialer shares its call‑log look with 連絡先 alone: every colour, the line thicknesses, the four
+    call‑log fonts (with any imported font files), the text size, the day‑heading scale, the SIM badge
+    style and the time, duration, date and number formats.
+  - 連絡先's **電話で全履歴 ›** opens Recents here showing only the calls with any of that contact's
+    numbers — matched even when a number is stored with spaces or without the country code — under a
+    "Calls with <name>" banner whose × (or Back) brings the full log back.
+  - Requires 白い熊 連絡先 1.6.0+120 or newer; an older 連絡先 is unaffected.
+
 ## 白い熊 電話 1.11.1+099 — 2026-11-09
 Built on Fossify Phone 1.11.1.
 
