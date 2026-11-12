@@ -103,8 +103,11 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getInt(SHOW_TABS, ALL_TABS_MASK)
         set(showTabs) = prefs.edit().putInt(SHOW_TABS, showTabs).apply()
 
+    // Off by default in this fork (白い熊, 2026-11-12): every call gets its own row with its exact time,
+    // never one row with a "(2)" counter hiding when the others came — the switch in Settings brings
+    // upstream's grouping back.
     var groupSubsequentCalls: Boolean
-        get() = prefs.getBoolean(GROUP_SUBSEQUENT_CALLS, true)
+        get() = prefs.getBoolean(GROUP_SUBSEQUENT_CALLS, false)
         set(groupSubsequentCalls) = prefs.edit().putBoolean(GROUP_SUBSEQUENT_CALLS, groupSubsequentCalls).apply()
 
     var openDialPadAtLaunch: Boolean
