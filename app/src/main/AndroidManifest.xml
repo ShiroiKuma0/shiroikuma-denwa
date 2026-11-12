@@ -320,6 +320,16 @@
              check. It identifies its caller three ways instead: an exact package name, the uid the
              kernel reports for it, and a pinned signing certificate. See automation/AutomationProvider,
              and note that IMPORT lives here and nowhere else. -->
+        <!-- The call log's look for renrakusaki's per-contact call history (CLAUDE.md, "Call history
+             for renrakusaki"). Exported without a permission; the provider itself answers only
+             renrakusaki's two package ids, and only reads. -->
+        <provider
+            android:name=".providers.CallLogStyleProvider"
+            android:authorities="${applicationId}.calllogstyle"
+            android:enabled="true"
+            android:exported="true"
+            tools:ignore="ExportedContentProvider" />
+
         <provider
             android:name=".automation.AutomationProvider"
             android:authorities="${applicationId}.automation"

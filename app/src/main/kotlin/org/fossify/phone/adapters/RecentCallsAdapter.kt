@@ -921,7 +921,7 @@ class RecentCallsAdapter(
         private const val VIEW_TYPE_CALL = 1
         private const val VIEW_TYPE_CONTACTS_HEADER = 2
         private const val VIEW_TYPE_CONTACT = 3
-        private const val DAY_HEADER_FONT_SCALE = 0.76f
+        const val DAY_HEADER_FONT_SCALE = 0.76f
     }
 }
 

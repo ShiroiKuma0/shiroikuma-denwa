@@ -192,6 +192,42 @@ stay alive, so alternating taps are a warm task swap — and both start each oth
 (`overridePendingTransition` is deprecated and ignored on API 34+). The renrakusaki half lives in
 `~/git/shiroikuma-renrakusaki` (`DIALER_TABS_INTENT_EXTRA`); both extra names must stay in sync.
 
+### Call history for renrakusaki's contact screen
+
+Renrakusaki's contact screen carries a 発着信履歴 section: that contact's last calls, read from the
+system call log by renrakusaki itself and drawn exactly like our Recents (day headings, SIM badge,
+arrow, time, duration, place — no avatar or name). Two contracts serve it, and their names must stay in
+sync with the renrakusaki repo:
+
+| Contract | Shape | Where |
+| --- | --- | --- |
+| Recents filter | `shiroikuma_open_tab` = `TAB_CALL_HISTORY`, plus `shiroikuma_recents_filter_numbers` (`ArrayList<String>`, the contact's numbers as stored) and `shiroikuma_recents_filter_name` (`String`, display name) | `MainActivity.takeRecentsFilter()` → `RecentsFragment.applyNumbersFilter()` |
+| Call-log look | `content://${applicationId}.calllogstyle/style` (cursor of `key`, `value` strings) and `…/font/<file name>` (read-only font file) | `providers/CallLogStyleProvider.kt` |
+
+- **The filter** is sent by renrakusaki's pill “電話で全履歴 ›”. It is consumed on read (then
+  `removeExtra`), in `onCreate` and `onNewIntent`, like the tab request. Recents shows only the calls
+  matching any of the numbers — the tapped-row match, plus `PhoneNumberUtils.compare` on normalized
+  numbers and the nine-digit tail of `hasSameTailAs` — under the existing “Calls with <name>” banner,
+  whose cross (or Back) restores the whole log. Without the extra nothing changes.
+- **The style provider** is exported with no permission but answers only `shiroikuma.renrakusaki` and
+  `.debug` (by `callingPackage`); anyone else gets null. Keys of `/style`:
+  - `color.name`, `color.subtitle`, `color.date`, `color.day_date`, `color.missed`, `color.incoming`,
+    `color.outgoing`, `color.divider`, `color.day_divider`, `color.date_underline`, `color.sim_text`,
+    `color.sim1`, `color.sim2`, `color.background` — decimal ARGB ints, resolved through the defaults
+    (`themeColor()` / `simColor()`), never unset;
+  - `thickness.divider`, `thickness.day_divider`, `thickness.date_underline` — dp;
+  - `font.<slot>.family` / `.weight` / `.size` for the slots `name`, `subtitle`, `date`, `day_date` —
+    the stored family (`""` system, `@monospace`, or a font file name), weight (0 = default) and size
+    in sp (0 = not set);
+  - `text_size_px` (the adapter's base `getTextSize()`, float), `day_header_scale`
+    (`RecentCallsAdapter.DAY_HEADER_FONT_SCALE`), `sim_text_bold` (1/0), `time_format`
+    (`CallTimeFormat` ordinal), `duration_format` (`CallDurationFormat` ordinal), `imperial_date` (1/0),
+    `format_numbers` (1/0), `version` (1).
+  `/font/<name>` serves a file from `FontHelper.getFontsDir` and rejects any name with “/” or “..”.
+  Renrakusaki reads `/style` each time a contact screen opens and falls back to our defaults when the
+  provider is missing, so neither app has to be released first. **Renaming or re-meaning a key, or
+  reordering the format enums, breaks renrakusaki's rows silently — bump `version` and tell that repo.**
+
 ## Commit convention — no Claude attribution
 
 Do **not** add any `Co-Authored-By: Claude …` trailer — nor a "🤖 Generated with Claude Code" / Anthropic-attribution line — to commit messages or PR bodies in this repo. 白い熊 does not want Claude attribution in the history; this **overrides** the harness's default to append such a trailer. End commit messages at the last line of the body. (The existing history was scrubbed of these trailers on 2026-06-08; the global rule lives in `~/.claude/CLAUDE.md`.)

@@ -57,6 +57,8 @@ import org.fossify.phone.helpers.CONTACTS_APP_OPEN_TAB_EXTRA
 import org.fossify.phone.helpers.DialpadPanel
 import org.fossify.phone.helpers.OPEN_DIAL_PAD_AT_LAUNCH
 import org.fossify.phone.helpers.PendingRestore
+import org.fossify.phone.helpers.RECENTS_FILTER_NAME_EXTRA
+import org.fossify.phone.helpers.RECENTS_FILTER_NUMBERS_EXTRA
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.helpers.SettingsExport
 import org.fossify.phone.helpers.tabsList
@@ -95,6 +97,7 @@ class MainActivity : SimpleActivity() {
         setContentView(binding.root)
         appLaunched(BuildConfig.APPLICATION_ID)
         requestedTab = takeRequestedTab()
+        takeRecentsFilter()
         setupOptionsMenu()
         refreshMenuItems()
         setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.mainTabsHolder))
@@ -201,6 +204,7 @@ class MainActivity : SimpleActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         takeRequestedTab()?.let { binding.mainTabsHolder.getTabAt(it)?.select() }
+        takeRecentsFilter()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
@@ -811,6 +815,17 @@ class MainActivity : SimpleActivity() {
         intent.removeExtra(CONTACTS_APP_OPEN_TAB_EXTRA)
         val position = visibleTabs().indexOf(wantedMask)
         return position.takeIf { it >= 0 && !shouldOpenContactsAppForTab(it) }
+    }
+
+    // A contact renrakusaki wants the whole call history of: its numbers narrow Recents, under a banner
+    // naming it. Consumed on read like the tab request it travels with; the fragment is part of our own
+    // layout, so it exists already and applies the filter as soon as the log has loaded.
+    private fun takeRecentsFilter() {
+        val numbers = intent.getStringArrayListExtra(RECENTS_FILTER_NUMBERS_EXTRA) ?: return
+        val name = intent.getStringExtra(RECENTS_FILTER_NAME_EXTRA).orEmpty()
+        intent.removeExtra(RECENTS_FILTER_NUMBERS_EXTRA)
+        intent.removeExtra(RECENTS_FILTER_NAME_EXTRA)
+        getRecentsFragment()?.applyNumbersFilter(numbers, name)
     }
 
     // Programmatic selections (default tab, last used page) must not land on a hand-off page,
