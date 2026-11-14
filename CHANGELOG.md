@@ -3,6 +3,16 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+103 — 2026-11-14
+Built on Fossify Phone 1.11.1.
+
+### Changed
+- **Swipe to call and the call‑log formats now live in the shared Commons library** (6.1.6‑sk13, was
+  sk10). The swipe gesture with its SIM 1 / SIM 2 backgrounds, the Japanese clock and duration
+  readings, the imperial date and the time and duration format choices moved out of this app, so
+  白い熊 連絡先 draws a contact's call history with exactly the same code rather than a copy that could
+  drift. Nothing looks or behaves differently in the dialer.
+
 ## 白い熊 電話 1.11.1+102 — 2026-11-12
 Built on Fossify Phone 1.11.1.
 
