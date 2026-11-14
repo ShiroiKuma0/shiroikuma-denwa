@@ -36,11 +36,10 @@ import org.fossify.phone.extensions.callContactWithSim
 import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
 import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.getSimSwipeColors
-import org.fossify.phone.extensions.setupSwipeToCall
+import org.fossify.phone.extensions.simTextColor
 import org.fossify.phone.extensions.startContactDetailsIntent
 import org.fossify.phone.extensions.styleContextualActionBar
 import org.fossify.phone.extensions.ThemeSlot
-import org.fossify.phone.helpers.SwipeToCallCallback
 import org.fossify.phone.interfaces.RefreshItemsListener
 import java.util.Collections
 
@@ -99,7 +98,9 @@ class ContactsAdapter(
                     canSwipe = { position ->
                         viewType == VIEW_TYPE_LIST && selectedKeys.isEmpty() && contacts.getOrNull(position) != null
                     },
-                    onSwipe = { position, useSim1 -> swipeCall(position, useSim1) }
+                    onSwipe = { position, useSim1 -> swipeCall(position, useSim1) },
+                    simTextColor = activity.simTextColor(),
+                    dialingText = activity.getString(R.string.dialing),
                 )
             )
         }

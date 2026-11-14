@@ -9,7 +9,7 @@ detektCompose = "0.4.28"
 #Eventbus
 eventbus = "3.3.1"
 #Fossify
-commons = "6.1.6-sk10"  # shiroikuma: patched Commons (anti-tamper removed + fork-package fixes + black/yellow CAB & menus + styled toasts), from mavenLocal
+commons = "6.1.6-sk13"  # shiroikuma: patched Commons (anti-tamper removed + fork-package fixes + black/yellow CAB & menus + styled toasts + shared swipe to call & call formats), from mavenLocal
 #Gradle
 gradlePlugins-agp = "9.2.0"
 #AndroidX

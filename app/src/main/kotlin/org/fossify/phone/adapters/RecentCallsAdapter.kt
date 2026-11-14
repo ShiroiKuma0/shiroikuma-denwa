@@ -40,12 +40,15 @@ import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.extensions.highlightTextPart
 import org.fossify.commons.extensions.isOrWasThankYouInstalled
 import org.fossify.commons.extensions.launchSendSMSIntent
+import org.fossify.commons.extensions.setupSwipeToCall
 import org.fossify.commons.extensions.setupViewBackground
 import org.fossify.commons.helpers.ContactsHelper
 import org.fossify.commons.extensions.toast
 import org.fossify.commons.extensions.showErrorToast
+import org.fossify.commons.extensions.toImperialDateString
 import org.fossify.commons.helpers.PERMISSION_WRITE_CALL_LOG
 import org.fossify.commons.helpers.SimpleContactsHelper
+import org.fossify.commons.helpers.SwipeToCallCallback
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.helpers.isNougatPlus
 import org.fossify.commons.models.contacts.Contact
@@ -70,7 +73,6 @@ import org.fossify.phone.extensions.getCallLogRegion
 import org.fossify.phone.extensions.setDefaultPhoneNumber
 import org.fossify.phone.extensions.getDayCode
 import org.fossify.phone.extensions.getSimSwipeColors
-import org.fossify.phone.extensions.setupSwipeToCall
 import org.fossify.phone.extensions.simTextColor
 import org.fossify.phone.extensions.simTextStyle
 import org.fossify.phone.extensions.startAddContactIntent
@@ -82,9 +84,7 @@ import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.ThemeDimen
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.themeDimenDp
-import org.fossify.phone.extensions.toImperialDateString
 import org.fossify.phone.helpers.RecentsHelper
-import org.fossify.phone.helpers.SwipeToCallCallback
 import org.fossify.phone.interfaces.RefreshItemsListener
 import org.fossify.phone.models.CallLogItem
 import org.fossify.phone.models.RecentCall
@@ -148,7 +148,9 @@ class RecentCallsAdapter(
                         val call = currentList.getOrNull(position) as? RecentCall
                         selectedKeys.isEmpty() && call != null && !call.isUnknownNumber
                     },
-                    onSwipe = { position, useSim1 -> swipeCall(position, useSim1) }
+                    onSwipe = { position, useSim1 -> swipeCall(position, useSim1) },
+                    simTextColor = activity.simTextColor(),
+                    dialingText = activity.getString(R.string.dialing),
                 )
             )
         }

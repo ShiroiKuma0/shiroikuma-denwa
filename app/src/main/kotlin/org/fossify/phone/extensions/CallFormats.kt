@@ -2,12 +2,9 @@ package org.fossify.phone.extensions
 
 import android.content.Context
 import androidx.annotation.StringRes
-import org.fossify.commons.extensions.formatSecondsToShortTimeString
-import org.fossify.commons.extensions.formatTime
+import org.fossify.commons.extensions.formatCallDuration
+import org.fossify.commons.extensions.formatCallTime
 import org.fossify.phone.R
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 // How a call's time-of-day is shown in the call log. JAPANESE (the default) renders kanji clock
 // readings; the rest are plain masks. The stored Config value is the entry's ordinal.
@@ -29,14 +26,8 @@ fun callTimeFormatOf(index: Int) = CallTimeFormat.entries.getOrElse(index) { Cal
 
 fun callDurationFormatOf(index: Int) = CallDurationFormat.entries.getOrElse(index) { CallDurationFormat.JAPANESE }
 
-fun Long.formatCallTime(context: Context): String = when (callTimeFormatOf(context.config.callTimeFormat)) {
-    CallTimeFormat.JAPANESE -> toJapaneseClockString()
-    CallTimeFormat.SYSTEM -> formatTime(context)
-    CallTimeFormat.HOUR_24 -> SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(this))
-    CallTimeFormat.HOUR_12 -> SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date(this))
-}
+// The formatting itself lives in commons (sk13) so renrakusaki draws a contact's calls identically;
+// the enums' ordinals are commons' CALL_TIME_* / CALL_DURATION_* constants, in the same order.
+fun Long.formatCallTime(context: Context): String = formatCallTime(context, context.config.callTimeFormat)
 
-fun Int.formatCallDuration(context: Context): String = when (callDurationFormatOf(context.config.callDurationFormat)) {
-    CallDurationFormat.JAPANESE -> toJapaneseDurationString()
-    CallDurationFormat.DIGITAL -> context.formatSecondsToShortTimeString(this)
-}
+fun Int.formatCallDuration(context: Context): String = formatCallDuration(context, context.config.callDurationFormat)
