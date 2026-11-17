@@ -64,7 +64,7 @@
     <dimen name="theme_note_rule_width">2dp</dimen>
     <dimen name="theme_note_rule_gap">10dp</dimen>
 
-    <!-- The three-line call-log row: the gaps between ✉, ☎ and ⋮ on line 2 -->
+    <!-- The three-line call-log row: the gaps between ☎, ✉ and ⋮ on line 2 -->
     <dimen name="recent_action_gap">28dp</dimen>
     <dimen name="recent_action_gap_menu">20dp</dimen>
 

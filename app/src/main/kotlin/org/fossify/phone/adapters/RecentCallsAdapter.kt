@@ -919,7 +919,7 @@ class RecentCallsAdapter(
                     showPopupMenu(overflowMenuAnchor, call)
                 }
 
-                // ✉ and ☎ sit before the ⋮ and go wherever it goes; a hidden number can take neither
+                // ☎ and ✉ sit before the ⋮ and go wherever it goes; a hidden number can take neither
                 val showActions = showOverflowMenu && !call.isUnknownNumber
                 itemRecentsMessage.apply {
                     beVisibleIf(showActions)
