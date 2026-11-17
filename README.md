@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+103`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+113`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -60,7 +60,7 @@ Empty fields are skipped rather than drawn blank, so the block is as short as th
 
 ## 🎨 Granular black & yellow theming
 
-A full theming page with **per‑slot colours** for the dialpad, in‑call screen, contacts, favourites and call log; **per‑element fonts** (family / weight / size with a live sample); an alpha colour picker; and a **SIM badge palette** — SIM 1 red, SIM 2 blue, the number on them yellow and bold, each settable, and honoured identically in the call log, on the call screen and under a swipe. It seeds to pure black + pure **#FFFF00** yellow — and it reaches the parts a theme usually can't: **every selection toolbar** — the bar, its "1 / N" counter, the back arrow and the text of the menu it opens — **every pop‑up menu** (one black surface with a yellow border, top bar and per‑call "⋮" alike, with every item title in your colour rather than the platform's white), a **yellow frame around every dialog**, which is the only thing giving a dialog an edge against a black screen, and even the **toasts** — the little "Value copied to clipboard" flashes come up black‑on‑yellow instead of the system's white bubble. The page itself follows the same rules: every action is an outlined pill, every explanation sits beneath its setting in dim gold beside a thin dim‑gold line, and the rows are packed tight.
+A full theming page with **per‑slot colours** for the dialpad, in‑call screen, contacts, favourites and call log; **per‑element fonts** (family / weight / size with a live sample); an alpha colour picker; and a **SIM badge palette** — SIM 1 red, SIM 2 blue, the number on them yellow and bold, each settable, and honoured identically in the call log, on the call screen and under a swipe. It seeds to pure black + pure **#FFFF00** yellow — and it reaches the parts a theme usually can't: **every selection toolbar** — the bar, its "1 / N" counter, the back arrow and the text of the menu it opens — **every pop‑up menu** (one black surface with a yellow border, top bar and per‑call "⋮" alike, where every action is a **full‑width outlined pill** with a › when it opens something, and its **icon is coloured by what it does** — call green, message blue, contact cyan, copy orange, settings yellow, block magenta, delete red, each settable), a **yellow frame around every dialog**, which is the only thing giving a dialog an edge against a black screen, and even the **toasts** — the little "Value copied to clipboard" flashes come up black‑on‑yellow instead of the system's white bubble. The page itself follows the same rules: every action is an outlined pill, every explanation sits beneath its setting in dim gold beside a thin dim‑gold line, and the rows are packed tight.
 
 ---
 
@@ -128,11 +128,11 @@ Swipe a recent call **left for SIM 1, right for SIM 2**. The row sweeps out in o
 
 ---
 
-## 🤝 Two apps, one bottom bar
+## 🤝 Three apps, one bottom bar
 
-With our Contacts fork (白い熊 連絡先) installed, tapping or swiping the Contacts/Favourites tabs opens it on the matching tab — one contacts experience shared across both apps.
+This dialer, our Contacts fork (白い熊 連絡先) and our SIP dialer (白い熊 臨電話) draw **the same bar in the same order — Favourites, Contacts, 電話, 臨電話** — so SIM calls and SIP calls are two tabs of one thing. 電話 is this app's call log; Favourites and Contacts open 連絡先 on the matching tab; 臨電話 opens the SIP call history, and is only drawn when 臨電話 is installed. Neither app closes the other, so after the first trip they sit warm side by side and a tap swaps them instantly, with no launch animation to sit through. (Requires 白い熊 連絡先 1.6.0+123 or newer.)
 
-And the tab bar **keeps the dialer's shape while you are over there**: 連絡先 comes up wearing *this* app's tabs — Contacts | Favourites | Recents, its own Groups tab out of the way — so the call log is always one tap away instead of something you have to back out of another app to reach. Hide Favourites here and it disappears there too; the two bars never disagree. Neither app closes the other, so after the first trip the two sit warm side by side and a tap swaps them instantly, with no launch animation to sit through. (Requires 白い熊 連絡先 1.6.0+083 or newer.)
+The bar is drawn as **card‑folder tabs**: one bold yellow line runs along its top and dives around the tab you are on, the others sit thinner and fainter behind it, and the tabs share the full width of the screen, folded or unfolded.
 
 **A contact's calls, on the contact.** 連絡先's contact screen lists that contact's latest calls drawn exactly like this call log — your colours, fonts, SIM badges and time formats, read live from the dialer — and its **電話で全履歴 ›** opens Recents here narrowed to every number that contact has, with a banner to clear it.
 
@@ -142,7 +142,7 @@ And the tab bar **keeps the dialer's shape while you are over there**: 連絡先
 
 ## 🕓 A richer call log
 
-Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, **every call on its own row with its exact time** (no "(2)" counter hiding when the others came — grouping is a switch away if you want it back), and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format. **Edit contact** sits in both of a row's menus, so a number you noted down wrong is corrected from the call it came in on rather than hunted for in another app.
+**Three lines per call**: the name; the number with the contact's label for it; then the SIM badge, the arrow, the time, the duration and the country. The arrow and the time share one colour that says how the call went — yellow for a call you placed and that was answered, blue for one that was not, red for one you missed. On the number's line sit three actions: **a message** (opens 白い熊 メッセージ on that number), **call back on the SIM that call used**, and the row's menu. The picture fills the row's height, and a tap on the row shows **that contact's whole history, across all of their numbers**. Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, **every call on its own row with its exact time** (no "(2)" counter hiding when the others came — grouping is a switch away if you want it back), and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format. **Edit contact** sits in both of a row's menus, so a number you noted down wrong is corrected from the call it came in on rather than hunted for in another app.
 
 ---
 

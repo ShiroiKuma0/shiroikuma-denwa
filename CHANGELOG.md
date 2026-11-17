@@ -3,6 +3,52 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+113 — 2026-11-17
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **One bottom bar across 電話, 臨電話 and 連絡先.** All three apps now draw the same four tabs in the
+  same order: Favorites, Contacts, 電話, 臨電話. 電話 is this app's call log. 臨電話 opens the SIP dialer
+  白い熊 臨電話 on its call history and is only drawn when that app is installed. Favorites and Contacts
+  open 白い熊 連絡先 as before.
+- **Card‑folder tabs.** The bar is drawn as folder tabs: one bold accent line along its top edge dives
+  around the selected tab, the other tabs sit thinner and at 30 % behind it, the selected label is bold
+  and a tab change is animated. The tabs share the full width of the screen at any width.
+- **A three‑line call row.** Line 1 is the name, line 2 the number with the contact's label for it,
+  line 3 the SIM badge, the arrow, the time, the duration and the country.
+  - A **message** icon opens 白い熊 メッセージ on that number (or whatever handles SMS when it is not
+    installed), and a **call** icon calls back on the SIM that row's call used. Both sit with the
+    row's ⋮ on the number's line, so the name keeps the row's full width on a folded screen.
+  - The picture is a square 90 % as tall as the row.
+  - A tap on a row shows that contact's whole history, across all of the contact's numbers.
+- **Pill menus with icons coloured by role.** Every pop‑up menu row in the app — a call's ⋮, the top
+  bar's and the selection bar's overflow, and the menus on the shared settings screens — is a
+  full‑width outlined pill with its icon inside and a › when it opens something. The frame and label
+  stay in the accent, or in red for a destructive row; the icon takes the colour of what the row does:
+  call green, message blue, contact cyan, copy and share orange, view and settings yellow, block
+  magenta, delete red. The row's menu is shown shifted up so it does not scroll while the screen has
+  room.
+- **New colours on the Theme screen**: the seven menu icon roles, the number line and the number's
+  label, the duration, the country, the two row actions, the not‑answered outgoing call, and — drawn by
+  臨電話 only — the 臨N badge, its text and the failure reason.
+- **臨電話 reads the call‑log look too.** The style provider now answers 白い熊 臨電話 as well as 連絡先,
+  and serves the new colours, the fonts of the number and duration lines and the number line's scale,
+  so a theme change here follows in all three apps.
+
+### Changed
+- **Call colours say how the call went.** A call you placed that was answered has a yellow arrow and
+  time; one that was not answered has them in pure blue; a missed call has them in pure red (was a
+  salmon red). The duration and the country are yellow and no longer dimmed.
+- **The number line is smaller and paler** (78 % of the row's text size, `#FFFFB0`), with the number's
+  label after it in `#FFFF00`.
+- **The dialpad button is traced, not filled**: a rounded square with a 3 dp accent outline and an
+  accent glyph over the page background.
+- **Tab order** is Favorites, Contacts, 電話 (was Contacts, Favorites, Recents), and the call‑log tab is
+  labelled 電話 in every language.
+- **The tab mask is no longer sent to 連絡先.** 連絡先 draws the four tabs itself, so this build needs
+  白い熊 連絡先 1.6.0+123 or newer; with an older one the Favorites and Contacts tabs land on its own
+  bar, which has no way back to the call log.
+
 ## 白い熊 電話 1.11.1+103 — 2026-11-14
 Built on Fossify Phone 1.11.1.
 
