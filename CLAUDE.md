@@ -232,7 +232,7 @@ sync with the renrakusaki repo:
 - **The style provider** is exported with no permission but answers only `shiroikuma.renrakusaki`, its
   `.debug`, and `shiroikuma.rindenwa` (by `callingPackage`); anyone else gets null. Rindenwa reads it for
   its SIP history rows, which share our three-line row (`item_recent_call.xml`: name / number · label /
-  SIM badge, arrow, time, duration, country — then ✉, ☎ and ⋮). Added for that row on 2026-11-17, all pure
+  SIM badge, arrow, time, duration, country — then ☎, ✉ and ⋮, the handset on the left since 2026-11-17). Added for that row on 2026-11-17, all pure
   additions under version 1: `color.number`, `color.country`, `color.action_message`, `color.action_call`,
   `color.duration` / `font.duration.*` (the duration and its “·”, which used to share `color.subtitle`),
   `color.number_label` (the contact's label after the “·” on line 2, `#FFFF00`, while `color.number`
@@ -242,7 +242,7 @@ sync with the renrakusaki repo:
   only, but set on our Theme screen), the menu icon roles `color.role.call` / `.message` / `.contact` /
   `.share` / `.view` / `.block` / `.delete`, `font.number.*` and `font.country.*`. There are no size keys: the picture is a square 90 % as tall as
   the row (`size.picture_dp` was served in +104 to +108 only), the SIM badge is as tall as
-  line 3's text, and so with ✉, ☎ and ⋮: here they
+  line 3's text, and so with ☎, ✉ and ⋮: here they
   sit on line 2 only, each as tall as that line, so the name keeps the row's whole width on a narrow
   screen (白い熊, 2026-11-17, after +106); the ✉ is an accent-coloured outlined chat bubble.
   Keys of `/style`:
