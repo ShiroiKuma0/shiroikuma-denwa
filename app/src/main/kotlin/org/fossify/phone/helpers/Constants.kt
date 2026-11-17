@@ -55,6 +55,16 @@ const val PALETTE_RED = 0xFFFF0000.toInt()
 const val PALETTE_BLUE = 0xFF0000FF.toInt()
 // The family's dim gold: explanations and their left rules on the UI page (ThemeSlot.SETTINGS_NOTE)
 const val PALETTE_DIM_GOLD = 0xFFC8C800.toInt()
+// Menu icon roles (ThemeSlot.MENU_ROLE_*): what an icon's colour says its row does. Yellow (view /
+// open / settings) is the accent and red (delete) is PALETTE_RED; the message blue is lighter than
+// PALETTE_BLUE because a thin glyph in pure blue all but vanishes on black.
+// The call log's number line: the accent, a shade paler, so it sits behind the name above it
+const val PALETTE_PALE_YELLOW = 0xFFFFFFB0.toInt()
+const val PALETTE_GREEN = 0xFF00FF00.toInt()
+const val PALETTE_MESSAGE_BLUE = 0xFF4D94FF.toInt()
+const val PALETTE_CYAN = 0xFF00FFFF.toInt()
+const val PALETTE_ORANGE = 0xFFFF8000.toInt()
+const val PALETTE_MAGENTA = 0xFFFF00FF.toInt()
 // The material yellow PALETTE_YELLOW used to be; persisted colors carrying its RGB are rewritten
 // once at startup (see migrateToPureYellowIfNeeded)
 const val LEGACY_PALETTE_YELLOW = 0xFFFFEB3B.toInt()
@@ -69,12 +79,6 @@ val contactsAppPackages = listOf("shiroikuma.renrakusaki", "shiroikuma.renrakusa
 // wears for us is tapped. Must match OPEN_TAB_INTENT_EXTRA in the renrakusaki repo.
 const val CONTACTS_APP_OPEN_TAB_EXTRA = "shiroikuma_open_tab"
 
-// Int extra carrying our own visible-tab mask (config.showTabs) on a hand-off launch. Non-zero tells
-// renrakusaki the launch came from the dialer's bottom bar, so it wears our tab set — Recents included —
-// instead of its own for that session, and the mask says which of our tabs to draw.
-// Must match DIALER_TABS_INTENT_EXTRA in the renrakusaki repo.
-const val CONTACTS_APP_DIALER_TABS_EXTRA = "shiroikuma_dialer_tabs"
-
 // Sent with CONTACTS_APP_OPEN_TAB_EXTRA = TAB_CALL_HISTORY by renrakusaki's "電話で全履歴 ›" on a contact
 // screen: the contact's numbers (ArrayList<String>, as stored) and its display name. Recents opens
 // narrowed to calls with any of those numbers, under the "Calls with <name>" banner.
@@ -83,7 +87,19 @@ const val RECENTS_FILTER_NUMBERS_EXTRA = "shiroikuma_recents_filter_numbers"
 const val RECENTS_FILTER_NAME_EXTRA = "shiroikuma_recents_filter_name"
 const val CONTACTS_APP_MAIN_ACTIVITY = "org.fossify.contacts.activities.MainActivity"
 
-val tabsList = arrayListOf(TAB_CONTACTS, TAB_FAVORITES, TAB_CALL_HISTORY)
+// 臨電話 (our SIP dialer, shiroikuma-rindenwa): the fourth tab of the bar the three apps share. It has no
+// page here — the tab opens Rindenwa on its own call history — and it is only drawn when Rindenwa is
+// installed. The boolean extra is the one Rindenwa's MainActivity honours (its EXTRA_OPEN_HISTORY).
+const val RINDENWA_PACKAGE = "shiroikuma.rindenwa"
+const val RINDENWA_MAIN_ACTIVITY = "org.linphone.ui.main.MainActivity"
+const val RINDENWA_OPEN_HISTORY_EXTRA = "shiroikuma_open_history"
+
+// 白い熊 メッセージ, which the ✉ of a call-log row opens on that number's conversation
+const val MESSEJI_PACKAGE = "shiroikuma.messeji"
+
+// The pages we hold, in the order of the bar all three apps share: Favorites, Contacts, 電話 (then 臨電話,
+// which is a tab without a page — see RINDENWA_PACKAGE).
+val tabsList = arrayListOf(TAB_FAVORITES, TAB_CONTACTS, TAB_CALL_HISTORY)
 
 private const val PATH = "org.fossify.phone.action."
 const val ACCEPT_CALL = PATH + "ACCEPT_CALL"

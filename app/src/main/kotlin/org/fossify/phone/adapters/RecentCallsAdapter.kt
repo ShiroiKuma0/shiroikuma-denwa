@@ -3,7 +3,10 @@ package org.fossify.phone.adapters
 import android.annotation.SuppressLint
 import android.graphics.drawable.Drawable
 import android.provider.CallLog.Calls
+import android.telephony.PhoneNumberUtils
+import android.text.Spannable
 import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.text.TextUtils
 import android.util.TypedValue
 import android.view.ContextThemeWrapper
@@ -37,6 +40,7 @@ import org.fossify.commons.extensions.getPhoneNumberTypeText
 import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.extensions.highlightTextPart
 import org.fossify.commons.extensions.launchSendSMSIntent
+import org.fossify.commons.extensions.normalizePhoneNumber
 import org.fossify.commons.extensions.setupSwipeToCall
 import org.fossify.commons.extensions.setupViewBackground
 import org.fossify.commons.helpers.ContactsHelper
@@ -70,6 +74,7 @@ import org.fossify.phone.extensions.getCallLogRegion
 import org.fossify.phone.extensions.setDefaultPhoneNumber
 import org.fossify.phone.extensions.getDayCode
 import org.fossify.phone.extensions.getSimSwipeColors
+import org.fossify.phone.extensions.openMessages
 import org.fossify.phone.extensions.simTextColor
 import org.fossify.phone.extensions.simTextStyle
 import org.fossify.phone.extensions.startAddContactIntent
@@ -81,6 +86,7 @@ import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.ThemeDimen
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.themeDimenDp
+import org.fossify.phone.helpers.MenuPills
 import org.fossify.phone.helpers.RecentsHelper
 import org.fossify.phone.interfaces.RefreshItemsListener
 import org.fossify.phone.models.CallLogItem
@@ -100,6 +106,7 @@ class RecentCallsAdapter(
 ) : MyRecyclerViewListAdapter<CallLogItem>(activity, recyclerView, RecentCallsDiffCallback(), itemClick) {
 
     private lateinit var outgoingCallIcon: Drawable
+    private lateinit var unansweredCallIcon: Drawable
     private lateinit var incomingCallIcon: Drawable
     private lateinit var incomingMissedCallIcon: Drawable
     var fontSize: Float = activity.getTextSize()
@@ -108,6 +115,12 @@ class RecentCallsAdapter(
     private var secondaryTextColor = textColor.adjustAlpha(0.6f)
     private var nameColor = activity.themeColor(ThemeSlot.CALL_LOG_NAME)
     private var subtitleColor = activity.themeColor(ThemeSlot.CALL_LOG_SUBTITLE)
+    private var numberColor = activity.themeColor(ThemeSlot.CALL_LOG_NUMBER)
+    private var numberLabelColor = activity.themeColor(ThemeSlot.CALL_LOG_NUMBER_LABEL)
+    private var durationColor = activity.themeColor(ThemeSlot.CALL_LOG_DURATION)
+    private var countryColor = activity.themeColor(ThemeSlot.CALL_LOG_COUNTRY)
+    private var messageActionColor = activity.themeColor(ThemeSlot.CALL_LOG_ACTION_MESSAGE)
+    private var callActionColor = activity.themeColor(ThemeSlot.CALL_LOG_ACTION_CALL)
     private var dateColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE)
     private var dayDateColor = activity.themeColor(ThemeSlot.CALL_LOG_DAY_DATE)
     private var callDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DIVIDER)
@@ -118,6 +131,7 @@ class RecentCallsAdapter(
     private var dateUnderlineThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DATE_UNDERLINE_THICKNESS)
     private var incomingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_INCOMING)
     private var outgoingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_OUTGOING)
+    private var unansweredColor = activity.themeColor(ThemeSlot.CALL_LOG_UNANSWERED)
     private var textToHighlight = ""
     private var durationPadding = resources.getDimension(R.dimen.normal_margin).toInt()
     private var phoneNumberUtilInstance: PhoneNumberUtil = PhoneNumberUtil.getInstance()
@@ -297,6 +311,12 @@ class RecentCallsAdapter(
         secondaryTextColor = textColor.adjustAlpha(0.6f)
         nameColor = activity.themeColor(ThemeSlot.CALL_LOG_NAME)
         subtitleColor = activity.themeColor(ThemeSlot.CALL_LOG_SUBTITLE)
+        numberColor = activity.themeColor(ThemeSlot.CALL_LOG_NUMBER)
+        numberLabelColor = activity.themeColor(ThemeSlot.CALL_LOG_NUMBER_LABEL)
+        durationColor = activity.themeColor(ThemeSlot.CALL_LOG_DURATION)
+        countryColor = activity.themeColor(ThemeSlot.CALL_LOG_COUNTRY)
+        messageActionColor = activity.themeColor(ThemeSlot.CALL_LOG_ACTION_MESSAGE)
+        callActionColor = activity.themeColor(ThemeSlot.CALL_LOG_ACTION_CALL)
         dateColor = activity.themeColor(ThemeSlot.CALL_LOG_DATE)
         dayDateColor = activity.themeColor(ThemeSlot.CALL_LOG_DAY_DATE)
         callDividerColor = activity.themeColor(ThemeSlot.CALL_LOG_DIVIDER)
@@ -307,10 +327,12 @@ class RecentCallsAdapter(
         dateUnderlineThicknessDp = activity.themeDimenDp(ThemeDimen.CALL_LOG_DATE_UNDERLINE_THICKNESS)
         incomingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_INCOMING)
         outgoingIconColor = activity.themeColor(ThemeSlot.CALL_LOG_OUTGOING)
+        unansweredColor = activity.themeColor(ThemeSlot.CALL_LOG_UNANSWERED)
         simTextColor = activity.simTextColor()
         simTextStyle = activity.simTextStyle()
 
         outgoingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_made_vector, outgoingIconColor)
+        unansweredCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_made_vector, unansweredColor)
         incomingCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_received_vector, incomingIconColor)
         incomingMissedCallIcon = resources.getColoredDrawableWithColor(R.drawable.ic_call_missed_vector, missedCallColor)
     }
@@ -636,7 +658,8 @@ class RecentCallsAdapter(
                 }
                 true
             }
-            show()
+            // full-width pills, shown so the menu never scrolls while the screen has room
+            MenuPills.show(this, contextTheme, view, Gravity.END)
         }
     }
 
@@ -647,6 +670,11 @@ class RecentCallsAdapter(
     }
 
     private inner class RecentCallViewHolder(val binding: ItemRecentCallBinding) : ViewHolder(binding.root) {
+        // A tap on a row's own button while rows are being selected selects the row, like any other tap
+        private fun rowAction(call: RecentCall, action: () -> Unit) {
+            if (actModeCallback.isSelectable) viewClicked(call) else action()
+        }
+
         fun bind(call: RecentCall) = bindView(
             item = call,
             allowSingleClick = refreshItemsListener != null && !call.isUnknownNumber,
@@ -680,8 +708,6 @@ class RecentCallsAdapter(
                         .orEmpty()
 
                     nameToShow = SpannableString("$name$typePart$numPart")
-                } else if (call.specificType.isNotBlank()) {
-                    nameToShow = SpannableString("$name - ${call.specificType}")
                 }
 
                 if (call.groupedCalls != null) {
@@ -700,6 +726,45 @@ class RecentCallsAdapter(
                     isSelected = true
                 }
 
+                // Line 2: the number this call used and the contact's label for it. Only where there is
+                // a contact — for a bare number line 1 already is the number.
+                val hasContact = !call.isUnknownNumber && name != call.phoneNumber
+                val numberLine = if (refreshItemsListener != null && hasContact) {
+                    numberWithLabel(call, matchingContact, formatPhoneNumbers)
+                } else {
+                    ""
+                }
+
+                itemRecentsNumber.apply {
+                    val shown = if (textToHighlight.isNotEmpty() && numberLine.contains(textToHighlight, true)) {
+                        numberLine.highlightTextPart(textToHighlight, properPrimaryColor)
+                    } else {
+                        SpannableString(numberLine)
+                    }
+                    // the label after the “·” keeps its own colour; the number before it is the paler one
+                    val labelStart = numberLine.indexOf(NUMBER_LABEL_SEPARATOR)
+                    if (labelStart >= 0) {
+                        shown.setSpan(
+                            ForegroundColorSpan(numberLabelColor),
+                            labelStart + NUMBER_LABEL_SEPARATOR.length,
+                            numberLine.length,
+                            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
+                        )
+                    }
+                    text = shown
+                    setTextColor(numberColor)
+                    // a quieter line than the name above and the time below, unless given a size of its own
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize * NUMBER_LINE_FONT_SCALE)
+                    applyThemeFont(ThemeSlot.CALL_LOG_NUMBER)
+                    // In the list the line keeps its height even when empty: the row's three actions
+                    // live on it and are as tall as it
+                    visibility = when {
+                        numberLine.isNotEmpty() -> View.VISIBLE
+                        showOverflowMenu -> View.INVISIBLE
+                        else -> View.GONE
+                    }
+                }
+
                 itemRecentsDateTime.apply {
                     text = if (refreshItemsListener == null) {
                         if (context.config.useImperialDate) {
@@ -711,24 +776,33 @@ class RecentCallsAdapter(
                         call.startTS.formatCallTime(activity)
                     }
 
-                    setTextColor(if (call.type == Calls.MISSED_TYPE) missedCallColor else dateColor)
+                    // the time takes its arrow's colour for the calls that have a say: one we missed,
+                    // one we placed, and one we placed in vain
+                    setTextColor(
+                        when {
+                            call.type == Calls.MISSED_TYPE -> missedCallColor
+                            call.type != Calls.OUTGOING_TYPE -> dateColor
+                            call.duration > 0 -> outgoingIconColor
+                            else -> unansweredColor
+                        }
+                    )
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
                     applyThemeFont(ThemeSlot.CALL_LOG_DATE)
                 }
 
                 itemRecentsDateTimeDurationSeparator.apply {
-                    text = "•"
+                    text = "·"
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
-                    setTextColor(subtitleColor)
+                    setTextColor(durationColor)
                     beVisibleIf(shouldShowDuration)
                 }
 
                 itemRecentsDuration.apply {
                     text = call.duration.formatCallDuration(context)
-                    setTextColor(subtitleColor)
+                    setTextColor(durationColor)
                     beVisibleIf(shouldShowDuration)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
-                    applyThemeFont(ThemeSlot.CALL_LOG_SUBTITLE)
+                    applyThemeFont(ThemeSlot.CALL_LOG_DURATION)
                     if (!showOverflowMenu) {
                         itemRecentsDuration.setPadding(0, 0, durationPadding, 0)
                     }
@@ -754,9 +828,9 @@ class RecentCallsAdapter(
                     }
 
                     text = location
-                    setTextColor(subtitleColor)
+                    setTextColor(countryColor)
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, currentFontSize)
-                    applyThemeFont(ThemeSlot.CALL_LOG_SUBTITLE)
+                    applyThemeFont(ThemeSlot.CALL_LOG_COUNTRY)
                     beVisibleIf(
                         phoneNumber != null
                                 && phoneNumber.countryCodeSource != Phonenumber.PhoneNumber.CountryCodeSource.FROM_DEFAULT_COUNTRY
@@ -799,7 +873,7 @@ class RecentCallsAdapter(
                 }
 
                 val drawable = when (call.type) {
-                    Calls.OUTGOING_TYPE -> outgoingCallIcon
+                    Calls.OUTGOING_TYPE -> if (call.duration > 0) outgoingCallIcon else unansweredCallIcon
                     Calls.MISSED_TYPE -> incomingMissedCallIcon
                     else -> incomingCallIcon
                 }
@@ -815,8 +889,46 @@ class RecentCallsAdapter(
                 overflowMenuIcon.setOnClickListener {
                     showPopupMenu(overflowMenuAnchor, call)
                 }
+
+                // ✉ and ☎ sit before the ⋮ and go wherever it goes; a hidden number can take neither
+                val showActions = showOverflowMenu && !call.isUnknownNumber
+                itemRecentsMessage.apply {
+                    beVisibleIf(showActions)
+                    applyColorFilter(messageActionColor)
+                    setOnClickListener { rowAction(call) { activity.openMessages(call.phoneNumber) } }
+                }
+
+                itemRecentsCall.apply {
+                    beVisibleIf(showActions)
+                    applyColorFilter(callActionColor)
+                    setOnClickListener { rowAction(call) { callBack(call, name) } }
+                }
             }
         }
+    }
+
+    /** Calls back on the SIM the row's call used; a call with no SIM on record goes the usual way. */
+    private fun callBack(call: RecentCall, name: String) {
+        if (areMultipleSIMsAvailable && (call.simID == 1 || call.simID == 2)) {
+            activity.callContactWithSimWithConfirmationCheck(call.phoneNumber, name, useMainSIM = call.simID == 1)
+        } else {
+            (activity as SimpleActivity).startCallWithConfirmationCheck(call.phoneNumber, name)
+        }
+    }
+
+    // "+420 735 160 301 · 携帯": the number as the call log has it, and what the contact files it under
+    private fun numberWithLabel(call: RecentCall, contact: Contact?, formatNumbers: Boolean): String {
+        val number = call.specificNumber.ifBlank { call.phoneNumber }
+        val shown = if (formatNumbers) number.formatPhoneNumber(callLogRegion) else number
+        val label = call.specificType.ifBlank {
+            val normalized = call.phoneNumber.normalizePhoneNumber()
+            contact?.phoneNumbers
+                ?.firstOrNull { PhoneNumberUtils.compare(it.normalizedNumber.normalizePhoneNumber(), normalized) }
+                ?.let { activity.getPhoneNumberTypeText(it.type, it.label) }
+                .orEmpty()
+        }
+
+        return if (label.isBlank()) shown else "$shown$NUMBER_LABEL_SEPARATOR$label"
     }
 
     private fun applyLine(view: View, color: Int, thicknessDp: Int) {
@@ -913,6 +1025,8 @@ class RecentCallsAdapter(
         private const val VIEW_TYPE_CONTACTS_HEADER = 2
         private const val VIEW_TYPE_CONTACT = 3
         const val DAY_HEADER_FONT_SCALE = 0.76f
+        const val NUMBER_LINE_FONT_SCALE = 0.78f
+        private const val NUMBER_LABEL_SEPARATOR = " · "
     }
 }
 

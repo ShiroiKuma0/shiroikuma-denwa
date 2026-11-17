@@ -12,7 +12,13 @@ import org.fossify.phone.R
 import org.fossify.phone.helpers.LEGACY_PALETTE_YELLOW
 import org.fossify.phone.helpers.PALETTE_BLACK
 import org.fossify.phone.helpers.PALETTE_BLUE
+import org.fossify.phone.helpers.PALETTE_CYAN
 import org.fossify.phone.helpers.PALETTE_DIM_GOLD
+import org.fossify.phone.helpers.PALETTE_GREEN
+import org.fossify.phone.helpers.PALETTE_MAGENTA
+import org.fossify.phone.helpers.PALETTE_MESSAGE_BLUE
+import org.fossify.phone.helpers.PALETTE_ORANGE
+import org.fossify.phone.helpers.PALETTE_PALE_YELLOW
 import org.fossify.phone.helpers.PALETTE_RED
 import org.fossify.phone.helpers.PALETTE_YELLOW
 import org.fossify.phone.helpers.SIM_COLOR_UNSET
@@ -71,6 +77,17 @@ enum class ThemeSlot(
     HEADER_ARROW("theme_header_arrow", ThemeGroup.CHROME, R.string.theme_header_arrow),
     SETTINGS_BUTTON("theme_settings_button", ThemeGroup.CHROME, R.string.theme_settings_button, hasFont = true),
 
+    // Menu icon roles: every menu row's icon is coloured by what the row does, while its frame and
+    // label stay in the accent (or, for a destructive row, in MENU_ROLE_DELETE — the warning colour).
+    // Served to the sister apps as color.role.* so all three menus speak one colour language.
+    MENU_ROLE_CALL("theme_menu_role_call", ThemeGroup.CHROME, R.string.theme_menu_role_call),
+    MENU_ROLE_MESSAGE("theme_menu_role_message", ThemeGroup.CHROME, R.string.theme_menu_role_message),
+    MENU_ROLE_CONTACT("theme_menu_role_contact", ThemeGroup.CHROME, R.string.theme_menu_role_contact),
+    MENU_ROLE_SHARE("theme_menu_role_share", ThemeGroup.CHROME, R.string.theme_menu_role_share),
+    MENU_ROLE_VIEW("theme_menu_role_view", ThemeGroup.CHROME, R.string.theme_menu_role_view),
+    MENU_ROLE_BLOCK("theme_menu_role_block", ThemeGroup.CHROME, R.string.theme_menu_role_block),
+    MENU_ROLE_DELETE("theme_menu_role_delete", ThemeGroup.CHROME, R.string.theme_menu_role_delete),
+
     // Tabs
     TAB_BACKGROUND("theme_tab_background", ThemeGroup.TABS, R.string.theme_tab_background),
     TAB_SELECTED("theme_tab_selected", ThemeGroup.TABS, R.string.theme_tab_selected),
@@ -84,9 +101,37 @@ enum class ThemeSlot(
     CALL_LOG_MISSED("theme_call_log_missed", ThemeGroup.CALL_LOG, R.string.theme_call_log_missed),
     CALL_LOG_INCOMING("theme_call_log_incoming", ThemeGroup.CALL_LOG, R.string.theme_call_log_incoming),
     CALL_LOG_OUTGOING("theme_call_log_outgoing", ThemeGroup.CALL_LOG, R.string.theme_call_log_outgoing),
+    // A call we placed that nobody picked up: its arrow and its time
+    CALL_LOG_UNANSWERED("theme_call_log_unanswered", ThemeGroup.CALL_LOG, R.string.theme_call_log_unanswered),
     CALL_LOG_DIVIDER("theme_call_log_divider", ThemeGroup.CALL_LOG, R.string.theme_call_log_divider),
     CALL_LOG_DAY_DIVIDER("theme_call_log_day_divider", ThemeGroup.CALL_LOG, R.string.theme_call_log_day_divider),
     CALL_LOG_DATE_UNDERLINE("theme_call_log_date_underline", ThemeGroup.CALL_LOG, R.string.theme_call_log_date_underline),
+    // The three-line row: line 2 (number · label), the country at the right of line 3, and the two
+    // actions before the row's ⋮. CALL_LOG_SUBTITLE keeps the duration.
+    CALL_LOG_DURATION(
+        "theme_call_log_duration", ThemeGroup.CALL_LOG, R.string.theme_call_log_duration, hasFont = true,
+    ),
+    // The contact's label for the number (携帯, 自宅 …), after the “·” on the same line
+    CALL_LOG_NUMBER_LABEL(
+        "theme_call_log_number_label", ThemeGroup.CALL_LOG, R.string.theme_call_log_number_label,
+    ),
+    CALL_LOG_NUMBER(
+        "theme_call_log_number", ThemeGroup.CALL_LOG, R.string.theme_call_log_number, hasFont = true,
+    ),
+    CALL_LOG_COUNTRY(
+        "theme_call_log_country", ThemeGroup.CALL_LOG, R.string.theme_call_log_country, hasFont = true,
+    ),
+    CALL_LOG_ACTION_MESSAGE(
+        "theme_call_log_action_message", ThemeGroup.CALL_LOG, R.string.theme_call_log_action_message,
+    ),
+    CALL_LOG_ACTION_CALL(
+        "theme_call_log_action_call", ThemeGroup.CALL_LOG, R.string.theme_call_log_action_call,
+    ),
+    // Drawn by 臨電話 only (we have no failure reason and no 臨N badge), but set here so its rows follow
+    // this page like ours do — see providers/CallLogStyleProvider
+    CALL_LOG_FAILURE("theme_call_log_failure", ThemeGroup.CALL_LOG, R.string.theme_call_log_failure),
+    RIN_BADGE("theme_rin_badge", ThemeGroup.CALL_LOG, R.string.theme_rin_badge),
+    RIN_BADGE_TEXT("theme_rin_badge_text", ThemeGroup.CALL_LOG, R.string.theme_rin_badge_text),
 
     // Dialpad
     DIALPAD_CALL_BUTTON("theme_dialpad_call_button", ThemeGroup.DIALPAD, R.string.theme_dialpad_call_button),
@@ -212,6 +257,14 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     // The 設定 shortcut sits in the search bar, so it follows the accent like the other top-bar icons
     ThemeSlot.SETTINGS_BUTTON -> themeColor(ThemeSlot.PRIMARY)
 
+    ThemeSlot.MENU_ROLE_CALL -> PALETTE_GREEN
+    ThemeSlot.MENU_ROLE_MESSAGE -> PALETTE_MESSAGE_BLUE
+    ThemeSlot.MENU_ROLE_CONTACT -> PALETTE_CYAN
+    ThemeSlot.MENU_ROLE_SHARE -> PALETTE_ORANGE
+    ThemeSlot.MENU_ROLE_VIEW -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.MENU_ROLE_BLOCK -> PALETTE_MAGENTA
+    ThemeSlot.MENU_ROLE_DELETE -> PALETTE_RED
+
     // Tabs
     ThemeSlot.TAB_BACKGROUND -> themeColor(ThemeSlot.BACKGROUND)
     ThemeSlot.TAB_SELECTED -> themeColor(ThemeSlot.PRIMARY)
@@ -223,12 +276,26 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CALL_LOG_DATE -> themeColor(ThemeSlot.TEXT_SECONDARY)
     ThemeSlot.CALL_LOG_DAY_DATE -> themeColor(ThemeSlot.TEXT_SECONDARY)
     // Semantic call-type colors keep their meaning by default
-    ThemeSlot.CALL_LOG_MISSED -> resources.getColor(R.color.color_missed_call, theme)
+    ThemeSlot.CALL_LOG_MISSED -> PALETTE_RED
     ThemeSlot.CALL_LOG_INCOMING -> resources.getColor(R.color.color_incoming_call, theme)
-    ThemeSlot.CALL_LOG_OUTGOING -> resources.getColor(R.color.color_outgoing_call, theme)
+    // A call we placed and that was answered wears the accent, arrow and time alike; one that was not
+    // answered wears pure blue
+    ThemeSlot.CALL_LOG_OUTGOING -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.CALL_LOG_UNANSWERED -> PALETTE_BLUE
     ThemeSlot.CALL_LOG_DIVIDER -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.CALL_LOG_DAY_DIVIDER -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.CALL_LOG_DATE_UNDERLINE -> themeColor(ThemeSlot.PRIMARY)
+    // The row's own lines are accent by default, each its own slot — not the secondary text colour
+    ThemeSlot.CALL_LOG_NUMBER -> PALETTE_PALE_YELLOW
+    ThemeSlot.CALL_LOG_NUMBER_LABEL -> PALETTE_YELLOW
+    ThemeSlot.CALL_LOG_DURATION -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.CALL_LOG_COUNTRY -> themeColor(ThemeSlot.PRIMARY)
+    // The message bubble is an accent outline; the call-back handset wears its menu row's colour
+    ThemeSlot.CALL_LOG_ACTION_MESSAGE -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.CALL_LOG_ACTION_CALL -> themeColor(ThemeSlot.MENU_ROLE_CALL)
+    ThemeSlot.CALL_LOG_FAILURE -> themeColor(ThemeSlot.CALL_LOG_MISSED)
+    ThemeSlot.RIN_BADGE -> PALETTE_YELLOW
+    ThemeSlot.RIN_BADGE_TEXT -> PALETTE_BLUE
 
     // Dialpad
     ThemeSlot.DIALPAD_CALL_BUTTON -> themeColor(ThemeSlot.PRIMARY)

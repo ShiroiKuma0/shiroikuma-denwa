@@ -188,7 +188,7 @@ class RecentsFragment(
                             )
 
                             is RecentCall -> if (searchQuery.isNullOrEmpty() && dialpadQuery.isNullOrEmpty()) {
-                                applyPhoneNumberFilter(item.phoneNumber, item.name)
+                                applyContactFilter(item)
                             } else {
                                 activity?.startCallWithConfirmationCheck(item.phoneNumber, item.name)
                             }
@@ -337,8 +337,12 @@ class RecentsFragment(
         return (activity as MainActivity).cachedContacts.find { it.name == recentCall.name && it.doesHavePhoneNumber(recentCall.phoneNumber) }
     }
 
-    private fun applyPhoneNumberFilter(phoneNumber: String, contactName: String) =
-        applyNumbersFilter(listOf(phoneNumber), contactName)
+    // A row tap shows that contact's whole history: every number the contact has, not only the one
+    // the tapped call used. A number with no contact behind it is its own history.
+    private fun applyContactFilter(call: RecentCall) {
+        val numbers = findContactByCall(call)?.phoneNumbers?.map { it.value }.orEmpty()
+        applyNumbersFilter(if (call.phoneNumber in numbers) numbers else numbers + call.phoneNumber, call.name)
+    }
 
     /**
      * Narrows the list to calls with any of [numbers], under the "Calls with <name>" banner whose cross

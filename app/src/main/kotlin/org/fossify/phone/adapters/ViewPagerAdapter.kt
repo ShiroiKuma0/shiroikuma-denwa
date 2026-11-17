@@ -3,7 +3,6 @@ package org.fossify.phone.adapters
 import android.view.View
 import android.view.ViewGroup
 import androidx.viewpager.widget.PagerAdapter
-import org.fossify.commons.helpers.TAB_CALL_HISTORY
 import org.fossify.commons.helpers.TAB_CONTACTS
 import org.fossify.commons.helpers.TAB_FAVORITES
 import org.fossify.phone.R
@@ -35,18 +34,14 @@ class ViewPagerAdapter(val activity: SimpleActivity) : PagerAdapter() {
     override fun isViewFromObject(view: View, item: Any) = view == item
 
     private fun getFragment(position: Int): Int {
+        // in tabsList order — Favorites, Contacts, 電話 — which is the order of the bar
         val showTabs = activity.config.showTabs
-        val fragments = arrayListOf<Int>()
-        if (showTabs and TAB_CONTACTS > 0) {
-            fragments.add(R.layout.fragment_contacts)
-        }
-
-        if (showTabs and TAB_FAVORITES > 0) {
-            fragments.add(R.layout.fragment_favorites)
-        }
-
-        if (showTabs and TAB_CALL_HISTORY > 0) {
-            fragments.add(R.layout.fragment_recents)
+        val fragments = tabsList.filter { showTabs and it != 0 }.map {
+            when (it) {
+                TAB_FAVORITES -> R.layout.fragment_favorites
+                TAB_CONTACTS -> R.layout.fragment_contacts
+                else -> R.layout.fragment_recents
+            }
         }
 
         return if (position < fragments.size) fragments[position] else fragments.last()

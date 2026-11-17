@@ -56,6 +56,11 @@
         <package android:name="shiroikuma.renrakusaki.debug" />
         <package android:name="shiroikuma.renrakusaki" />
 
+        <!-- 臨電話, which the fourth tab opens (and whose presence decides whether that tab is drawn),
+             and メッセージ, which the ✉ of a call-log row opens. -->
+        <package android:name="shiroikuma.rindenwa" />
+        <package android:name="shiroikuma.messeji" />
+
         <!-- Android Auto, for its CarConnection provider: without this the projection probe in
              extensions/CarProjection.kt cannot see the provider and silently reads "not in a car",
              which would leave the car call screen never being shown. -->
