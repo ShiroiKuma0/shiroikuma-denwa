@@ -2,9 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(*)",
-      "Edit(*)",
-      "Write(*)",
-      "Read(*)",
+      "Edit(/**)",
+      "Write(/**)",
       "Bash(git commit*)",
       "Bash(git push*)",
       "Bash(git add*)",
