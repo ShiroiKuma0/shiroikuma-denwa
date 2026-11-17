@@ -3,6 +3,24 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+115 — 2026-11-17
+Built on Fossify Phone 1.11.1.
+
+### Changed
+- **A thin line between the calls of one day.** Two calls of the same day are now separated by a line
+  1 dp thick in the darker yellow `#8C8C00`, stopping 16 dp short of both screen edges. The bright,
+  full‑width line between the days is unchanged, and no thin line is drawn under a day's last call,
+  where the day's line follows. Colour and thickness stay settable under the call log on the Theme
+  screen (0 hides the line), and 白い熊 臨電話 draws the same line from the same two values, so both
+  histories stay alike.
+- **A hidden call line comes back once.** If the line between calls was set to 0, the first start of
+  this build sets it to 1 dp in the new colour. It can be set to 0 again afterwards.
+
+### Removed
+- **The “設定” shortcut in the search bar**, together with its “Settings shortcut” colour and font row
+  on the Theme screen. Settings is in the ⋮ menu; the UI page opens from Settings or by a long press
+  on the ⋮.
+
 ## 白い熊 電話 1.11.1+113 — 2026-11-17
 Built on Fossify Phone 1.11.1.
 
