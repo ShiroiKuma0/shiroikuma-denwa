@@ -251,6 +251,13 @@ sync with the renrakusaki repo:
     `color.sim1`, `color.sim2`, `color.background` — decimal ARGB ints, resolved through the defaults
     (`themeColor()` / `simColor()`), never unset;
   - `thickness.divider`, `thickness.day_divider`, `thickness.date_underline` — dp;
+    `thickness.divider` / `color.divider` are the line **between two calls of one day**: default 1 dp
+    in `#8C8C00` (`PALETTE_DIM_YELLOW`), thinner and paler than the day's line (4 dp, accent). Both
+    apps draw it inset by 16 dp from both screen edges and never under a day's last call, where the
+    day's line follows; 0 hides it (白い熊, 2026-11-17, from 1.11.1+115 and Rindenwa …+025). Here it is
+    an `ItemDecoration` in `RecentCallsAdapter` (`callDividerDecoration`), not a view in the row, so it
+    stays right when a neighbour comes or goes without a rebind. `migrateCallDividerIfNeeded()` brought
+    a stored 0 back to the defaults once;
   - `font.<slot>.family` / `.weight` / `.size` for the slots `name`, `subtitle`, `date`, `day_date` —
     the stored family (`""` system, `@monospace`, or a font file name), weight (0 = default) and size
     in sp (0 = not set);
