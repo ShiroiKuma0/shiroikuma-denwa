@@ -25,21 +25,22 @@
             app:layout_constraintBottom_toTopOf="@+id/main_tabs_holder"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <org.fossify.commons.views.MyFloatingActionButton
+        <!-- The dialpad button: a traced square, never a filled one — outline and glyph in the accent,
+             the background showing through (painted in MainActivity.styleDialpadButton). A plain
+             ImageView on purpose: a FloatingActionButton is filled by nature and repainted by commons. -->
+        <ImageView
             android:id="@+id/main_dialpad_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
+            android:layout_width="@dimen/dialpad_fab_size"
+            android:layout_height="@dimen/dialpad_fab_size"
             android:layout_marginEnd="@dimen/bigger_margin"
             android:layout_marginBottom="@dimen/activity_margin"
+            android:clickable="true"
             android:contentDescription="@string/dialpad"
-            android:elevation="@dimen/medium_margin"
+            android:focusable="true"
             android:padding="@dimen/activity_margin"
             android:src="@drawable/ic_dialpad_vector"
-            app:backgroundTint="@color/color_primary"
             app:layout_constraintBottom_toTopOf="@+id/main_tabs_holder"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:rippleColor="@color/pressed_item_foreground" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <include
             android:id="@+id/dialpad_panel"
@@ -49,13 +50,30 @@
             android:visibility="gone"
             app:layout_constraintBottom_toTopOf="@+id/main_tabs_holder" />
 
+        <!-- The tabs share the bar's full width equally, at any screen width: tabMaxWidth 0dp lifts
+             Material's 264 dp cap, which left them huddled in the middle of the unfolded screen. -->
+        <!-- The card-folder tabs the bar is drawn as. Declared before the TabLayout, whose own
+             background is transparent, so each tab's icon and label sit inside their folder tab. -->
+        <org.fossify.phone.views.FolderTabsView
+            android:id="@+id/main_tabs_folder"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/main_tabs_holder"
+            app:layout_constraintEnd_toEndOf="@+id/main_tabs_holder"
+            app:layout_constraintStart_toStartOf="@+id/main_tabs_holder"
+            app:layout_constraintTop_toTopOf="@+id/main_tabs_holder" />
+
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/main_tabs_holder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:tabIndicator="@null"
-            app:tabMinWidth="150dp"
+            app:tabGravity="fill"
+            app:tabMaxWidth="0dp"
+            app:tabMinWidth="0dp"
+            app:tabMode="fixed"
             app:tabRippleColor="@null" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -114,7 +114,8 @@
     <string name="theme_call_log_day_date">Date header</string>
     <string name="theme_call_log_missed">Missed call</string>
     <string name="theme_call_log_incoming">Incoming call icon</string>
-    <string name="theme_call_log_outgoing">Outgoing call icon</string>
+    <string name="theme_call_log_outgoing">Outgoing call (answered): arrow &amp; time</string>
+    <string name="theme_call_log_unanswered">Outgoing call (not answered): arrow &amp; time</string>
     <string name="theme_call_log_divider">Line between calls</string>
     <string name="theme_call_log_day_divider">Day divider line</string>
     <string name="theme_call_log_date_underline">Date underline</string>
@@ -200,6 +201,29 @@
     <string name="font_weight_semibold">SemiBold (600)</string>
     <string name="font_weight_bold">Bold (700)</string>
     <string name="font_weight_black">Black (900)</string>
+    <string name="theme_subgroup_menu_roles">Menu icon colors</string>
+    <string name="theme_menu_role_call">Call / connect</string>
+    <string name="theme_menu_role_message">Message / write</string>
+    <string name="theme_menu_role_contact">Contact / person</string>
+    <string name="theme_menu_role_share">Copy / share / export</string>
+    <string name="theme_menu_role_view">View / open / settings</string>
+    <string name="theme_menu_role_block">Block / mute / silence</string>
+    <string name="theme_menu_role_delete">Delete / remove (warning)</string>
+    <string name="theme_call_log_number">Number &amp; label line</string>
+    <string name="theme_call_log_number_label">Number type (after the number)</string>
+    <string name="theme_call_log_country">Country</string>
+    <string name="theme_call_log_duration">Duration</string>
+    <string name="theme_subgroup_call_log_actions">Row actions</string>
+    <string name="theme_call_log_action_message">Message icon</string>
+    <string name="theme_call_log_action_call">Call-back icon</string>
+    <string name="theme_subgroup_call_log_rindenwa">臨電話 rows</string>
+    <string name="theme_rin_badge">臨N badge</string>
+    <string name="theme_rin_badge_text">臨N badge text</string>
+    <string name="theme_call_log_failure">Failure reason</string>
+    <string name="tab_denwa" translatable="false">電話</string>
+    <string name="tab_rindenwa" translatable="false">臨電話</string>
+    <string name="row_send_message">Send a message</string>
+    <string name="row_call_back">Call back</string>
     <string name="theme_group_sim">SIM cards</string>
     <string name="theme_group_chrome">Top bar &amp; menu</string>
     <string name="theme_subgroup_chrome_menu">Overflow menu</string>

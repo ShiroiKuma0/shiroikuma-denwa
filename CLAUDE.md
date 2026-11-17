@@ -186,19 +186,31 @@ sanitized to never land on a hand-off page, so the dialer never auto-bounces int
 the interception also requires a non-hand-off tab (Recents) to be shown, otherwise it stays inert. Both
 renrakusaki package ids are declared in the manifest `<queries>` block for package visibility.
 
-**The bottom bar is shared, and the hand-off is bidirectional.** A hand-off launch also carries
-`shiroikuma_dialer_tabs` (`CONTACTS_APP_DIALER_TABS_EXTRA`), an int holding our own `config.showTabs`:
-non-zero tells renrakusaki the launch came from the dialer's bottom bar, so for that session it wears
-*our* tab set — Contacts | Favorites | Recents, its own Groups tab dropped — instead of its own, and the
-mask tells it which of our tabs to draw (so the two bars still match when Favorites is switched off here).
-Its Recents tab hands straight back, launching our `MainActivity` with the same `shiroikuma_open_tab`
+**Four tabs, one bar across three apps (2026-11-17).** 電話, 臨電話 (`shiroikuma-rindenwa`) and 連絡先 each
+draw the same bar in the same order — **Favorites, Contacts, 電話, 臨電話** — the last two labelled exactly
+so in every language (`tab_denwa` / `tab_rindenwa`, not translatable). Here `tabsList` holds the three pages
+we own in that order; 臨電話 is `TAB_RINDENWA`, a tab with no page, drawn only when `shiroikuma.rindenwa` is
+installed (and our call history is shown). Tapping it calls `launchRindenwa()` (`extensions/SisterApps.kt`):
+`shiroikuma.rindenwa` / `org.linphone.ui.main.MainActivity`, boolean extra `shiroikuma_open_history` = true,
+`NEW_TASK or CLEAR_TOP or SINGLE_TOP`, no animation. Rindenwa's 電話 tab opens us the way renrakusaki's does:
+`shiroikuma_open_tab` = `TAB_CALL_HISTORY` (4). Favorites and Contacts fall back to our own lists when
+renrakusaki is missing rather than hiding. Because every app now draws the bar itself, the old dialer-tabs mask
+(`shiroikuma_dialer_tabs`, our `config.showTabs`, which made renrakusaki wear our three tabs for a session)
+is gone: we stopped sending it in 1.11.1+108, which therefore needs renrakusaki 1.6.0+123 or later.
+
+The bar is drawn as **card-folder tabs**, the look 臨電話 gave it first: `views/FolderTabsView` sits behind
+the (transparent) `TabLayout` and draws one bold accent line along the bar's top edge that dives around the
+selected tab, the others thinner at 30 % behind it; the selected label is bold. Measures are Rindenwa's
+`SkFolderTabPainter` (3 dp / 1.5 dp strokes, 12 dp corners, 260 ms) — change them in all three apps or none.
+
+**The hand-off is bidirectional.** Renrakusaki's 電話 tab hands straight back, launching our `MainActivity` with the same `shiroikuma_open_tab`
 extra set to `TAB_CALL_HISTORY` and the same `CLEAR_TOP or SINGLE_TOP` flags; `takeRequestedTab()` consumes
 it in `onCreate` and `onNewIntent`, and honors it only for a tab that stays in the dialer, so a request for
 Contacts or Favorites can never ping-pong the two apps. Neither side finishes the other — both activities
 stay alive, so alternating taps are a warm task swap — and both start each other with
 `ActivityOptions.makeCustomAnimation(0, 0)` so the swap reads as a tab change rather than an app switch
 (`overridePendingTransition` is deprecated and ignored on API 34+). The renrakusaki half lives in
-`~/git/shiroikuma-renrakusaki` (`DIALER_TABS_INTENT_EXTRA`); both extra names must stay in sync.
+`~/git/shiroikuma-renrakusaki`.
 
 ### Call history for renrakusaki's contact screen
 
@@ -217,8 +229,23 @@ sync with the renrakusaki repo:
   matching any of the numbers — the tapped-row match, plus `PhoneNumberUtils.compare` on normalized
   numbers and the nine-digit tail of `hasSameTailAs` — under the existing “Calls with <name>” banner,
   whose cross (or Back) restores the whole log. Without the extra nothing changes.
-- **The style provider** is exported with no permission but answers only `shiroikuma.renrakusaki` and
-  `.debug` (by `callingPackage`); anyone else gets null. Keys of `/style`:
+- **The style provider** is exported with no permission but answers only `shiroikuma.renrakusaki`, its
+  `.debug`, and `shiroikuma.rindenwa` (by `callingPackage`); anyone else gets null. Rindenwa reads it for
+  its SIP history rows, which share our three-line row (`item_recent_call.xml`: name / number · label /
+  SIM badge, arrow, time, duration, country — then ✉, ☎ and ⋮). Added for that row on 2026-11-17, all pure
+  additions under version 1: `color.number`, `color.country`, `color.action_message`, `color.action_call`,
+  `color.duration` / `font.duration.*` (the duration and its “·”, which used to share `color.subtitle`),
+  `color.number_label` (the contact's label after the “·” on line 2, `#FFFF00`, while `color.number`
+  before it is the paler `#FFFFB0`), `number_scale` (0.78 — line 2 is drawn at base size × this unless `font.number.size` is set),
+  `color.unanswered` (arrow and time of a call we placed that was not answered; an answered one takes
+  `color.outgoing` for both), `color.failure` and `color.rin_badge` / `color.rin_badge_text` (the last three are drawn by Rindenwa
+  only, but set on our Theme screen), the menu icon roles `color.role.call` / `.message` / `.contact` /
+  `.share` / `.view` / `.block` / `.delete`, `font.number.*` and `font.country.*`. There are no size keys: the picture is a square 90 % as tall as
+  the row (`size.picture_dp` was served in +104 to +108 only), the SIM badge is as tall as
+  line 3's text, and so with ✉, ☎ and ⋮: here they
+  sit on line 2 only, each as tall as that line, so the name keeps the row's whole width on a narrow
+  screen (白い熊, 2026-11-17, after +106); the ✉ is an accent-coloured outlined chat bubble.
+  Keys of `/style`:
   - `color.name`, `color.subtitle`, `color.date`, `color.day_date`, `color.missed`, `color.incoming`,
     `color.outgoing`, `color.divider`, `color.day_divider`, `color.date_underline`, `color.sim_text`,
     `color.sim1`, `color.sim2`, `color.background` — decimal ARGB ints, resolved through the defaults
@@ -235,6 +262,20 @@ sync with the renrakusaki repo:
   Renrakusaki reads `/style` each time a contact screen opens and falls back to our defaults when the
   provider is missing, so neither app has to be released first. **Renaming or re-meaning a key, or
   reordering the format enums, breaks renrakusaki's rows silently — bump `version` and tell that repo.**
+
+## Menus are pill menus, with icons coloured by role
+
+Every popup row in the app — a call-log row's ⋮, the top bar's and the action mode's overflow, commons'
+screens included — is drawn by `views/PillMenuItemView`, swapped in through our own copies of AppCompat's
+`abc_popup_menu_item_layout.xml` / `abc_cascading_menu_item_layout.xml` (verbatim 1.7.1 with only the root
+view changed — **diff them against the library when AppCompat is bumped**). Rows are full-width outlined
+pills per the black-yellow-theme skill; frame and label stay in the accent (the warning colour for a
+destructive row) while the **icon takes the colour of what the row does** — `ThemeSlot.MENU_ROLE_*`,
+settable under “Menu icon colors” on the Theme screen: call green, message blue, contact cyan,
+copy/share orange, view/open/settings yellow, block magenta, delete red. `helpers/MenuPills` maps each
+menu item id to its icon, role and whether it ends in a › — **a new menu item needs a line there**, or it
+shows as a view-coloured pill with whatever icon it brought. `MenuPills.show()` opens a `PopupMenu`
+shifted up so it never scrolls while the screen has room.
 
 ## Commit convention — no Claude attribution
 

@@ -20,15 +20,15 @@ import org.fossify.phone.extensions.themeDimenDp
 import java.io.File
 
 /**
- * Read-only view of the call log's look, for renrakusaki's per-contact call history, so it draws its
- * rows exactly like our Recents without copying any of our settings.
+ * Read-only view of the call log's look, for renrakusaki's per-contact call history and rindenwa's SIP
+ * history, so they draw their rows exactly like our Recents without copying any of our settings.
  *
  * - `content://<applicationId>.calllogstyle/style` — a `key` / `value` cursor (both strings): colours
  *   as decimal ARGB ints already resolved through their defaults, thicknesses in dp, per-slot fonts,
  *   the base text size in px and the format choices. [VERSION] goes up whenever a key changes meaning.
  * - `content://<applicationId>.calllogstyle/font/<file name>` — an imported font file, read-only.
  *
- * Only renrakusaki (release and debug) gets an answer; anyone else gets null. The contract is
+ * Only renrakusaki (release and debug) and rindenwa get an answer; anyone else gets null. The contract is
  * documented in CLAUDE.md beside the tab hand-off.
  */
 class CallLogStyleProvider : ContentProvider() {
@@ -76,7 +76,9 @@ class CallLogStyleProvider : ContentProvider() {
         const val COLUMN_VALUE = "value"
         const val VERSION = 1
 
-        private val ALLOWED_CALLERS = setOf("shiroikuma.renrakusaki", "shiroikuma.renrakusaki.debug")
+        private val ALLOWED_CALLERS = setOf(
+            "shiroikuma.renrakusaki", "shiroikuma.renrakusaki.debug", "shiroikuma.rindenwa",
+        )
 
         private val COLOR_SLOTS = listOf(
             "name" to ThemeSlot.CALL_LOG_NAME,
@@ -91,6 +93,24 @@ class CallLogStyleProvider : ContentProvider() {
             "date_underline" to ThemeSlot.CALL_LOG_DATE_UNDERLINE,
             "sim_text" to ThemeSlot.SIM_TEXT,
             "background" to ThemeSlot.BACKGROUND,
+            // Added for the three-line row (2026-11-17). Pure additions: version stays 1.
+            "number" to ThemeSlot.CALL_LOG_NUMBER,
+            "number_label" to ThemeSlot.CALL_LOG_NUMBER_LABEL,
+            "duration" to ThemeSlot.CALL_LOG_DURATION,
+            "country" to ThemeSlot.CALL_LOG_COUNTRY,
+            "action_message" to ThemeSlot.CALL_LOG_ACTION_MESSAGE,
+            "action_call" to ThemeSlot.CALL_LOG_ACTION_CALL,
+            "failure" to ThemeSlot.CALL_LOG_FAILURE,
+            "unanswered" to ThemeSlot.CALL_LOG_UNANSWERED,
+            "rin_badge" to ThemeSlot.RIN_BADGE,
+            "rin_badge_text" to ThemeSlot.RIN_BADGE_TEXT,
+            "role.call" to ThemeSlot.MENU_ROLE_CALL,
+            "role.message" to ThemeSlot.MENU_ROLE_MESSAGE,
+            "role.contact" to ThemeSlot.MENU_ROLE_CONTACT,
+            "role.share" to ThemeSlot.MENU_ROLE_SHARE,
+            "role.view" to ThemeSlot.MENU_ROLE_VIEW,
+            "role.block" to ThemeSlot.MENU_ROLE_BLOCK,
+            "role.delete" to ThemeSlot.MENU_ROLE_DELETE,
         )
 
         // The call log's text slots — the only ones with a font of their own
@@ -118,6 +138,7 @@ class CallLogStyleProvider : ContentProvider() {
                 rows += "font.$name.size" to config.getFontSize(slot.key).toString()
             }
             rows += "text_size_px" to ctx.getTextSize().toString()
+            rows += "number_scale" to RecentCallsAdapter.NUMBER_LINE_FONT_SCALE.toString()
             rows += "day_header_scale" to RecentCallsAdapter.DAY_HEADER_FONT_SCALE.toString()
             rows += "sim_text_bold" to config.simTextBold.flag()
             rows += "time_format" to config.callTimeFormat.toString()

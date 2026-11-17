@@ -215,6 +215,12 @@ class ThemeActivity : SimpleActivity() {
         addSubgroup(R.string.theme_subgroup_chrome_menu, primaryColor)
         addColorRow(ThemeSlot.MENU_ICON, subRowIndent)
         addColorRow(ThemeSlot.MENU_TEXT, subRowIndent)
+        addSubgroup(R.string.theme_subgroup_menu_roles, primaryColor)
+        listOf(
+            ThemeSlot.MENU_ROLE_CALL, ThemeSlot.MENU_ROLE_MESSAGE, ThemeSlot.MENU_ROLE_CONTACT,
+            ThemeSlot.MENU_ROLE_SHARE, ThemeSlot.MENU_ROLE_VIEW, ThemeSlot.MENU_ROLE_BLOCK,
+            ThemeSlot.MENU_ROLE_DELETE,
+        ).forEach { addColorRow(it, subRowIndent) }
         addSubgroup(R.string.theme_subgroup_chrome_header, primaryColor)
         addColorRow(ThemeSlot.HEADER_TITLE, subRowIndent)
         addColorRow(ThemeSlot.HEADER_ARROW, subRowIndent)
@@ -231,10 +237,22 @@ class ThemeActivity : SimpleActivity() {
         addSlotRow(ThemeSlot.CALL_LOG_NAME, subRowIndent)
         addSlotRow(ThemeSlot.CALL_LOG_SUBTITLE, subRowIndent)
         addSlotRow(ThemeSlot.CALL_LOG_DATE, subRowIndent)
+        addSlotRow(ThemeSlot.CALL_LOG_NUMBER, subRowIndent)
+        addColorRow(ThemeSlot.CALL_LOG_NUMBER_LABEL, subRowIndent)
+        addSlotRow(ThemeSlot.CALL_LOG_DURATION, subRowIndent)
+        addSlotRow(ThemeSlot.CALL_LOG_COUNTRY, subRowIndent)
+        addSubgroup(R.string.theme_subgroup_call_log_actions, primaryColor)
+        addColorRow(ThemeSlot.CALL_LOG_ACTION_MESSAGE, subRowIndent)
+        addColorRow(ThemeSlot.CALL_LOG_ACTION_CALL, subRowIndent)
+        addSubgroup(R.string.theme_subgroup_call_log_rindenwa, primaryColor)
+        addColorRow(ThemeSlot.RIN_BADGE, subRowIndent)
+        addColorRow(ThemeSlot.RIN_BADGE_TEXT, subRowIndent)
+        addColorRow(ThemeSlot.CALL_LOG_FAILURE, subRowIndent)
         addSubgroup(R.string.theme_subgroup_call_log_types, primaryColor)
         addColorRow(ThemeSlot.CALL_LOG_MISSED, subRowIndent)
         addColorRow(ThemeSlot.CALL_LOG_INCOMING, subRowIndent)
         addColorRow(ThemeSlot.CALL_LOG_OUTGOING, subRowIndent)
+        addColorRow(ThemeSlot.CALL_LOG_UNANSWERED, subRowIndent)
         addSubgroup(R.string.theme_subgroup_call_log_dividers, primaryColor)
         addColorRow(ThemeSlot.CALL_LOG_DIVIDER, subRowIndent)
         addDimenRow(ThemeDimen.CALL_LOG_DIVIDER_THICKNESS, subRowIndent)

@@ -4,11 +4,15 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.ShortcutInfo
+import android.content.res.ColorStateList
 import android.content.res.Configuration
+import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.Icon
 import android.graphics.drawable.LayerDrawable
+import android.graphics.drawable.RippleDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
@@ -46,7 +50,9 @@ import org.fossify.phone.extensions.dropRenrakusakiCopies
 import org.fossify.phone.extensions.getInstalledContactsAppPackage
 import org.fossify.phone.extensions.handleFullScreenNotificationsPermission
 import org.fossify.phone.extensions.holdsDialerRole
+import org.fossify.phone.extensions.isRindenwaInstalled
 import org.fossify.phone.extensions.launchContactsApp
+import org.fossify.phone.extensions.launchRindenwa
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.launchCreateNewContactIntent
 import org.fossify.phone.fragments.ContactsFragment
@@ -66,6 +72,14 @@ import org.fossify.phone.models.Events
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+
+// The bar's fourth tab, 臨電話. Not a commons TAB_* mask and never stored in config.showTabs: it has no
+// page here and is drawn whenever Rindenwa is installed.
+private const val TAB_RINDENWA = -1
+
+private const val DIALPAD_BUTTON_CORNER_DP = 16f
+private const val DIALPAD_BUTTON_STROKE_DP = 3f
+private const val DIALPAD_BUTTON_RIPPLE_ALPHA = 0.3f
 
 class MainActivity : SimpleActivity() {
     override var isSearchBarEnabled = true
@@ -88,6 +102,7 @@ class MainActivity : SimpleActivity() {
     // selection that runs after the launch, so a cold start lands on it instead of the default tab.
     private var requestedTab: Int? = null
     private var storedShowTabs = 0
+    private var storedShowRindenwaTab = false
     private var storedFontSize = 0
     private var storedStartNameWithSurname = false
     var cachedContacts = ArrayList<Contact>()
@@ -149,12 +164,15 @@ class MainActivity : SimpleActivity() {
             return
         }
 
-        updateMenuColors()
-        val properPrimaryColor = getProperPrimaryColor()
-        val dialpadIcon = resources.getColoredDrawableWithColor(R.drawable.ic_dialpad_vector, properPrimaryColor.getContrastColor())
-        binding.mainDialpadButton.setImageDrawable(dialpadIcon)
+        // 臨電話 installed or removed while we were away: its tab comes or goes with it
+        if (storedShowRindenwaTab != showsRindenwaTab()) {
+            recreate()
+            return
+        }
 
+        updateMenuColors()
         updateTextColors(binding.mainHolder)
+        styleDialpadButton()
         setupTabColors()
 
         getAllFragments().forEach {
@@ -545,7 +563,39 @@ class MainActivity : SimpleActivity() {
             colorTabItem(inactiveView, themeColor(ThemeSlot.TAB_UNSELECTED))
         }
 
-        binding.mainTabsHolder.setBackgroundColor(themeColor(ThemeSlot.TAB_BACKGROUND))
+        // the folder tabs behind the bar carry its background; the selected tab's label goes bold
+        binding.mainTabsHolder.setBackgroundColor(Color.TRANSPARENT)
+        binding.mainTabsFolder.setColors(themeColor(ThemeSlot.TAB_SELECTED), themeColor(ThemeSlot.TAB_BACKGROUND))
+        for (index in 0 until binding.mainTabsHolder.tabCount) {
+            boldTabLabel(binding.mainTabsHolder.getTabAt(index)?.customView, index == binding.viewPager.currentItem)
+        }
+    }
+
+    // The dialpad button is traced, not filled: a rounded square outlined in the accent with the glyph
+    // in the same colour, over the page's own background so the list never shows through it.
+    private fun styleDialpadButton() {
+        val accent = themeColor(ThemeSlot.PRIMARY)
+        val density = resources.displayMetrics.density
+        val shape = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = DIALPAD_BUTTON_CORNER_DP * density
+            setColor(themeColor(ThemeSlot.BACKGROUND))
+            setStroke((DIALPAD_BUTTON_STROKE_DP * density).toInt(), accent)
+        }
+        val mask = GradientDrawable().apply {
+            cornerRadius = DIALPAD_BUTTON_CORNER_DP * density
+            setColor(Color.WHITE)
+        }
+
+        binding.mainDialpadButton.apply {
+            background = RippleDrawable(ColorStateList.valueOf(accent.adjustAlpha(DIALPAD_BUTTON_RIPPLE_ALPHA)), shape, mask)
+            setImageDrawable(resources.getColoredDrawableWithColor(R.drawable.ic_dialpad_vector, accent))
+        }
+    }
+
+    private fun boldTabLabel(view: View?, bold: Boolean) {
+        view?.findViewById<TextView>(org.fossify.commons.R.id.tab_item_label)
+            ?.setTypeface(null, if (bold) Typeface.BOLD else Typeface.NORMAL)
     }
 
     private fun colorTabItem(view: View?, color: Int) {
@@ -555,42 +605,23 @@ class MainActivity : SimpleActivity() {
 
     private fun getInactiveTabIndexes(activeIndex: Int) = (0 until binding.mainTabsHolder.tabCount).filter { it != activeIndex }
 
-    private fun getSelectedTabDrawableIds(): List<Int> {
-        val showTabs = config.showTabs
-        val icons = mutableListOf<Int>()
-
-        if (showTabs and TAB_CONTACTS != 0) {
-            icons.add(R.drawable.ic_person_vector)
+    // One icon per tab of the bar, in bar order — the 臨電話 tab included, which is never the selected one
+    private fun getSelectedTabDrawableIds(): List<Int> = barTabs().map {
+        when (it) {
+            TAB_FAVORITES -> R.drawable.ic_star_vector
+            TAB_CONTACTS -> R.drawable.ic_person_vector
+            TAB_CALL_HISTORY -> R.drawable.ic_clock_filled_vector
+            else -> R.drawable.ic_simple_phone_vector
         }
-
-        if (showTabs and TAB_FAVORITES != 0) {
-            icons.add(R.drawable.ic_star_vector)
-        }
-
-        if (showTabs and TAB_CALL_HISTORY != 0) {
-            icons.add(R.drawable.ic_clock_filled_vector)
-        }
-
-        return icons
     }
 
-    private fun getDeselectedTabDrawableIds(): ArrayList<Int> {
-        val showTabs = config.showTabs
-        val icons = ArrayList<Int>()
-
-        if (showTabs and TAB_CONTACTS != 0) {
-            icons.add(R.drawable.ic_person_outline_vector)
+    private fun getDeselectedTabDrawableIds(): List<Int> = barTabs().map {
+        when (it) {
+            TAB_FAVORITES -> R.drawable.ic_star_outline_vector
+            TAB_CONTACTS -> R.drawable.ic_person_outline_vector
+            TAB_CALL_HISTORY -> R.drawable.ic_clock_vector
+            else -> R.drawable.ic_simple_phone_vector
         }
-
-        if (showTabs and TAB_FAVORITES != 0) {
-            icons.add(R.drawable.ic_star_outline_vector)
-        }
-
-        if (showTabs and TAB_CALL_HISTORY != 0) {
-            icons.add(R.drawable.ic_clock_vector)
-        }
-
-        return icons
     }
 
     private fun initFragments() {
@@ -615,8 +646,8 @@ class MainActivity : SimpleActivity() {
                 var wantedTab = getDefaultTab()
 
                 // open the Recents tab if we got here by clicking a missed call notification
-                if (intent.action == Intent.ACTION_VIEW && config.showTabs and TAB_CALL_HISTORY > 0) {
-                    wantedTab = binding.mainTabsHolder.tabCount - 1
+                if (intent.action == Intent.ACTION_VIEW && recentsPosition() >= 0) {
+                    wantedTab = recentsPosition()
                 }
 
                 // a tab asked for by renrakusaki's bar outranks both — that is 白い熊 tapping one of our
@@ -650,24 +681,33 @@ class MainActivity : SimpleActivity() {
     private fun setupTabs() {
         binding.viewPager.adapter = null
         binding.mainTabsHolder.removeAllTabs()
-        tabsList.forEachIndexed { index, value ->
-            if (config.showTabs and value != 0) {
-                binding.mainTabsHolder.newTab().setCustomView(R.layout.bottom_tablayout_item).apply {
-                    customView?.findViewById<ImageView>(R.id.tab_item_icon)?.setImageDrawable(getTabIcon(index))
-                    customView?.findViewById<TextView>(R.id.tab_item_label)?.text = getTabLabel(index)
-                    AutofitHelper.create(customView?.findViewById(R.id.tab_item_label))
-                    binding.mainTabsHolder.addTab(this)
-                }
+        storedShowRindenwaTab = showsRindenwaTab()
+        barTabs().forEach { tab ->
+            binding.mainTabsHolder.newTab().setCustomView(R.layout.bottom_tablayout_item).apply {
+                customView?.findViewById<ImageView>(R.id.tab_item_icon)?.setImageDrawable(getTabIcon(tab))
+                customView?.findViewById<TextView>(R.id.tab_item_label)?.text = getTabLabel(tab)
+                AutofitHelper.create(customView?.findViewById(R.id.tab_item_label))
+                binding.mainTabsHolder.addTab(this)
             }
         }
 
         binding.mainTabsHolder.onTabSelectionChanged(
             tabUnselectedAction = {
                 updateBottomTabItemColors(it.customView, false, getDeselectedTabDrawableIds()[it.position])
+                boldTabLabel(it.customView, false)
             },
             tabSelectedAction = {
+                if (barTabs().getOrNull(it.position) == TAB_RINDENWA) {
+                    launchRindenwa()
+                    // a tab without a page: the selection goes back to the page we are staying on
+                    Handler().post {
+                        binding.mainTabsHolder.getTabAt(sanitizeWantedTab(binding.viewPager.currentItem))?.select()
+                    }
+                    return@onTabSelectionChanged
+                }
+
                 if (shouldOpenContactsAppForTab(it.position)) {
-                    launchContactsApp(tabMaskAt(it.position), config.showTabs)
+                    launchContactsApp(tabMaskAt(it.position))
                     // bounce the selection back to the page we are actually staying on
                     Handler().post {
                         binding.mainTabsHolder.getTabAt(sanitizeWantedTab(binding.viewPager.currentItem))?.select()
@@ -679,34 +719,40 @@ class MainActivity : SimpleActivity() {
                 getCurrentFragment()?.onSearchQueryChanged(binding.mainMenu.getCurrentQuery())
                 binding.viewPager.currentItem = it.position
                 updateBottomTabItemColors(it.customView, true, getSelectedTabDrawableIds()[it.position])
+                boldTabLabel(it.customView, true)
 
-                val lastPosition = binding.mainTabsHolder.tabCount - 1
-                if (it.position == lastPosition && config.showTabs and TAB_CALL_HISTORY > 0) {
+                if (it.position == recentsPosition()) {
                     clearMissedCalls()
                 }
             }
         )
 
         binding.mainTabsHolder.beGoneIf(binding.mainTabsHolder.tabCount == 1)
+        binding.mainTabsFolder.beGoneIf(binding.mainTabsHolder.tabCount == 1)
+        binding.mainTabsFolder.attach(binding.mainTabsHolder)
         storedShowTabs = config.showTabs
         storedStartNameWithSurname = config.startNameWithSurname
     }
 
-    private fun getTabIcon(position: Int): Drawable {
-        val drawableId = when (position) {
-            0 -> R.drawable.ic_person_vector
-            1 -> R.drawable.ic_star_vector
-            else -> R.drawable.ic_clock_vector
+    private fun getTabIcon(tab: Int): Drawable {
+        val drawableId = when (tab) {
+            TAB_FAVORITES -> R.drawable.ic_star_vector
+            TAB_CONTACTS -> R.drawable.ic_person_vector
+            TAB_CALL_HISTORY -> R.drawable.ic_clock_vector
+            else -> R.drawable.ic_simple_phone_vector
         }
 
         return resources.getColoredDrawableWithColor(drawableId, getProperTextColor())
     }
 
-    private fun getTabLabel(position: Int): String {
-        val stringId = when (position) {
-            0 -> R.string.contacts_tab
-            1 -> R.string.favorites_tab
-            else -> R.string.call_history_tab
+    // The last two are named for the apps, exactly so, in every language: 電話 is our own call history
+    // and 臨電話 the SIP one next door
+    private fun getTabLabel(tab: Int): String {
+        val stringId = when (tab) {
+            TAB_FAVORITES -> R.string.favorites_tab
+            TAB_CONTACTS -> R.string.contacts_tab
+            TAB_CALL_HISTORY -> R.string.tab_denwa
+            else -> R.string.tab_rindenwa
         }
 
         return resources.getString(stringId)
@@ -740,9 +786,7 @@ class MainActivity : SimpleActivity() {
     // The keypad only makes sense over the call log, which is what it filters. Anywhere else — and
     // that is only reachable with the Contacts-app hand-off turned off — the separate screen opens.
     private fun canShowDialpadPanel(): Boolean {
-        return getRecentsFragment() != null &&
-                config.showTabs and TAB_CALL_HISTORY > 0 &&
-                binding.viewPager.currentItem == binding.mainTabsHolder.tabCount - 1
+        return getRecentsFragment() != null && binding.viewPager.currentItem == recentsPosition()
     }
 
     fun refreshFragments() {
@@ -753,19 +797,15 @@ class MainActivity : SimpleActivity() {
     }
 
     private fun getAllFragments(): ArrayList<MyViewPagerFragment<*>?> {
-        val showTabs = config.showTabs
         val fragments = arrayListOf<MyViewPagerFragment<*>?>()
-
-        if (showTabs and TAB_CONTACTS > 0) {
-            fragments.add(getContactsFragment())
-        }
-
-        if (showTabs and TAB_FAVORITES > 0) {
-            fragments.add(getFavoritesFragment())
-        }
-
-        if (showTabs and TAB_CALL_HISTORY > 0) {
-            fragments.add(getRecentsFragment())
+        visibleTabs().forEach {
+            fragments.add(
+                when (it) {
+                    TAB_FAVORITES -> getFavoritesFragment()
+                    TAB_CONTACTS -> getContactsFragment()
+                    else -> getRecentsFragment()
+                }
+            )
         }
 
         return fragments
@@ -779,7 +819,7 @@ class MainActivity : SimpleActivity() {
 
     private fun getRecentsFragment(): RecentsFragment? = findViewById(R.id.recents_fragment)
 
-    // Contacts and Favorites are always the first tabs, so the hand-off tabs occupy positions 0 until this count.
+    // Favorites and Contacts are always the first tabs, so the hand-off tabs occupy positions 0 until this count.
     private fun handOffTabCount(): Int {
         var count = 0
         if (config.showTabs and TAB_CONTACTS != 0) count++
@@ -796,15 +836,25 @@ class MainActivity : SimpleActivity() {
                 && getInstalledContactsAppPackage() != null
     }
 
-    // The TAB_* masks of the tabs actually shown, in bar order — the source of both tab positions and count.
-    // Read from the config rather than the tab bar, so it also answers before the bar has been built.
+    // The TAB_* masks of the pages actually shown, in bar order — the source of both page positions and
+    // count. Read from the config rather than the tab bar, so it also answers before the bar has been built.
     private fun visibleTabs() = tabsList.filter { config.showTabs and it != 0 }
+
+    // The bar itself: our pages, then 臨電話 — a tab with no page behind it, drawn only when Rindenwa is
+    // installed and only beside our own call history, whose SIP twin it is.
+    private fun barTabs() = if (showsRindenwaTab()) visibleTabs() + TAB_RINDENWA else visibleTabs()
+
+    private fun showsRindenwaTab() = config.showTabs and TAB_CALL_HISTORY != 0 && isRindenwaInstalled()
+
+    // The page (and tab) position of our call history, or -1 when it is switched off
+    private fun recentsPosition() = visibleTabs().indexOf(TAB_CALL_HISTORY)
 
     // The TAB_* mask of the tab shown at the given position.
     private fun tabMaskAt(position: Int) = visibleTabs().getOrNull(position) ?: 0
 
-    // A tab renrakusaki asked us to open, as a page position: the mirror of the extra we send it, arriving
-    // when the Recents tab on the bar it wears for us is tapped. Consumed on read, and honored only for a
+    // A tab renrakusaki or rindenwa asked us to open, as a page position: the mirror of the extra we send,
+    // arriving when the 電話 tab on their copy of the shared bar is tapped. Consumed on read, and honored
+    // only for a
     // tab that stays in the dialer — a request for Contacts or Favorites would bounce us straight back out.
     private fun takeRequestedTab(): Int? {
         val wantedMask = intent.getIntExtra(CONTACTS_APP_OPEN_TAB_EXTRA, 0)
@@ -833,30 +883,10 @@ class MainActivity : SimpleActivity() {
     private fun sanitizeWantedTab(position: Int) = if (shouldOpenContactsAppForTab(position)) handOffTabCount() else position
 
     private fun getDefaultTab(): Int {
-        val showTabsMask = config.showTabs
         val wantedTab = when (config.defaultTab) {
-            TAB_LAST_USED -> if (config.lastUsedViewPagerPage < binding.mainTabsHolder.tabCount) config.lastUsedViewPagerPage else 0
-            TAB_CONTACTS -> 0
-            TAB_FAVORITES -> if (showTabsMask and TAB_CONTACTS > 0) 1 else 0
-            else -> {
-                if (showTabsMask and TAB_CALL_HISTORY > 0) {
-                    if (showTabsMask and TAB_CONTACTS > 0) {
-                        if (showTabsMask and TAB_FAVORITES > 0) {
-                            2
-                        } else {
-                            1
-                        }
-                    } else {
-                        if (showTabsMask and TAB_FAVORITES > 0) {
-                            1
-                        } else {
-                            0
-                        }
-                    }
-                } else {
-                    0
-                }
-            }
+            TAB_LAST_USED -> config.lastUsedViewPagerPage.takeIf { it < visibleTabs().size } ?: 0
+            TAB_FAVORITES, TAB_CONTACTS -> visibleTabs().indexOf(config.defaultTab).coerceAtLeast(0)
+            else -> recentsPosition().coerceAtLeast(0)
         }
 
         return sanitizeWantedTab(wantedTab)
