@@ -204,6 +204,10 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(PURE_YELLOW_MIGRATED, false)
         set(value) = prefs.edit().putBoolean(PURE_YELLOW_MIGRATED, value).apply()
 
+    var callDividerMigrated: Boolean
+        get() = prefs.getBoolean(CALL_DIVIDER_MIGRATED, false)
+        set(value) = prefs.edit().putBoolean(CALL_DIVIDER_MIGRATED, value).apply()
+
     fun getThemeOverride(key: String): Int = prefs.getInt(key, THEME_UNSET)
 
     fun setThemeOverride(key: String, color: Int) = prefs.edit().putInt(key, color).apply()

@@ -323,8 +323,6 @@ class MainActivity : SimpleActivity() {
                 return@setOnMenuItemClickListener true
             }
         }
-
-        setupSettingsShortcut()
     }
 
     private fun changeColumnCount() {
@@ -389,33 +387,6 @@ class MainActivity : SimpleActivity() {
             toolbarMenu.getItem(i).icon?.applyColorFilter(iconColor)
         }
         toolbarMenu.colorItemTitles(menuTextColor)
-        styleSettingsShortcut()
-    }
-
-    private fun settingsShortcutView(): View? =
-        binding.mainMenu.requireToolbar().menu.findItem(R.id.settings_shortcut)?.actionView
-
-    // 設 opens the 白い熊 UI page, 定 opens the regular Settings; the two characters tap independently.
-    private fun setupSettingsShortcut() {
-        val view = settingsShortcutView() ?: return
-        view.findViewById<View>(R.id.settings_shortcut_left)?.setOnClickListener {
-            startActivity(Intent(this, ThemeActivity::class.java))
-        }
-        view.findViewById<View>(R.id.settings_shortcut_right)?.setOnClickListener {
-            launchSettings()
-        }
-    }
-
-    // Colour + font the 設定 characters from the SETTINGS_BUTTON slot.
-    private fun styleSettingsShortcut() {
-        val view = settingsShortcutView() ?: return
-        val color = themeColor(ThemeSlot.SETTINGS_BUTTON)
-        listOf(R.id.settings_shortcut_left, R.id.settings_shortcut_right).forEach { id ->
-            view.findViewById<TextView>(id)?.apply {
-                setTextColor(color)
-                applyThemeFont(ThemeSlot.SETTINGS_BUTTON)
-            }
-        }
     }
 
     // Apply the granular search-bar theme on top of the commons defaults (must run after updateColors).

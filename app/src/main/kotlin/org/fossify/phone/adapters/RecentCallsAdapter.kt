@@ -1,6 +1,8 @@
 package org.fossify.phone.adapters
 
 import android.annotation.SuppressLint
+import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.provider.CallLog.Calls
 import android.telephony.PhoneNumberUtils
@@ -16,6 +18,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.bumptech.glide.Glide
 import com.google.i18n.phonenumbers.NumberParseException
@@ -145,8 +148,35 @@ class RecentCallsAdapter(
     private var simTextColor = activity.simTextColor()
     private var simTextStyle = activity.simTextStyle()
 
+    // The line between two calls of one day: thin, inset from both screen edges, and absent under a
+    // day's last call, where the day's own line follows. Drawn as a decoration rather than a view in
+    // the row, so it is right again as soon as a neighbour is added or removed without a rebind.
+    // Rindenwa draws the same line from the same two /style keys.
+    private val callDividerPaint = Paint()
+    private val callDividerDecoration = object : RecyclerView.ItemDecoration() {
+        override fun onDrawOver(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
+            if (callDividerThicknessDp <= 0) return
+            val thickness = callDividerThicknessDp * parent.resources.displayMetrics.density
+            val inset = parent.resources.getDimension(org.fossify.commons.R.dimen.activity_margin)
+            val items = currentList
+            for (i in 0 until parent.childCount) {
+                val child = parent.getChildAt(i)
+                val position = parent.getChildAdapterPosition(child)
+                if (items.getOrNull(position) !is RecentCall || items.getOrNull(position + 1) !is RecentCall) continue
+                callDividerPaint.color = callDividerColor
+                callDividerPaint.alpha = (callDividerPaint.alpha * child.alpha).toInt()
+                val bottom = child.bottom + child.translationY
+                c.drawRect(
+                    parent.paddingLeft + inset, bottom - thickness,
+                    parent.width - parent.paddingRight - inset, bottom, callDividerPaint
+                )
+            }
+        }
+    }
+
     init {
         initDrawables()
+        recyclerView.addItemDecoration(callDividerDecoration)
         setupDragListener(true)
         setHasStableIds(true)
         (recyclerView.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
@@ -693,7 +723,6 @@ class RecentCallsAdapter(
         ) { _, _ ->
             binding.apply {
                 root.setupViewBackground(activity)
-                applyLine(itemRecentsDivider, callDividerColor, callDividerThicknessDp)
 
                 val currentFontSize = fontSize
                 itemRecentsHolder.isSelected = selectedKeys.contains(call.id)
