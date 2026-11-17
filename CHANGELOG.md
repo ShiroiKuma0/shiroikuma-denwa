@@ -3,6 +3,15 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+116 — 2026-11-17
+Built on Fossify Phone 1.11.1.
+
+### Changed
+- **The call icon now comes before the message icon on every call row.** The right end of a row in
+  the call history reads call, message, ⋮ — it used to read message, call, ⋮. Sizes, gaps and the
+  place on the number's line are unchanged, and the number now ends where the call icon begins.
+  白い熊 臨電話 made the same swap, so both histories stay alike.
+
 ## 白い熊 電話 1.11.1+115 — 2026-11-17
 Built on Fossify Phone 1.11.1.
 

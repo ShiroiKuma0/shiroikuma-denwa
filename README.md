@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+115`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+116`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -142,7 +142,7 @@ The bar is drawn as **card‑folder tabs**: one bold yellow line runs along its 
 
 ## 🕓 A richer call log
 
-**Three lines per call**: the name; the number with the contact's label for it; then the SIM badge, the arrow, the time, the duration and the country. The arrow and the time share one colour that says how the call went — yellow for a call you placed and that was answered, blue for one that was not, red for one you missed. On the number's line sit three actions: **a message** (opens 白い熊 メッセージ on that number), **call back on the SIM that call used**, and the row's menu. The picture fills the row's height, and a tap on the row shows **that contact's whole history, across all of their numbers**. Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, **every call on its own row with its exact time** (no "(2)" counter hiding when the others came — grouping is a switch away if you want it back), and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format. **Edit contact** sits in both of a row's menus, so a number you noted down wrong is corrected from the call it came in on rather than hunted for in another app.
+**Three lines per call**: the name; the number with the contact's label for it; then the SIM badge, the arrow, the time, the duration and the country. The arrow and the time share one colour that says how the call went — yellow for a call you placed and that was answered, blue for one that was not, red for one you missed. On the number's line sit three actions: **call back on the SIM that call used**, **a message** (opens 白い熊 メッセージ on that number), and the row's menu. The picture fills the row's height, and a tap on the row shows **that contact's whole history, across all of their numbers**. Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, **every call on its own row with its exact time** (no "(2)" counter hiding when the others came — grouping is a switch away if you want it back), and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format. **Edit contact** sits in both of a row's menus, so a number you noted down wrong is corrected from the call it came in on rather than hunted for in another app.
 
 ---
 
