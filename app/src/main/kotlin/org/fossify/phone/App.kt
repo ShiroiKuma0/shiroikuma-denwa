@@ -11,6 +11,7 @@ import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.phone.activities.MainActivity
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.colorItemTitles
+import org.fossify.phone.extensions.migrateCallDividerIfNeeded
 import org.fossify.phone.extensions.migrateToPureYellowIfNeeded
 import org.fossify.phone.extensions.seedBlackYellowThemeIfNeeded
 import org.fossify.phone.extensions.syncDialogFrame
@@ -23,6 +24,8 @@ class App : FossifyApp() {
         seedBlackYellowThemeIfNeeded()
         // Rewrite colors persisted with the legacy material yellow to pure yellow, once.
         migrateToPureYellowIfNeeded()
+        // Bring back a call divider that was switched off, once.
+        migrateCallDividerIfNeeded()
         // Frame dialogs in the accent, so they are not black-on-black with the screen behind them.
         syncDialogFrame()
         // Recolor every screen's top-bar foreground from the header slots, so it propagates even to

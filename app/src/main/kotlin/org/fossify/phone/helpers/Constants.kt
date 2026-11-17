@@ -40,6 +40,7 @@ const val CALL_SCREEN_FIELDS = "theme_call_screen_fields"
 const val CALL_SCREEN_PREFER_NICKNAME = "theme_call_screen_prefer_nickname"
 const val THEME_V1_SEEDED = "theme_v1_seeded"
 const val PURE_YELLOW_MIGRATED = "pure_yellow_migrated"
+const val CALL_DIVIDER_MIGRATED = "call_divider_migrated"
 const val OPEN_CONTACTS_APP_FOR_TAB = "open_contacts_app_for_tab"
 const val FONT_FAMILY_PREFIX = "font_family_" // String, "" = system/global default
 const val FONT_WEIGHT_PREFIX = "font_weight_" // Int, 0 = default, else 100..900
@@ -55,6 +56,8 @@ const val PALETTE_RED = 0xFFFF0000.toInt()
 const val PALETTE_BLUE = 0xFF0000FF.toInt()
 // The family's dim gold: explanations and their left rules on the UI page (ThemeSlot.SETTINGS_NOTE)
 const val PALETTE_DIM_GOLD = 0xFFC8C800.toInt()
+// The family's darker opaque yellow: the thin line between two calls of one day (and an off switch)
+const val PALETTE_DIM_YELLOW = 0xFF8C8C00.toInt()
 // Menu icon roles (ThemeSlot.MENU_ROLE_*): what an icon's colour says its row does. Yellow (view /
 // open / settings) is the accent and red (delete) is PALETTE_RED; the message blue is lighter than
 // PALETTE_BLUE because a thin glyph in pure blue all but vanishes on black.

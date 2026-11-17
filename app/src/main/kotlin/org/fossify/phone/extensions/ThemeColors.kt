@@ -14,6 +14,7 @@ import org.fossify.phone.helpers.PALETTE_BLACK
 import org.fossify.phone.helpers.PALETTE_BLUE
 import org.fossify.phone.helpers.PALETTE_CYAN
 import org.fossify.phone.helpers.PALETTE_DIM_GOLD
+import org.fossify.phone.helpers.PALETTE_DIM_YELLOW
 import org.fossify.phone.helpers.PALETTE_GREEN
 import org.fossify.phone.helpers.PALETTE_MAGENTA
 import org.fossify.phone.helpers.PALETTE_MESSAGE_BLUE
@@ -75,7 +76,6 @@ enum class ThemeSlot(
     MENU_TEXT("theme_menu_text", ThemeGroup.CHROME, R.string.theme_menu_text),
     HEADER_TITLE("theme_header_title", ThemeGroup.CHROME, R.string.theme_header_title),
     HEADER_ARROW("theme_header_arrow", ThemeGroup.CHROME, R.string.theme_header_arrow),
-    SETTINGS_BUTTON("theme_settings_button", ThemeGroup.CHROME, R.string.theme_settings_button, hasFont = true),
 
     // Menu icon roles: every menu row's icon is coloured by what the row does, while its frame and
     // label stay in the accent (or, for a destructive row, in MENU_ROLE_DELETE — the warning colour).
@@ -254,8 +254,6 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.MENU_TEXT -> themeColor(ThemeSlot.TEXT)
     ThemeSlot.HEADER_TITLE -> themeColor(ThemeSlot.PRIMARY).getContrastColor()
     ThemeSlot.HEADER_ARROW -> themeColor(ThemeSlot.PRIMARY).getContrastColor()
-    // The 設定 shortcut sits in the search bar, so it follows the accent like the other top-bar icons
-    ThemeSlot.SETTINGS_BUTTON -> themeColor(ThemeSlot.PRIMARY)
 
     ThemeSlot.MENU_ROLE_CALL -> PALETTE_GREEN
     ThemeSlot.MENU_ROLE_MESSAGE -> PALETTE_MESSAGE_BLUE
@@ -282,7 +280,8 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     // answered wears pure blue
     ThemeSlot.CALL_LOG_OUTGOING -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.CALL_LOG_UNANSWERED -> PALETTE_BLUE
-    ThemeSlot.CALL_LOG_DIVIDER -> themeColor(ThemeSlot.PRIMARY)
+    // Between two calls of one day: thinner and paler than the day's line, so the days still read first
+    ThemeSlot.CALL_LOG_DIVIDER -> PALETTE_DIM_YELLOW
     ThemeSlot.CALL_LOG_DAY_DIVIDER -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.CALL_LOG_DATE_UNDERLINE -> themeColor(ThemeSlot.PRIMARY)
     // The row's own lines are accent by default, each its own slot — not the secondary text colour
@@ -429,6 +428,23 @@ fun Context.syncDialogFrame() {
     if (config.dialogBorderWidth != DIALOG_FRAME_WIDTH_DP) {
         config.dialogBorderWidth = DIALOG_FRAME_WIDTH_DP
     }
+}
+
+/**
+ * One-time: a call divider that was switched off (0 dp) comes back at its defaults — 1 dp in
+ * [PALETTE_DIM_YELLOW] — the line 白い熊 asked for on 2026-11-17. A divider that was showing keeps
+ * what was picked for it, and 0 can be set again afterwards.
+ */
+fun Context.migrateCallDividerIfNeeded() {
+    if (config.callDividerMigrated) {
+        return
+    }
+
+    if (themeDimenDp(ThemeDimen.CALL_LOG_DIVIDER_THICKNESS) <= 0) {
+        setThemeDimenDp(ThemeDimen.CALL_LOG_DIVIDER_THICKNESS, ThemeDimen.CALL_LOG_DIVIDER_THICKNESS.defaultDp)
+        config.clearThemeOverride(ThemeSlot.CALL_LOG_DIVIDER.key)
+    }
+    config.callDividerMigrated = true
 }
 
 /** One-time rewrite of every persisted legacy material-yellow color to pure [PALETTE_YELLOW]. */

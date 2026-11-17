@@ -232,10 +232,6 @@
     <string name="theme_menu_text">Menu text</string>
     <string name="theme_header_title">Title</string>
     <string name="theme_header_arrow">Back arrow</string>
-    <string name="theme_subgroup_chrome_settings">Settings shortcut</string>
-    <string name="theme_settings_button">設定 characters</string>
-    <string name="settings_shortcut_left">設</string>
-    <string name="settings_shortcut_right">定</string>
     <string name="open_dialpad_by_default">Open the dialpad by default when the app opens</string>
     <string name="open_contacts_app_for_tab">Open the Contacts app from the Contacts and Favorites tabs</string>
     <string name="disable_proximity_sensor">Disable proximity sensor during calls</string>
