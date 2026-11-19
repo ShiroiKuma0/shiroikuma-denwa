@@ -346,4 +346,85 @@
         Haven't found some strings? There's more at
         https://github.com/FossifyOrg/Commons/tree/master/commons/src/main/res
     -->
+
+    <!-- The SIM dialog: what a call was made through, opened by a tap on the row's SIM badge -->
+    <string name="sim_dialog_open">SIM details of this call</string>
+    <string name="sim_dialog_slot">Slot %d</string>
+    <string name="sim_dialog_number_unknown">Number not known</string>
+    <string name="sim_dialog_copy">Copy number</string>
+    <string name="sim_dialog_close">Close</string>
+    <string name="sim_dialog_call">Call</string>
+    <string name="sim_dialog_outgoing">Outgoing</string>
+    <string name="sim_dialog_incoming">Incoming</string>
+    <string name="sim_dialog_missed">Missed</string>
+    <string name="sim_dialog_rejected">Rejected</string>
+    <string name="sim_dialog_blocked">Blocked</string>
+    <string name="sim_dialog_rang">Rang</string>
+    <string name="sim_dialog_rang_answered">%s before the answer</string>
+    <string name="sim_dialog_rang_unanswered">%s, no answer</string>
+    <string name="sim_dialog_talked">Talked</string>
+    <string name="sim_dialog_ended">Ended</string>
+    <string name="sim_dialog_end_local">You hung up</string>
+    <string name="sim_dialog_end_remote">They hung up</string>
+    <string name="sim_dialog_end_busy">Busy</string>
+    <string name="sim_dialog_end_rejected">Rejected</string>
+    <string name="sim_dialog_end_missed">Not answered</string>
+    <string name="sim_dialog_end_canceled">Cancelled</string>
+    <string name="sim_dialog_end_error">Network error</string>
+    <string name="sim_dialog_end_restricted">Not allowed</string>
+    <string name="sim_dialog_end_elsewhere">Answered on another device</string>
+    <string name="sim_dialog_network">Network</string>
+    <string name="sim_dialog_network_wifi">Wi-Fi calling</string>
+    <string name="sim_dialog_roaming">Roaming</string>
+    <string name="sim_dialog_roaming_yes">Yes</string>
+    <string name="sim_dialog_audio">Audio</string>
+    <string name="sim_dialog_signal">Signal</string>
+    <string name="sim_dialog_signal_dbm">%d dBm</string>
+    <string name="sim_dialog_caller_id">Caller ID</string>
+    <string name="sim_dialog_caller_id_default">Network default</string>
+    <string name="sim_dialog_caller_id_shown">Shown (*31#)</string>
+    <string name="sim_dialog_caller_id_hidden">Hidden (#31#)</string>
+
+    <!-- UI → Diagnostics -->
+    <string name="diag_title">Diagnostics</string>
+    <string name="diag_note">Nothing is recorded until a switch below is on. Files go to %s, one per kind per day.</string>
+    <string name="diag_notification_note">While anything records, a notification says so, with Mark and Turn all off.</string>
+    <string name="diag_sub_car">In the car</string>
+    <string name="diag_sub_calls">Calls and SIM cards</string>
+    <string name="diag_sub_data">Recorded data</string>
+    <string name="diag_car">Car-call screen</string>
+    <string name="diag_car_descr">What the app decided when a call came or went while Android Auto was projecting: whether it showed its own call screen, and what the system refused.</string>
+    <string name="diag_calls">Call recording</string>
+    <string name="diag_calls_descr">What the in-call service saw of each call — its states, the SIM it resolved, the network — and the stamp it stored. Contains the numbers called.</string>
+    <string name="diag_sim">SIM cards</string>
+    <string name="diag_sim_descr">When a new card is seen in a slot, and each pass that stamps the call history.</string>
+    <string name="diag_counting">Counting…</string>
+    <string name="diag_stored_none">Stored: nothing</string>
+    <string name="diag_stored">Stored: %1$s, %2$s</string>
+    <plurals name="diag_files">
+        <item quantity="one">%d file</item>
+        <item quantity="other">%d files</item>
+    </plurals>
+    <string name="diag_keep">Keep for</string>
+    <string name="diag_keep_all">everything</string>
+    <string name="diag_keep_days">%d d</string>
+    <string name="diag_keep_note">0 keeps everything. Older days are deleted when you leave this page and when the app starts.</string>
+    <string name="diag_export">Export</string>
+    <string name="diag_export_descr">Copies the files into a new dated subdirectory of a directory you pick. Last used: %s</string>
+    <string name="diag_export_done">Exported to %s</string>
+    <string name="diag_export_failed">The export could not be written</string>
+    <string name="diag_nothing">Nothing is recorded</string>
+    <string name="diag_share">Share</string>
+    <string name="diag_share_descr">Sends the files through another app.</string>
+    <string name="diag_purge">Purge</string>
+    <string name="diag_purge_descr">Deletes everything recorded, after a warning that says what goes.</string>
+    <string name="diag_purge_warning">This deletes %1$s forever:\n\n%2$s</string>
+    <string name="diag_purge_do">Delete forever</string>
+    <string name="diag_purged">Deleted %s</string>
+    <string name="diag_channel">Diagnostics recording</string>
+    <string name="diag_recording">電話 is recording diagnostics</string>
+    <string name="diag_mark">Mark</string>
+    <string name="diag_all_off">Turn all off</string>
+    <string name="diag_marked">Mark #%d</string>
+    <string name="theme_switch_off">Switch that is off</string>
 </resources>

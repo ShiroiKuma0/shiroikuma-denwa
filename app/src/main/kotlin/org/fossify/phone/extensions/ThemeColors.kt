@@ -64,6 +64,9 @@ enum class ThemeSlot(
     // The UI page's own explanations and the thin rule beside them — the family's dim gold
     SETTINGS_NOTE("theme_settings_note", ThemeGroup.FOUNDATION, R.string.theme_settings_note),
 
+    // A switch that is off: the outline and dot in a darker, opaque yellow (the on state is the accent)
+    SWITCH_OFF("theme_switch_off", ThemeGroup.FOUNDATION, R.string.theme_switch_off),
+
     // Search bar
     SEARCH_FILL("theme_search_fill", ThemeGroup.SEARCH, R.string.theme_search_fill),
     SEARCH_TEXT("theme_search_text", ThemeGroup.SEARCH, R.string.theme_search_text, hasFont = true),
@@ -240,6 +243,7 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.TEXT -> getProperTextColor()
     ThemeSlot.TEXT_SECONDARY -> themeColor(ThemeSlot.TEXT).adjustAlpha(0.6f)
     ThemeSlot.SETTINGS_NOTE -> PALETTE_DIM_GOLD
+    ThemeSlot.SWITCH_OFF -> PALETTE_DIM_YELLOW
 
     // Search bar: black fill, yellow text/icon/border by inheriting foundation
     ThemeSlot.SEARCH_FILL -> themeColor(ThemeSlot.BACKGROUND)
@@ -304,7 +308,7 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CALL_ACCEPT -> resources.getColor(R.color.md_green_400, theme)
     ThemeSlot.CALL_DECLINE -> resources.getColor(R.color.md_red_400, theme)
     ThemeSlot.CALL_CONTROL_ACTIVE -> themeColor(ThemeSlot.PRIMARY)
-    ThemeSlot.CALL_CONTROL_INACTIVE -> themeColor(ThemeSlot.TEXT).adjustAlpha(0.10f)
+    ThemeSlot.CALL_CONTROL_INACTIVE -> themeColor(ThemeSlot.SWITCH_OFF) // a ring's colour now, not a fill
 
     // The caller block: the name shapes read as the headline, everything under them as its detail
     ThemeSlot.CALL_DISPLAY_NAME, ThemeSlot.CALL_SURNAME_FIRST, ThemeSlot.CALL_FIRST_SURNAME,
@@ -427,6 +431,18 @@ fun Context.syncDialogFrame() {
 
     if (config.dialogBorderWidth != DIALOG_FRAME_WIDTH_DP) {
         config.dialogBorderWidth = DIALOG_FRAME_WIDTH_DP
+    }
+
+    // Dialog buttons are pills (commons sk12): the positive one thick and bold, the others thin —
+    // never the stock bare-text buttons.
+    if (!config.pillDialogButtons) {
+        config.pillDialogButtons = true
+    }
+
+    // …and a button that deletes is a pill in the warning colour (commons sk15).
+    val warning = themeColor(ThemeSlot.MENU_ROLE_DELETE)
+    if (config.dialogWarningColor != warning) {
+        config.dialogWarningColor = warning
     }
 }
 

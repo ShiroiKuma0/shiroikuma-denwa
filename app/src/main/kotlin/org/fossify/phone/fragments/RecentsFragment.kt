@@ -1,5 +1,6 @@
 package org.fossify.phone.fragments
 
+import org.fossify.phone.extensions.asPlaceholderPill
 import android.content.Context
 import android.telephony.PhoneNumberUtils
 import android.util.AttributeSet
@@ -68,7 +69,7 @@ class RecentsFragment(
 
         binding.recentsPlaceholder.text = context.getString(placeholderResId)
         binding.recentsPlaceholder2.apply {
-            underlineText()
+            asPlaceholderPill()
             setOnClickListener {
                 requestCallLogPermission()
             }

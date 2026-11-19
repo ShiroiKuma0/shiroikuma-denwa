@@ -10,6 +10,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.text.TextUtils
+import android.graphics.Typeface
 import android.util.TypedValue
 import android.view.ContextThemeWrapper
 import android.view.Gravity
@@ -68,6 +69,7 @@ import org.fossify.phone.databinding.ItemRecentCallBinding
 import org.fossify.phone.databinding.ItemRecentsDateBinding
 import org.fossify.phone.dialogs.DeclineMessagesEditor
 import org.fossify.phone.dialogs.ShowGroupedCallsDialog
+import org.fossify.phone.dialogs.SimBadgeDialog
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.callContactWithSimWithConfirmationCheck
 import org.fossify.phone.extensions.applyThemeFont
@@ -451,7 +453,7 @@ class RecentCallsAdapter(
     }
 
     private fun askConfirmRemove() {
-        ConfirmationDialog(activity, activity.getString(R.string.remove_confirmation)) {
+        ConfirmationDialog(activity, activity.getString(R.string.remove_confirmation), destructive = true) {
             activity.handlePermission(PERMISSION_WRITE_CALL_LOG) {
                 removeRecents()
             }
@@ -878,13 +880,22 @@ class RecentCallsAdapter(
                     )
                 }
 
-                itemRecentsSimImage.beVisibleIf(areMultipleSIMsAvailable && call.simID != -1)
-                itemRecentsSimId.beVisibleIf(areMultipleSIMsAvailable && call.simID != -1)
-                if (areMultipleSIMsAvailable && call.simID != -1) {
-                    itemRecentsSimImage.applyColorFilter(call.simColor)
-                    itemRecentsSimId.setTextColor(simTextColor)
-                    itemRecentsSimId.setTypeface(null, simTextStyle)
-                    itemRecentsSimId.text = call.simID.toString()
+                // The badge says which SIM the call went over, so it does not depend on which SIMs
+                // are in the phone now. It is drawn from the call's stamp — the badge as it was then —
+                // and only for a call without one from the SIM and the colours of today.
+                val stamp = call.stamp?.takeIf { it.digit > 0 }
+                val hasBadge = stamp != null || call.simID != -1
+                itemRecentsSimImage.beVisibleIf(hasBadge)
+                itemRecentsSimId.beVisibleIf(hasBadge)
+                itemRecentsSimTouch.beVisibleIf(hasBadge)
+                if (hasBadge) {
+                    itemRecentsSimImage.applyColorFilter(stamp?.color ?: call.simColor)
+                    itemRecentsSimId.setTextColor(stamp?.textColor ?: simTextColor)
+                    itemRecentsSimId.setTypeface(null, stamp?.let { if (it.bold) Typeface.BOLD else Typeface.NORMAL } ?: simTextStyle)
+                    // as big as 臨電話 draws its 臨N: 85 % of the size of the time beside it
+                    itemRecentsSimId.setTextSize(TypedValue.COMPLEX_UNIT_PX, itemRecentsDateTime.textSize * SIM_TEXT_SCALE)
+                    itemRecentsSimId.text = (stamp?.digit ?: call.simID).toString()
+                    itemRecentsSimTouch.setOnClickListener { SimBadgeDialog(activity, call) }
                 }
 
                 if (call.isUnknownNumber || name == call.phoneNumber) {
@@ -1066,6 +1077,7 @@ class RecentCallsAdapter(
         private const val VIEW_TYPE_CONTACT = 3
         const val DAY_HEADER_FONT_SCALE = 0.76f
         const val NUMBER_LINE_FONT_SCALE = 0.78f
+        private const val SIM_TEXT_SCALE = 0.85f
         private const val NUMBER_LABEL_SEPARATOR = " · "
     }
 }
@@ -1092,6 +1104,7 @@ class RecentCallsDiffCallback : DiffUtil.ItemCallback<CallLogItem>() {
                         oldItem.duration == newItem.duration &&
                         oldItem.type == newItem.type &&
                         oldItem.simID == newItem.simID &&
+                        oldItem.stamp == newItem.stamp &&
                         oldItem.specificNumber == newItem.specificNumber &&
                         oldItem.specificType == newItem.specificType &&
                         oldItem.isUnknownNumber == newItem.isUnknownNumber &&

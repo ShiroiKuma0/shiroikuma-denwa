@@ -1,5 +1,10 @@
 package org.fossify.phone.dialogs
 
+import org.fossify.phone.extensions.themeColor
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.helpers.MenuPills
+import org.fossify.phone.views.applyOutlinedSwitch
+import org.fossify.commons.extensions.pillDrawable
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
@@ -104,7 +109,6 @@ class ExportImportDialog(
         }
         statusLine?.text = message
         statusLine?.setTextColor(if (warn) EXPORT_WARN_COLOR else textColor)
-        statusLine?.alpha = if (warn) 1f else 0.8f
     }
 
     private fun formatTimestamp(time: Long): String {
@@ -123,7 +127,7 @@ class ExportImportDialog(
 
         box.addView(heading(activity.getString(R.string.eim_title)))
         box.addView(caption(activity.getString(R.string.eim_hint)).apply {
-            alpha = 0.85f
+            setTextColor(activity.themeColor(ThemeSlot.SETTINGS_NOTE)) // an explanation: dim gold, never faded
             setPadding(0, 0, 0, dp(10))
         })
         box.addView(folderBox())
@@ -207,7 +211,8 @@ class ExportImportDialog(
         addView(pill(activity.getString(R.string.eim_import)) { onImport() }.also {
             (it.layoutParams as LinearLayout.LayoutParams).marginEnd = dp(8)
         })
-        addView(pill(activity.getString(R.string.eim_export)) { onExport() })
+        // the panel's main action: the thick, bold pill
+        addView(pill(activity.getString(R.string.eim_export), main = true) { onExport() })
     }
 
     // ---- the result box -------------------------------------------------------------------------
@@ -238,7 +243,7 @@ class ExportImportDialog(
             setPadding(0, dp(16), 0, 0)
         }
         buttons.forEachIndexed { index, (label, action) ->
-            bar.addView(pill(label) { result.dismiss(); action() }.also {
+            bar.addView(pill(label, main = index == buttons.lastIndex) { result.dismiss(); action() }.also {
                 if (index < buttons.lastIndex) (it.layoutParams as LinearLayout.LayoutParams).marginEnd = dp(10)
             })
         }
@@ -279,31 +284,24 @@ class ExportImportDialog(
         setTextColor(textColor)
         if (bold) setTypeface(typeface, Typeface.BOLD)
         setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-        buttonTintList = ColorStateList.valueOf(accent)
-        setPadding(dp(8), dp(7), 0, dp(7))
+        // a toggle is the theme's outlined switch, never a filled tick box
+        applyOutlinedSwitch(small = true)
+        setPadding(dp(8), dp(4), 0, dp(4))
     }
 
     private fun divider(topGap: Int = 0) = View(activity).apply {
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1))
             .apply { topMargin = dp(topGap) }
-        setBackgroundColor(accent)
-        alpha = 0.4f
+        setBackgroundColor(MenuPills.dividerColor(activity)) // an opaque darker accent, not a faded line
     }
 
-    /** An ArcaneChat-style round pill: background fill, a thin accent stroke, accent text and ripple. */
-    private fun pill(label: String, onClick: () -> Unit) = Button(activity).apply {
+    /** The family's pill: outlined, never filled — thick and bold for the [main] action, thin otherwise. */
+    private fun pill(label: String, main: Boolean = false, onClick: () -> Unit) = Button(activity).apply {
         text = label
         isAllCaps = false
         setTextColor(accent)
-        background = RippleDrawable(
-            ColorStateList.valueOf((accent and 0x00FFFFFF) or 0x33000000),
-            GradientDrawable().apply {
-                setColor(this@ExportImportDialog.background)
-                setStroke((PILL_STROKE_DP * activity.resources.displayMetrics.density).toInt(), accent)
-                cornerRadius = dp(PILL_CORNER_DP).toFloat()
-            },
-            null
-        )
+        setTypeface(typeface, if (main) Typeface.BOLD else Typeface.NORMAL)
+        background = activity.pillDrawable(accent, this@ExportImportDialog.background, main)
         // Explicit padding and zeroed minimums so the rounded stroke is never clipped at the view edge.
         minHeight = 0
         minimumHeight = 0

@@ -12,7 +12,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:alpha="0.8"
             android:gravity="center"
             android:paddingStart="@dimen/activity_margin"
             android:paddingTop="@dimen/activity_margin"

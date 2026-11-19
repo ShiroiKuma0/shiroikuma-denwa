@@ -105,9 +105,7 @@ object MenuPills {
     )
 
     // A switch that is off: an opaque darker accent, never a faded one
-    fun switchOffColor(context: Context): Int = ColorUtils.blendARGB(
-        context.themeColor(ThemeSlot.BACKGROUND), context.themeColor(ThemeSlot.PRIMARY), SWITCH_OFF_BLEND
-    )
+    fun switchOffColor(context: Context): Int = context.themeColor(ThemeSlot.SWITCH_OFF)
 
     /** The disabled title line a menu opens with. */
     fun isHeader(item: MenuItem) = !item.isEnabled && item.itemId == 0 && !item.hasSubMenu()

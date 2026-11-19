@@ -90,6 +90,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:gravity="center"
+        android:includeFontPadding="false"
         android:textColor="@color/md_grey_black"
         android:textSize="@dimen/small_text_size"
         android:visibility="gone"
@@ -210,6 +211,20 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/item_recents_number"
         app:srcCompat="@drawable/ic_three_dots_vector" />
+
+    <!-- What a tap on the SIM badge lands on: the badge is only as tall as line 3's text, so this
+         covers it and the arrow beside it, down to the row's bottom edge. Opens the SIM dialog. -->
+    <View
+        android:id="@+id/item_recents_sim_touch"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/sim_dialog_open"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/item_recents_type"
+        app:layout_constraintStart_toStartOf="@+id/item_recents_sim_image"
+        app:layout_constraintTop_toTopOf="@+id/item_recents_date_time" />
 
     <View
         android:id="@+id/overflow_menu_anchor"

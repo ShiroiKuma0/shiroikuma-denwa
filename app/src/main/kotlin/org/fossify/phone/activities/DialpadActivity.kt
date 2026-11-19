@@ -1,5 +1,6 @@
 package org.fossify.phone.activities
 
+import org.fossify.phone.extensions.asRingButton
 import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
@@ -69,12 +70,9 @@ class DialpadActivity : SimpleActivity() {
 
         val properPrimaryColor = getProperPrimaryColor()
         binding.dialpadPanel.apply {
-            val callIcon = resources.getColoredDrawableWithColor(
-                drawableId = R.drawable.ic_phone_vector,
-                color = themeColor(ThemeSlot.DIALPAD_CALL_ICON)
-            )
-            dialpadCallButton.setImageDrawable(callIcon)
-            dialpadCallButton.background.applyColorFilter(themeColor(ThemeSlot.DIALPAD_CALL_BUTTON))
+            // a ring with the handset inside it — never a filled disc
+            dialpadCallButton.setImageResource(R.drawable.ic_phone_vector)
+            dialpadCallButton.asRingButton(themeColor(ThemeSlot.DIALPAD_CALL_BUTTON))
         }
 
         binding.apply {

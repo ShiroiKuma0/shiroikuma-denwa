@@ -109,7 +109,7 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
 - **Source:** the `shiroikuma-commons` fork (`~/git/shiroikuma-commons`, branch `custom`), which strips
   Commons' anti-tamper "fake version" / sideloading checks out entirely **and** carries fork-package
   fixes for spots where Commons hard-codes `org.fossify.*` (documented in that repo's CLAUDE.md).
-- **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk13"` in
+- **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk16"` in
   `gradle/libs.versions.toml` (`mavenLocal()` is already a repository in `settings.gradle.kts`).
 - Because Commons itself no longer nags, this app carries **no** anti-tamper workaround — no
   `getPackageName` spoof, no `SIDELOADING_FALSE`, no `res/raw/keep.xml`.
@@ -136,7 +136,10 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
   call-log formats (`extensions/CallFormats.kt`: the Japanese clock and duration readings, the imperial
   date, `formatCallTime` / `formatCallDuration` by ordinal and the `CALL_TIME_*` / `CALL_DURATION_*`
   ordinals our `CallTimeFormat` / `CallDurationFormat` enums must match). A change to either is made in
-  the commons fork, published as the next `-skN`, and both apps move their pin. All are pure
+  the commons fork, published as the next `-skN`, and both apps move their pin. `-sk14` (per-side swipe
+  marks, renrakusaki's) changes nothing for us; **`-sk15` and `-sk16` are ours**: red destructive dialog buttons, the
+  family's look on commons' own Compose screens and dialogs, and tight rows on Customize colors, all behind
+  `pillDialogButtons`. All are pure
   additions — a bump that drops them shows up as edgeless dialogs, grey menus, white toasts and
   nameless private contacts, not as a build failure.
 
@@ -169,7 +172,7 @@ git checkout <new-commons-tag>     # then re-apply all patches (anti-tamper stri
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :commons:publishToMavenLocal -PVERSION=<ver>-skN
 ```
 
-Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk13`; `-skN` is our patch
+Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk16`; `-skN` is our patch
 revision — see the commons fork's CLAUDE.md). The patched AAR lives only in `~/.m2`, not in the repo.
 
 ## Contacts/Favorites tabs hand off to our Contacts fork (renrakusaki)
@@ -223,6 +226,7 @@ sync with the renrakusaki repo:
 | --- | --- | --- |
 | Recents filter | `shiroikuma_open_tab` = `TAB_CALL_HISTORY`, plus `shiroikuma_recents_filter_numbers` (`ArrayList<String>`, the contact's numbers as stored) and `shiroikuma_recents_filter_name` (`String`, display name) | `MainActivity.takeRecentsFilter()` → `RecentsFragment.applyNumbersFilter()` |
 | Call-log look | `content://${applicationId}.calllogstyle/style` (cursor of `key`, `value` strings) and `…/font/<file name>` (read-only font file) | `providers/CallLogStyleProvider.kt` |
+| Call stamps | `content://${applicationId}.calllogstyle/stamps` — cursor of `date` (long, the call log's `DATE`), `number` (as logged) and `stamp` (JSON); selection arguments, if any, are numbers to narrow it to | `providers/CallLogStyleProvider.kt` → `helpers/CallStamps.kt` |
 
 - **The filter** is sent by renrakusaki's pill “電話で全履歴 ›”. It is consumed on read (then
   `removeExtra`), in `onCreate` and `onNewIntent`, like the tab request. Recents shows only the calls
@@ -269,6 +273,101 @@ sync with the renrakusaki repo:
   Renrakusaki reads `/style` each time a contact screen opens and falls back to our defaults when the
   provider is missing, so neither app has to be released first. **Renaming or re-meaning a key, or
   reordering the format enums, breaks renrakusaki's rows silently — bump `version` and tell that repo.**
+
+## Call stamps — a call keeps the SIM it was made through
+
+The system call log records only the slot a call used, so the SIM badge used to be worked out on every
+read from that and today's settings: a new card in a slot took over the old card's history, and
+re-colouring SIM 1 repainted last year's calls. Since 2026-11-18 each call has a **stamp**
+(`models/CallStamp.kt`, kept by `helpers/CallStamps.kt` in `call_stamps.db`) and a row with a stamp is
+drawn from it alone.
+
+- **Key: the call's date plus number**, never the call-log row id — a restored backup gives every row a
+  new id, and `CallHistoryBackup` dedups on the same pair. The stamp travels inside each call's object
+  in `call_history.json` as `"sim"` (an added key; archives without it restore as before).
+- **What it holds:** the SIM's own number and operator, slot, the badge as it looked (digit, fill, text
+  colour, bold), and what only the in-call service knows: disconnect cause, ring time, network
+  (VoLTE / Wi-Fi / 3G…), roaming network and country, audio route, signal, caller ID (known only from a
+  dialled `#31#` / `*31#`; otherwise “network default”).
+- **Where it comes from:** `helpers/CallStampRecorder.kt`, driven by `CallService`, while the call is
+  live (source `call`); or, for a call we never saw — Android Auto takes the in-call service — the first
+  log read, from the slot and the badge of that moment (source `log`), with the card's number only if
+  that card was already in the slot when the call was made; or a **seed** (source `seed`); or a backup.
+  A `call` stamp is never replaced by a weaker one.
+- **The SIM's number** is read as 自由作業盤 reads it: `SubscriptionManager.getPhoneNumber(subId)`, then
+  `SubscriptionInfo.number`, under `READ_PHONE_NUMBERS`.
+- **The seed** is a file, `sim-history-seed.json`, dropped into the app's external files directory
+  (`Android/data/<app id>/files/`): `{"accounts": {"<account id as logged>": {"sim": 1, "number": "+420…",
+  "operator": "…"}}}`. On the next log read every cellular call logged under one of those ids (and not
+  recorded live) is stamped with that card and the badge colours of that moment; the file is deleted and
+  `sim-history-seed.result.txt` says how many calls it stamped. It is a file because the numbers are
+  private and this repository is public — **never put a real number in the source.**
+- **The first run** stamps the whole log once, not just the page shown, so the badges of that day are
+  frozen for all of it before a colour changes.
+- **The dialog** (`dialogs/SimBadgeDialog.kt`, the badge drawn large by `views/SimBadgeView.kt`) opens
+  from a tap on a row's badge and shows the stamp; a fact that is not known is left out.
+- **Served to the sister apps** at `…calllogstyle/stamps` (same caller allowlist as the style, added
+  2026-11-18 in +120, a pure addition under version 1). A reader matches a call-log row on `date` plus
+  `number` and draws its badge from the stamp's `digit`, `color`, `text`, `bold`; a row without a stamp
+  falls back to the slot and `color.sim1` / `color.sim2`. The JSON keys are those of `CallStamp.toJson()`
+  (`src`, `digit`, `color`, `text`, `bold`, `num`, `op`, `slot`, `end`, `ring`, `net`, `roam`, `roam_op`,
+  `roam_iso`, `route`, `dbm`, `lvl`, `cid`; an absent key means “not known”). **Renaming or re-meaning
+  one breaks the readers and old backups alike.**
+
+## Diagnostics — behind switches, in `diag/`, never “.log”
+
+EMUI's logcat keeps error-level lines only, so what the app did can only be read from files it writes
+itself. All of them go through `helpers/Diag.kt`, laid out as the diagnostics-ui-settings skill says and
+shown as the last section of the Theme (UI) page: **every kind behind its own switch, all off by
+default**, then Recorded data (stored, keep for N days, Export into a dated subdirectory of a picked
+directory, Share, Purge behind a warning that lists what goes). While any switch is on, an ongoing
+notification offers Mark and Turn all off (`receivers/DiagReceiver.kt`).
+
+| Kind | Switch | Written by |
+| --- | --- | --- |
+| `car` | Car-call screen | `CarCallLog.write` — `CarCallMonitor`, `CarCallService` |
+| `calls` | Call recording | `CallStampRecorder` — states, resolved SIM, the stored stamp |
+| `sim` | SIM cards | `CallStamps` — a new card in a slot, each sweep of the log |
+
+Files are `Android/data/<app id>/files/diag/denwa-<kind>_<yyyy-MM-dd>.txt`, appended one line at a
+time (opened and closed around each line, so a deleted file simply starts again), capped at 8 MB a day.
+**No file this app writes on the phone may end in “.log”** — EMUI's nightly clean-up deletes those.
+The car trail was an always-on `carcall.log` in the files root until 2026-11-19; `Diag.init` moves a
+leftover into `diag/`. A new diagnostic is a new `Diag.Kind` plus `Diag.log(kind) { … }` at the call
+site — never a file of its own.
+
+## The black-yellow look, applied app-wide (2026-11-19)
+
+The black-yellow-theme skill is the specification; these are the places it is enforced centrally, so a
+new screen gets the look without doing anything — and the things to keep when touching them:
+
+- **Dialog buttons are pills**: `syncDialogFrame()` sets commons' `pillDialogButtons` (sk12) on every
+  resume — positive thick and bold, the others thin. Commons knows no destructive button, so a
+  “Delete” confirm is still an accent pill, not a red one.
+- **Every switch is the outlined switch** (`views/OutlinedSwitch.kt`, the same as 予定表's):
+  the lifecycle callback in `App.kt` runs `outlineAllSwitches()` over every screen on resume; dialogs and adapters with
+  tick-box toggles call `outlineAllToggles()` themselves. Off colour: `ThemeSlot.SWITCH_OFF`.
+- **The stock Settings page** keeps upstream's layout and is restyled in code by
+  `restyleSettingsPage()` (`extensions/SettingsPage.kt`): tight rows, bold underlined headings, nothing
+  faded, and a pill with › around the label of each row that opens something — **a new such row must be
+  added to the list passed from `SettingsActivity.onResume`**.
+- **Tappable words are pills**: `TextView.asPill()` / `asPlaceholderPill()`, and round buttons are rings,
+  never filled discs: `ImageView.asRingButton()` (`extensions/Pills.kt`). The dialpad's call button is a
+  ring in `DIALPAD_CALL_BUTTON`; `DIALPAD_CALL_ICON` is no longer read.
+- **The in-call screen is outlined too** (白い熊, 2026-11-19): accept and decline / end are a green and a
+  red ring with the handset in the same colour (`ic_call_accept.xml`, `ic_call_end.xml`). **The car call
+  screen is the one exception and stays filled** (`ic_car_call_accept.xml`, `ic_car_call_end.xml`): it is
+  read at a glance while driving, where a solid disc is found faster — do not “fix” it; the control buttons are rings (`CallActivity`: an action in `CALL_CONTROL_ACTIVE`, a
+  toggle thick in it when on and thinner in `CALL_CONTROL_INACTIVE` — now a ring colour defaulting to
+  `SWITCH_OFF` — when off); the block button is an outlined octagon; the conference screen's two buttons
+  are thin rings; the dialpad keys are ringed with no tint fill; the snackbar's action is a pill.
+- **A button that deletes is a red pill** (commons sk15): `ConfirmationDialog(…, destructive = true)` or
+  `setupDialogStuff(…, destructiveButton = AlertDialog.BUTTON_*)`; the colour is
+  `BaseConfig.dialogWarningColor`, kept equal to `MENU_ROLE_DELETE` by `syncDialogFrame()`. **A new
+  delete / purge / reset confirmation must pass it.**
+- **Commons' own screens** (About, Manage blocked numbers, its Compose dialogs) take the look from the
+  same `pillDialogButtons` opt-in since sk15; `outlineAllSwitches()` runs from the app's lifecycle
+  callback (`App.kt`), so commons' Views screens are covered as well.
 
 ## Menus are pill menus, with icons coloured by role
 

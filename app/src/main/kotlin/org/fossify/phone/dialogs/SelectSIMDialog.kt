@@ -1,5 +1,6 @@
 package org.fossify.phone.dialogs
 
+import org.fossify.phone.views.outlineAllToggles
 import android.annotation.SuppressLint
 import android.telecom.PhoneAccountHandle
 import android.view.ViewGroup
@@ -26,6 +27,7 @@ class SelectSIMDialog(
     private val binding by activity.viewBinding(DialogSelectSimBinding::inflate)
 
     init {
+        binding.selectSimRemember.outlineAllToggles()
         binding.selectSimRememberHolder.setOnClickListener {
             binding.selectSimRemember.toggle()
         }

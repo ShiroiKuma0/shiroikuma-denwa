@@ -1,5 +1,7 @@
 package org.fossify.phone.dialogs
 
+import android.view.ViewGroup
+import org.fossify.commons.extensions.pillDrawable
 import android.app.Activity
 import android.text.InputType
 import android.util.TypedValue
@@ -18,6 +20,9 @@ import org.fossify.phone.extensions.themeColor
  * editor dialogs, so both look the same. Plain TextViews in explicit
  * theme colors: commons' updateTextColors leaves them alone, so a row keeps the primary color.
  */
+private const val PILL_ROW_GAP_DP = 3
+private const val PILL_ROW_SIDE_DP = 8
+
 object DeclineMessageViews {
     private const val MAX_INPUT_LINES = 4
 
@@ -41,15 +46,32 @@ object DeclineMessageViews {
         return cappedScroll(activity, rows, maxHeightFraction)
     }
 
-    /** A message to pick, in the primary color. */
-    fun rowView(activity: Activity, text: String, onClick: () -> Unit) = TextView(activity).apply {
+    /**
+     * A row to tap — a message to send, an action to run: a full-width outlined pill, as the menus
+     * draw their rows, so it never passes for plain text. [color] is the accent unless the row is
+     * destructive, which lends its red to frame and label alike.
+     */
+    fun rowView(
+        activity: Activity,
+        text: String,
+        color: Int = activity.themeColor(ThemeSlot.PRIMARY),
+        onClick: () -> Unit,
+    ) = TextView(activity).apply {
         this.text = text
-        setTextColor(activity.themeColor(ThemeSlot.PRIMARY))
+        setTextColor(color)
         textSize(R.dimen.decline_row_text_size)
         val h = px(activity, R.dimen.decline_row_padding_horizontal)
         val v = px(activity, R.dimen.decline_row_padding_vertical)
         setPadding(h, v, h, v)
-        selectableBackground()
+        background = activity.pillDrawable(color, activity.themeColor(ThemeSlot.BACKGROUND), main = false)
+        val density = activity.resources.displayMetrics.density
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            val gap = (PILL_ROW_GAP_DP * density).toInt()
+            val side = (PILL_ROW_SIDE_DP * density).toInt()
+            setMargins(side, gap, side, gap)
+        }
         setOnClickListener { onClick() }
     }
 

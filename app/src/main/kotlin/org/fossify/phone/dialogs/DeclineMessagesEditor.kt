@@ -78,7 +78,8 @@ object DeclineMessagesEditor {
             }
         }
 
-        activity.setupDialogStuff(view, builder, titleText = title) { dialog = it }
+        // "Delete all" sits in the neutral slot: the one button here that cannot be undone
+        activity.setupDialogStuff(view, builder, titleText = title, destructiveButton = AlertDialog.BUTTON_NEUTRAL) { dialog = it }
     }
 
     /** Edit / Move up / Move down / Delete for the message at [index]; [then] re-opens the list. */

@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
 import android.os.ParcelFileDescriptor
+import android.telephony.PhoneNumberUtils
 import org.fossify.commons.extensions.baseConfig
 import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.helpers.FontHelper
@@ -17,6 +18,7 @@ import org.fossify.phone.extensions.config
 import org.fossify.phone.extensions.simColor
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.themeDimenDp
+import org.fossify.phone.helpers.CallStamps
 import java.io.File
 
 /**
@@ -27,6 +29,9 @@ import java.io.File
  *   as decimal ARGB ints already resolved through their defaults, thicknesses in dp, per-slot fonts,
  *   the base text size in px and the format choices. [VERSION] goes up whenever a key changes meaning.
  * - `content://<applicationId>.calllogstyle/font/<file name>` — an imported font file, read-only.
+ * - `content://<applicationId>.calllogstyle/stamps` — the call stamps (`date`, `number`, `stamp` as JSON),
+ *   so a call drawn elsewhere keeps the SIM badge it was made with; selection arguments narrow it to
+ *   the calls with those numbers.
  *
  * Only renrakusaki (release and debug) and rindenwa get an answer; anyone else gets null. The contract is
  * documented in CLAUDE.md beside the tab hand-off.
@@ -37,9 +42,27 @@ class CallLogStyleProvider : ContentProvider() {
 
     override fun query(u: Uri, p: Array<String>?, s: String?, a: Array<String>?, o: String?): Cursor? {
         val ctx = context ?: return null
-        if (!isAllowedCaller() || u.pathSegments.singleOrNull() != PATH_STYLE) return null
+        if (!isAllowedCaller()) return null
+        return when (u.pathSegments.singleOrNull()) {
+            PATH_STYLE -> styleCursor(ctx)
+            PATH_STAMPS -> stampsCursor(ctx, a)
+            else -> null
+        }
+    }
+
+    private fun styleCursor(ctx: Context): Cursor {
         val cursor = MatrixCursor(arrayOf(COLUMN_KEY, COLUMN_VALUE))
         styleRows(ctx).forEach { (key, value) -> cursor.addRow(arrayOf(key, value)) }
+        return cursor
+    }
+
+    // One row per stamped call: when it was logged, with which number, and its CallStamp as JSON.
+    // With selection arguments, only the calls with one of those numbers (compared as phone numbers).
+    private fun stampsCursor(ctx: Context, numbers: Array<String>?): Cursor {
+        val cursor = MatrixCursor(arrayOf(COLUMN_DATE, COLUMN_NUMBER, COLUMN_STAMP))
+        CallStamps.all(ctx)
+            .filter { item -> numbers.isNullOrEmpty() || numbers.any { it == item.number || PhoneNumberUtils.compare(it, item.number) } }
+            .forEach { cursor.addRow(arrayOf<Any>(it.date, it.number, it.stamp.toJson().toString())) }
         return cursor
     }
 
@@ -72,6 +95,10 @@ class CallLogStyleProvider : ContentProvider() {
     companion object {
         const val PATH_STYLE = "style"
         const val PATH_FONT = "font"
+        const val PATH_STAMPS = "stamps"
+        const val COLUMN_DATE = "date"
+        const val COLUMN_NUMBER = "number"
+        const val COLUMN_STAMP = "stamp"
         const val COLUMN_KEY = "key"
         const val COLUMN_VALUE = "value"
         const val VERSION = 1

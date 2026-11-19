@@ -1,5 +1,6 @@
 package org.fossify.phone.activities
 
+import org.fossify.phone.extensions.asPill
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
@@ -136,6 +137,8 @@ class MainActivity : SimpleActivity() {
                 snackbar.setBackgroundTint(getProperBackgroundColor().darkenColor())
                 snackbar.setTextColor(getProperTextColor())
                 snackbar.setActionTextColor(getProperTextColor())
+                // its action is a pill like every other, not a bare word
+                snackbar.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_action)?.asPill(main = true)
                 snackbar.show()
             }
 
@@ -483,7 +486,7 @@ class MainActivity : SimpleActivity() {
 
     private fun clearCallHistory() {
         val confirmationText = "${getString(R.string.clear_history_confirmation)}\n\n${getString(R.string.cannot_be_undone)}"
-        ConfirmationDialog(this, confirmationText) {
+        ConfirmationDialog(this, confirmationText, destructive = true) {
             RecentsHelper(this).removeAllRecentCalls(this) {
                 runOnUiThread {
                     getRecentsFragment()?.refreshItems(invalidate = true)
