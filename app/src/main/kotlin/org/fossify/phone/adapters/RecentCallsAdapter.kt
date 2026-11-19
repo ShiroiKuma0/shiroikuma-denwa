@@ -823,6 +823,9 @@ class RecentCallsAdapter(
                     setTextColor(
                         when {
                             call.type == Calls.MISSED_TYPE -> missedCallColor
+                            // an incoming call that was answered: the colour of the duration standing
+                            // right after it, so the line is one colour (白い熊, 2026-11-19; 臨電話 does the same)
+                            call.type != Calls.OUTGOING_TYPE && call.duration > 0 -> durationColor
                             call.type != Calls.OUTGOING_TYPE -> dateColor
                             call.duration > 0 -> outgoingIconColor
                             else -> unansweredColor
