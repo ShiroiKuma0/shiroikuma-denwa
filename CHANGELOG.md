@@ -3,6 +3,78 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+124 — 2026-11-19
+Built on Fossify Phone 1.11.1.
+
+### Added
+- **A call keeps the SIM it was made with.** The system call log records only the slot a call used, so
+  the SIM badge used to be worked out afresh from today's cards and colours: with the cards out it
+  vanished, a new card took over the old card's history, and changing a SIM colour repainted calls made
+  a year ago. Every call now gets a **stamp**, frozen when it is made: the SIM's own number, its
+  operator, the slot, and the badge as it looked — digit, fill, text colour, bold. A row in the call
+  history is drawn from its stamp and nothing else.
+- **What only the in‑call service knows is kept too:** how the call ended (you hung up, they hung up,
+  busy, rejected, network error…), how long it rang, the network it ran on (VoLTE, Wi‑Fi calling, 3G,
+  2G), roaming with the network's name and country, the audio route, the signal at the start, and
+  whether the dialled number carried a caller‑ID prefix.
+- **Tap a SIM badge for the call's details.** A dialog shows the badge drawn large as a SIM card, the
+  originating number (“+420‑123‑456‑789”) and operator beside it, and one line for each known fact in
+  the order the call happened — Call, Rang, Talked, Ended, Network, Roaming, Audio, Signal, Caller ID —
+  each with an icon coloured by what the line is about. A fact that is not known is left out. “Copy
+  number” copies the SIM's number.
+- **The whole existing history is stamped on first start,** not just the page on screen, so the badges
+  of that day are frozen before anything changes. A call the app never saw live (Android Auto takes the
+  in‑call service while it projects) is stamped the first time the log is read.
+- **A history seed for cards that are gone.** A file `sim-history-seed.json` dropped into the app's
+  external files directory names the number and operator behind each account id already in the log; it
+  is applied once, deleted, and its result written beside it.
+- **Stamps travel with the backup.** `call_history.json` carries each call's stamp, matched on restore
+  by the call's date and number; archives without stamps restore as before.
+- **Stamps for the sister apps.** The call‑log style provider serves them at `…calllogstyle/stamps`, so
+  白い熊 連絡先's contact history and 白い熊 臨電話 can draw a call with the badge it was made with.
+- **A Diagnostics section,** last on the UI page. Every diagnostic sits behind its own switch, all off by
+  default: the car‑call screen's decisions, what the in‑call service saw of each call, and SIM‑card
+  changes. Below them: what is stored, keep for N days, Export into a dated subdirectory of a directory
+  you pick, Share, and Purge behind a warning that lists exactly what goes. While anything records, a
+  notification offers Mark and Turn all off. Files are one `.txt` per kind per day under `diag/`.
+- **“Switch that is off”** is a settable colour on the UI page.
+
+### Changed
+- **The SIM badge no longer depends on the cards in the phone.** It shows whenever the call's SIM is
+  known — with both cards out, and for calls logged under a slot whose card is gone.
+- **The number on the SIM badge is bigger,** 85 % of the time beside it, as 白い熊 臨電話 draws its 臨N,
+  and follows the font size.
+- **The time of an answered incoming call takes the duration's colour,** so the line is one colour; it
+  used to take the plain date colour.
+- **Dialog buttons are pills** — the confirming one thick and bold, the others thin — and **a button
+  that deletes is a red pill**: removing calls, clearing the history, deleting contacts, purging
+  diagnostics, regenerating the automation token, “Delete all” in the decline‑message editor.
+- **Every switch is the outlined switch** — an outline with a dot, never filled — on every screen, the
+  stock Settings page and Customize colors included. The tick boxes of toggle lists (visible tabs,
+  contact sources, “always use this SIM”, call‑screen fields, export items) are outlined switches too.
+- **The stock Settings page is tightened:** rows only as tall as their content, bold underlined
+  headings, no faded text, and each row that opens something is a pill with a › — “白い熊 UI” the thick
+  one.
+- **On the UI page,** decline messages, per‑caller message lists and All‑files access are pills; a red
+  action has a red frame as well as a red label.
+- **Words that were buttons are pills:** “Request access”, “Create new contact”, “Add font…”, the call
+  screen's “UNDO”, the decline and save rows, the snackbar's “OK”.
+- **The in‑call screen is outlined:** accept and decline / end are a green and a red ring with the
+  handset in the same colour; the control buttons are rings — a toggle thick and bright when on,
+  thinner and darker when off; the block button is an outlined red octagon; the conference screen's
+  buttons are thin rings. **The car call screen keeps filled accept and end buttons,** on purpose: it is
+  read at a glance while driving.
+- **The dialpad's call button is a ring** with the handset inside, and the keys are ringed with no tint
+  fill.
+- **The car‑call trail is behind its Diagnostics switch.** It was always on; it now records only while
+  “Car‑call screen” is on. An existing trail is moved into `diag/`.
+- **About, Manage blocked numbers and Customize colors** follow the same look (patched Commons
+  `6.1.6-sk16`): pills for rows and buttons, the outlined switch, tight rows.
+
+### Fixed
+- **No diagnostic file ends in “.log”.** EMUI's nightly clean‑up deletes every `*.log` under
+  `Android/data`; the car‑call trail was one.
+
 ## 白い熊 電話 1.11.1+116 — 2026-11-17
 Built on Fossify Phone 1.11.1.
 

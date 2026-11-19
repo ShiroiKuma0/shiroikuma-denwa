@@ -10,7 +10,7 @@ A fork of [Fossify Phone](https://github.com/FossifyOrg/Phone) with **major addi
 
 Installs **side‑by‑side** with Fossify Phone (app id `shiroikuma.denwa`).
 
-**📥 Latest release: [`1.11.1+116`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
+**📥 Latest release: [`1.11.1+124`](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases/latest)** — [all releases & APK downloads »](https://github.com/ShiroiKuma0/shiroikuma-denwa/releases)
 
 </div>
 
@@ -143,6 +143,14 @@ The bar is drawn as **card‑folder tabs**: one bold yellow line runs along its 
 ## 🕓 A richer call log
 
 **Three lines per call**: the name; the number with the contact's label for it; then the SIM badge, the arrow, the time, the duration and the country. The arrow and the time share one colour that says how the call went — yellow for a call you placed and that was answered, blue for one that was not, red for one you missed. On the number's line sit three actions: **call back on the SIM that call used**, **a message** (opens 白い熊 メッセージ on that number), and the row's menu. The picture fills the row's height, and a tap on the row shows **that contact's whole history, across all of their numbers**. Day headers with an underline, configurable thin‑call / thick‑day dividers, Japanese **kanji time & duration formats**, optional **和暦 (imperial‑era) dates**, a themeable date header, a custom icon for unknown callers, **every call on its own row with its exact time** (no "(2)" counter hiding when the others came — grouping is a switch away if you want it back), and tap‑to‑filter a single contact's recent calls — plus missed‑call notifications with your chosen time format. **Edit contact** sits in both of a row's menus, so a number you noted down wrong is corrected from the call it came in on rather than hunted for in another app.
+
+---
+
+## 🧾 A call remembers the SIM it was made with
+
+The system call log only knows *which slot* a call used. Swap the card in that slot and the old card's whole history silently becomes the new card's; recolour SIM 1 and last year's calls change colour with it; take the cards out and the badges are gone.
+
+Here every call is **stamped when it is made** — the SIM's own number and operator, the badge exactly as it looked, and what only the in‑call service ever sees: how the call ended, how long it rang, VoLTE or Wi‑Fi calling, roaming, the audio route, the signal. **Tap the SIM badge** on any row and a card‑shaped badge opens with all of it. The stamps travel inside the backup, and the sister apps read them, so a call looks the same everywhere, forever.
 
 ---
 
