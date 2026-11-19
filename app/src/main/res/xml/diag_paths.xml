@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- What the Diagnostics section may share: the app's own diag directory, nothing else. -->
+<paths>
+    <external-files-path
+        name="diag"
+        path="diag/" />
+</paths>

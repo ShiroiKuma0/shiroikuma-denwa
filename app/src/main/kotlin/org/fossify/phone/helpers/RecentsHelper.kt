@@ -14,6 +14,7 @@ import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.extensions.buildSIMAccountLookupMap
 import org.fossify.phone.extensions.findByNumber
+import org.fossify.phone.extensions.simColor
 import org.fossify.phone.models.RecentCall
 import org.fossify.phone.models.SIMAccount
 
@@ -45,9 +46,10 @@ class RecentsHelper(private val context: Context) {
 
                 this.queryLimit = queryLimit
                 val recentCalls = if (previousRecents.isNotEmpty()) {
+                    // A call that just ended may have been listed before its stamp was filed.
                     val previousRecentCalls = previousRecents
                         .flatMap { it.groupedCalls ?: listOf(it) }
-                        .map { it.copy(groupedCalls = null) }
+                        .map { it.copy(groupedCalls = null, stamp = CallStamps.find(context, it.startTS, it.phoneNumber) ?: it.stamp) }
 
                     val newerRecents = getRecents(
                         contacts = contacts,
@@ -150,6 +152,8 @@ class RecentsHelper(private val context: Context) {
         )
 
         val accountIdToSimAccountMap = context.buildSIMAccountLookupMap()
+        CallStamps.prepare(context)
+        val lateStamps = ArrayList<CallStamps.Item>()
 
         val cursor = if (isNougatPlus()) {
             // https://issuetracker.google.com/issues/175198972?pli=1#comment6
@@ -243,6 +247,9 @@ class RecentsHelper(private val context: Context) {
                     }
                 }
                 val simAccount = accountIdToSimAccountMap[accountId]
+                val simID = simAccount?.id
+                    ?: CallStamps.slotSimId(accountId, cursor.getStringValue(Calls.PHONE_ACCOUNT_COMPONENT_NAME))
+                val simColor = simAccount?.color ?: if (simID != -1) context.simColor(simID) else -1
                 var specificNumber = ""
                 var specificType = ""
 
@@ -265,16 +272,21 @@ class RecentsHelper(private val context: Context) {
                         startTS = startTS,
                         duration = duration,
                         type = type,
-                        simID = simAccount?.id ?: -1,
-                        simColor = simAccount?.color ?: -1,
+                        simID = simID,
+                        simColor = simColor,
                         specificNumber = specificNumber,
                         specificType = specificType,
-                        isUnknownNumber = isUnknownNumber
+                        isUnknownNumber = isUnknownNumber,
+                        // drawn from its stamp; a call nobody recorded gets one now, from today's badge
+                        stamp = CallStamps.find(context, startTS, number.orEmpty())
+                            ?: CallStamps.late(context, startTS, simID, simColor)
+                                ?.also { lateStamps += CallStamps.Item(startTS, number.orEmpty(), it) }
                     )
                 )
             } while (cursor.moveToNext() && recentCalls.size < queryLimit)
         }
 
+        CallStamps.putAll(context, lateStamps)
         val blockedNumbers = context.getBlockedNumbers()
 
         return recentCalls
@@ -298,6 +310,7 @@ class RecentsHelper(private val context: Context) {
             if (it) {
                 ensureBackgroundThread {
                     context.contentResolver.delete(contentUri, null, null)
+                    CallStamps.clear(context)
                     callback()
                 }
             }

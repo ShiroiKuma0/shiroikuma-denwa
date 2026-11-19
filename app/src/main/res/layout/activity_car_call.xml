@@ -107,7 +107,7 @@
         android:layout_height="@dimen/incoming_call_button_size"
         android:layout_marginBottom="@dimen/activity_margin"
         android:contentDescription="@string/car_call_answer"
-        android:src="@drawable/ic_call_accept"
+        android:src="@drawable/ic_car_call_accept"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -121,7 +121,7 @@
         android:layout_height="@dimen/incoming_call_button_size"
         android:layout_marginBottom="@dimen/activity_margin"
         android:contentDescription="@string/end_call"
-        android:src="@drawable/ic_call_end"
+        android:src="@drawable/ic_car_call_end"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/car_call_accept"
         app:layout_constraintStart_toStartOf="parent" />

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The stop-sign octagon as an outline (1/24 of the box, 3 dp on the 72 dp block button), tinted at
+     runtime. ic_octagon_vector, the filled one, remains the ripple mask. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M7.24,0.5 L16.76,0.5 L23.5,7.24 L23.5,16.76 L16.76,23.5 L7.24,23.5 L0.5,16.76 L0.5,7.24 Z"
+        android:strokeColor="@android:color/white"
+        android:strokeWidth="1" />
+</vector>

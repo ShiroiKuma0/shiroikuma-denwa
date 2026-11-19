@@ -27,6 +27,7 @@ import org.fossify.phone.extensions.keyguardManager
 import org.fossify.phone.extensions.powerManager
 import org.fossify.phone.helpers.CallManager
 import org.fossify.phone.helpers.CallNotificationManager
+import org.fossify.phone.helpers.CallStampRecorder
 import org.fossify.phone.helpers.CarCallMonitor
 import org.fossify.phone.helpers.NoCall
 import org.fossify.phone.models.Events
@@ -62,6 +63,7 @@ class CallService : InCallService() {
     private val callListener = object : Call.Callback() {
         override fun onStateChanged(call: Call, state: Int) {
             super.onStateChanged(call, state)
+            CallStampRecorder.onStateChanged(this@CallService, call, state)
             resolvePhoneAccountIfNeeded(call)
             updateVolumeWatcher()
             if (state == Call.STATE_DISCONNECTED || state == Call.STATE_DISCONNECTING) {
@@ -131,6 +133,7 @@ class CallService : InCallService() {
         CallManager.onCallAdded(call)
         CallManager.inCallService = this
         call.registerCallback(callListener)
+        CallStampRecorder.onCallAdded(this, call)
         resolvePhoneAccountIfNeeded(call)
         updateVolumeWatcher()
 
@@ -165,6 +168,7 @@ class CallService : InCallService() {
     override fun onCallRemoved(call: Call) {
         super.onCallRemoved(call)
         call.unregisterCallback(callListener)
+        CallStampRecorder.onCallRemoved(this, call)
         handledAccountSelection.remove(call)
         updateVolumeWatcher()
         val wasPrimaryCall = call == CallManager.getPrimaryCall()
@@ -195,6 +199,7 @@ class CallService : InCallService() {
         super.onCallAudioStateChanged(audioState)
         if (audioState != null) {
             CallManager.onAudioStateChanged(audioState)
+            CallStampRecorder.onAudioRoute(audioState.route)
         }
     }
 

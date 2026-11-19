@@ -1,5 +1,6 @@
 package org.fossify.phone.fragments
 
+import org.fossify.phone.extensions.asPlaceholderPill
 import android.content.Context
 import android.util.AttributeSet
 import org.fossify.commons.adapters.MyRecyclerViewAdapter
@@ -63,7 +64,7 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
 
         binding.fragmentPlaceholder2.apply {
             text = context.getString(placeholderActionResId)
-            underlineText()
+            asPlaceholderPill()
             setOnClickListener {
                 if (context.hasPermission(PERMISSION_READ_CONTACTS)) {
                     activity?.launchCreateNewContactIntent()

@@ -7,6 +7,7 @@ import android.provider.CallLog.Calls
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.helpers.PERMISSION_READ_CALL_LOG
 import org.fossify.commons.helpers.PERMISSION_WRITE_CALL_LOG
+import org.fossify.phone.models.CallStamp
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -37,6 +38,10 @@ object CallHistoryBackup {
 
     private const val VERSION = 1
     private const val KEY_CALLS = "calls"
+
+    // The call's CallStamp — the SIM's number, operator and badge as they were, and what the in-call
+    // service saw. An added key: an archive without it restores as before, and an older build ignores it.
+    private const val KEY_STAMP = "sim"
     private const val INSERT_CHUNK = 200
 
     // The columns worth carrying, as their JSON names. PHONE_ACCOUNT_ID / _COMPONENT_NAME and Huawei's
@@ -62,11 +67,14 @@ object CallHistoryBackup {
         require(context.hasPermission(PERMISSION_READ_CALL_LOG)) { "no call-log access" }
 
         val calls = JSONArray()
+        val stamps = CallStamps.all(context).associate { "${it.date}|${it.number}" to it.stamp }
         val cursor = context.contentResolver.query(Calls.CONTENT_URI, null, null, null, "${Calls.DATE} ASC")
             ?: error("the call log is unavailable")
         cursor.use {
             while (it.moveToNext()) {
-                rowOf(it)?.let(calls::put)
+                val row = rowOf(it) ?: continue
+                stamps["${row.optLong("date")}|${row.optString("number")}"]?.let { stamp -> row.put(KEY_STAMP, stamp.toJson()) }
+                calls.put(row)
             }
         }
         return JSONObject().put("version", VERSION).put(KEY_CALLS, calls).toString().toByteArray()
@@ -90,12 +98,17 @@ object CallHistoryBackup {
         val existing = existingKeys(context)
         val writable = writableColumns(context)
         val pending = ArrayList<ContentValues>(INSERT_CHUNK)
+        val stamps = ArrayList<CallStamps.Item>()
         var added = 0
 
         for (index in 0 until calls.length()) {
             val row = calls.optJSONObject(index)
             val date = row?.optLong("date", 0L) ?: 0L
             val number = row?.optString("number").orEmpty()
+            // a stamp goes back whether or not its call is already in the log
+            row?.optJSONObject(KEY_STAMP)?.takeIf { date > 0L }?.let {
+                stamps += CallStamps.Item(date, number, CallStamp.fromJson(it))
+            }
             if (row != null && date > 0L && "$date|$number" !in existing) {
                 pending += valuesOf(row, date, number, writable)
                 if (pending.size >= INSERT_CHUNK) {
@@ -103,6 +116,7 @@ object CallHistoryBackup {
                 }
             }
         }
+        CallStamps.putRestored(context, stamps)
         return added + flush(context, pending)
     }
 

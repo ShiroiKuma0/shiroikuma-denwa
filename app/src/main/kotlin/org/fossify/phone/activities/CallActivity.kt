@@ -1,5 +1,8 @@
 package org.fossify.phone.activities
 
+import org.fossify.phone.helpers.PALETTE_GREEN
+import org.fossify.phone.extensions.asRingButton
+import org.fossify.phone.extensions.asPill
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -44,6 +47,9 @@ import org.fossify.phone.models.CallContact
 import org.fossify.phone.views.applyDialpadKeyBackgrounds
 import kotlin.math.max
 import kotlin.math.min
+
+private const val CONTROL_RING_DP = 2f
+private const val CONTROL_RING_ON_DP = 3.5f
 
 class CallActivity : SimpleActivity() {
     companion object {
@@ -282,8 +288,11 @@ class CallActivity : SimpleActivity() {
             callToggleMicrophone, callToggleSpeaker, callDialpad,
             callToggleHold, callAdd, callSwap, callMerge, callManage
         ).forEach {
-            it.applyColorFilter(bgColor.getContrastColor())
-            it.background.applyColorFilter(inactiveColor)
+            // rings, never filled discs: an action in the accent, a toggle dim until it is on
+            it.asRingButton(getActiveButtonColor(), CONTROL_RING_DP)
+        }
+        arrayOf(callToggleMicrophone, callToggleSpeaker, callToggleHold).forEach {
+            it.asRingButton(inactiveColor, CONTROL_RING_DP)
         }
 
         arrayOf(
@@ -709,7 +718,9 @@ class CallActivity : SimpleActivity() {
 
                         val rippleBg = resources.getDrawable(R.drawable.ic_call_accept, theme) as RippleDrawable
                         val layerDrawable = rippleBg.findDrawableByLayerId(R.id.accept_call_background_holder) as LayerDrawable
-                        layerDrawable.setDrawableByLayerId(R.id.accept_call_icon, getDrawable(acceptDrawableId))
+                        // the 1 / 2 handset in the ring's own green, as the plain one is
+                        val glyph = getDrawable(acceptDrawableId)?.mutate()?.apply { setTint(PALETTE_GREEN) }
+                        layerDrawable.setDrawableByLayerId(R.id.accept_call_icon, glyph)
                         binding.callAccept.setImageDrawable(rippleBg)
                     }
                 }
@@ -1048,7 +1059,7 @@ class CallActivity : SimpleActivity() {
             ?.findDrawableByLayerId(R.id.block_call_background)
             ?.applyColorFilter(blockColor)
 
-        callBlock.applyColorFilter(blockColor.getContrastColor())
+        callBlock.applyColorFilter(blockColor) // an outlined octagon with the glyph in its own colour
         callBlockLabel.setTextColor(themeColor(ThemeSlot.PRIMARY))
     }
 
@@ -1064,7 +1075,7 @@ class CallActivity : SimpleActivity() {
         }
 
         blockUndoLabel.setTextColor(frameColor)
-        blockUndoAction.setTextColor(frameColor)
+        blockUndoAction.asPill(color = frameColor) // an action, so a pill — never a bare word
     }
 
     /**
@@ -1376,13 +1387,11 @@ class CallActivity : SimpleActivity() {
     private fun getInactiveButtonColor() = themeColor(ThemeSlot.CALL_CONTROL_INACTIVE)
 
     private fun toggleButtonColor(view: ImageView, enabled: Boolean) {
+        // on: a thick ring in the accent; off: a thinner one in the darker yellow — as the switches do
         if (enabled) {
-            val color = getActiveButtonColor()
-            view.background.applyColorFilter(color)
-            view.applyColorFilter(color.getContrastColor())
+            view.asRingButton(getActiveButtonColor(), CONTROL_RING_ON_DP)
         } else {
-            view.background.applyColorFilter(getInactiveButtonColor())
-            view.applyColorFilter(getProperBackgroundColor().getContrastColor())
+            view.asRingButton(getInactiveButtonColor(), CONTROL_RING_DP)
         }
     }
 

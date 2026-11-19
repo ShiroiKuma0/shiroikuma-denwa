@@ -1,5 +1,6 @@
 package org.fossify.phone.adapters
 
+import org.fossify.phone.extensions.asRingButton
 import android.telecom.Call
 import android.view.Menu
 import android.view.ViewGroup
@@ -15,6 +16,8 @@ import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.databinding.ItemConferenceCallBinding
 import org.fossify.phone.extensions.hasCapability
 import org.fossify.phone.helpers.getCallContact
+
+private const val CONFERENCE_RING_DP = 1.25f
 
 class ConferenceCallsAdapter(
     activity: SimpleActivity, recyclerView: MyRecyclerView, val data: ArrayList<Call>, itemClick: (Any) -> Unit
@@ -67,7 +70,7 @@ class ConferenceCallsAdapter(
                 val canDisconnect = call.hasCapability(Call.Details.CAPABILITY_DISCONNECT_FROM_CONFERENCE)
                 itemConferenceCallSplit.isEnabled = canSeparate
                 itemConferenceCallSplit.alpha = if (canSeparate) 1.0f else LOWER_ALPHA
-                itemConferenceCallSplit.setColorFilter(textColor)
+                itemConferenceCallSplit.asRingButton(textColor, CONFERENCE_RING_DP)
                 itemConferenceCallSplit.setOnClickListener {
                     call.splitFromConference()
                     data.removeAt(position)
@@ -86,7 +89,7 @@ class ConferenceCallsAdapter(
 
                 itemConferenceCallEnd.isEnabled = canDisconnect
                 itemConferenceCallEnd.alpha = if (canDisconnect) 1.0f else LOWER_ALPHA
-                itemConferenceCallEnd.setColorFilter(textColor)
+                itemConferenceCallEnd.asRingButton(textColor, CONFERENCE_RING_DP)
                 itemConferenceCallEnd.setOnClickListener {
                     call.disconnect()
                     data.removeAt(position)

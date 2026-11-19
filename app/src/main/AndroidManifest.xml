@@ -328,6 +328,21 @@
         <!-- The call log's look for renrakusaki's per-contact call history (CLAUDE.md, "Call history
              for renrakusaki"). Exported without a permission; the provider itself answers only
              renrakusaki's two package ids, and only reads. -->
+        <!-- Diagnostics: the recording notification's buttons, and the share of the recorded files -->
+        <receiver
+            android:name=".receivers.DiagReceiver"
+            android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.diag"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/diag_paths" />
+        </provider>
+
         <provider
             android:name=".providers.CallLogStyleProvider"
             android:authorities="${applicationId}.calllogstyle"

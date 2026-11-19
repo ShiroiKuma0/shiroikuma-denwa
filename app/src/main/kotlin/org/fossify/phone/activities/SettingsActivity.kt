@@ -39,6 +39,7 @@ import org.fossify.phone.R
 import org.fossify.phone.databinding.ActivitySettingsBinding
 import org.fossify.phone.dialogs.ExportCallHistoryDialog
 import org.fossify.phone.dialogs.ManageVisibleTabsDialog
+import org.fossify.phone.extensions.restyleSettingsPage
 import org.fossify.phone.extensions.areMultipleSIMsAvailable
 import org.fossify.phone.extensions.canLaunchAccountsConfiguration
 import org.fossify.phone.extensions.config
@@ -147,6 +148,17 @@ class SettingsActivity : SimpleActivity() {
             ).forEach {
                 it.setTextColor(getProperPrimaryColor())
             }
+
+            // the family's look on the stock page: tight rows, pills for the rows that open something
+            restyleSettingsPage(
+                holder = settingsHolder,
+                mainRow = settingsShiroikumaUiHolder,
+                navigationRows = listOf(
+                    settingsColorCustomizationHolder, settingsChangeDateTimeFormatHolder, settingsManageTabsHolder,
+                    settingsManageBlockedNumbersHolder, settingsSimRedirectionHolder, settingsManageSpeedDialHolder,
+                    settingsExportCallsHolder, settingsImportCallsHolder,
+                ),
+            )
         }
     }
 

@@ -1,5 +1,6 @@
 package org.fossify.phone
 
+import org.fossify.phone.views.outlineAllSwitches
 import android.app.Activity
 import android.app.Application
 import android.os.Bundle
@@ -16,6 +17,7 @@ import org.fossify.phone.extensions.migrateToPureYellowIfNeeded
 import org.fossify.phone.extensions.seedBlackYellowThemeIfNeeded
 import org.fossify.phone.extensions.syncDialogFrame
 import org.fossify.phone.extensions.themeColor
+import org.fossify.phone.helpers.Diag
 
 class App : FossifyApp() {
     override fun onCreate() {
@@ -31,6 +33,8 @@ class App : FossifyApp() {
         // Recolor every screen's top-bar foreground from the header slots, so it propagates even to
         // sub-screens we don't own (e.g. the commons Settings → About page).
         registerActivityLifecycleCallbacks(TopBarColorizer())
+        // Diagnostics: load the switches, and move the old car-call trail into the diag directory.
+        Diag.init(this)
     }
 }
 
@@ -43,6 +47,10 @@ private class TopBarColorizer : Application.ActivityLifecycleCallbacks {
         // Any screen can open a dialog, and the accent may have changed since the last one — resync
         // the frame here, before the screen is interactive.
         activity.syncDialogFrame()
+
+        // Every switch on every screen — commons' own included — is the theme's outlined pill. Posted,
+        // so it runs after the screen has built its rows and recoloured its views in its own onResume.
+        activity.window?.decorView?.let { decor -> decor.post { decor.outlineAllSwitches() } }
 
         if (activity is MainActivity) {
             return

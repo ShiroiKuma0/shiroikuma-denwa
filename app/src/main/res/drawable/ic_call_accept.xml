@@ -1,21 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Accept: a green ring with the green handset inside — outlined like every control of the theme,
+     never a filled disc. The handset layer is swapped for the 1 / 2 glyph when a SIM is known. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="@color/ripple_foreground">
+    android:color="#4D00FF00">
     <item android:id="@+id/accept_call_background_holder">
         <layer-list>
             <item android:id="@+id/accept_call_background">
                 <shape android:shape="oval">
-                    <solid android:color="@color/md_green_700" />
+                    <solid android:color="@android:color/transparent" />
+                    <stroke
+                        android:width="3dp"
+                        android:color="#00FF00" />
                 </shape>
             </item>
 
             <item
                 android:id="@+id/accept_call_icon"
                 android:bottom="@dimen/medium_margin"
-                android:drawable="@drawable/ic_phone_vector"
+                android:drawable="@drawable/ic_call_accept_glyph"
                 android:left="@dimen/medium_margin"
                 android:right="@dimen/medium_margin"
                 android:top="@dimen/medium_margin" />
         </layer-list>
+    </item>
+    <item android:id="@android:id/mask">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/white" />
+        </shape>
     </item>
 </ripple>

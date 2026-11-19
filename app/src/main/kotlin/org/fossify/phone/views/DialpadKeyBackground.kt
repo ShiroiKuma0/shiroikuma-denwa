@@ -68,7 +68,7 @@ class DialpadKeyBackground(
 }
 
 /**
- * One circular key background, ringed in the theme's primary color and filled faintly with it, with
+ * One circular key background, ringed in the theme's primary color and otherwise empty, with
  * the touch ripple clipped to the same circle. Each key needs its own instance — the drawable sizes
  * itself from its own bounds.
  */
@@ -76,7 +76,7 @@ fun Context.dialpadKeyBackground(): Drawable {
     val accentColor = themeColor(ThemeSlot.PRIMARY)
     val strokeWidthPx = resources.getDimension(R.dimen.dialpad_key_border_width)
     val content = DialpadKeyBackground(
-        fillColor = ColorUtils.setAlphaComponent(accentColor, LOWER_ALPHA_INT),
+        fillColor = Color.TRANSPARENT, // ringed only: the background shows through, no tint fill
         strokeColor = accentColor,
         strokeWidthPx = strokeWidthPx,
     )

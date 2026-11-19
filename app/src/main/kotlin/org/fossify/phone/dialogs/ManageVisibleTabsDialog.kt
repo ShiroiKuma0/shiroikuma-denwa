@@ -1,5 +1,6 @@
 package org.fossify.phone.dialogs
 
+import org.fossify.phone.views.outlineAllToggles
 import org.fossify.commons.activities.BaseSimpleActivity
 import org.fossify.commons.extensions.getAlertDialogBuilder
 import org.fossify.commons.extensions.setupDialogStuff
@@ -24,6 +25,7 @@ class ManageVisibleTabsDialog(val activity: BaseSimpleActivity) {
             put(TAB_CALL_HISTORY, R.id.manage_visible_tabs_call_history)
         }
 
+        binding.root.outlineAllToggles()
         val showTabs = activity.config.showTabs
         for ((key, value) in tabs) {
             binding.root.findViewById<MyAppCompatCheckbox>(value).isChecked = showTabs and key != 0

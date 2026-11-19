@@ -14,6 +14,14 @@ import android.os.Environment
 import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
+import android.provider.DocumentsContract
+import android.util.TypedValue
+import android.view.Gravity
+import org.fossify.commons.extensions.formatSize
+import org.fossify.phone.helpers.Diag
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.SeekBar
@@ -99,6 +107,7 @@ import java.io.OutputStream
 // A row's vertical padding, replacing the commons style's 20dp: every row is only as tall as its content
 // (black-yellow-theme skill, "Row padding"), so a page of one-liners never reads double-spaced.
 private const val ROW_PADDING_VERTICAL_DP = 2
+private const val NOTE_TEXT_SP = 13f
 
 
 // How many hex characters of the automation token stay visible at each end.
@@ -156,6 +165,12 @@ class ThemeActivity : SimpleActivity() {
         if (uri != null) runEximImport(uri)
     }
 
+    // Diagnostics: the export's directory picker, and whether "keep for" changed (clean up on leaving).
+    private var diagCleanupDue = false
+    private val diagExportPicker = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) runDiagExport(uri)
+    }
+
     private val fontImportLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         onFontImported(uri)
     }
@@ -173,6 +188,14 @@ class ThemeActivity : SimpleActivity() {
         buildRows()
         // Returning from the system's All-files-access screen: the panel's folder line may now resolve.
         eximPanel?.refresh()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (diagCleanupDue) {
+            diagCleanupDue = false
+            ensureBackgroundThread { Diag.cleanup(applicationContext) }
+        }
     }
 
     private fun buildRows() {
@@ -304,6 +327,176 @@ class ThemeActivity : SimpleActivity() {
             addSwitchRow(R.string.sim_text_bold, config.simTextBold, rowIndent) { config.simTextBold = it }
             addSwitchRow(R.string.swipe_to_call, config.swipeToCall, rowIndent) { config.swipeToCall = it }
         }
+
+        // Diagnostics — last, as in every sister app
+        addDiagnosticsSection(primaryColor, subRowIndent)
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // Diagnostics
+    // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Every diagnostic behind its own switch, off by default, in subsections by theme; then what is
+     * recorded and what can be done with it — keep-for, export, share, purge. The layout the
+     * diagnostics-ui-settings skill prescribes; the storage is [Diag].
+     */
+    private fun addDiagnosticsSection(primaryColor: Int, subRowIndent: Int) {
+        addSection(R.string.diag_title, primaryColor)
+        addNoteRow(getString(R.string.diag_note, Diag.dir(this)?.absolutePath ?: "?"), rowIndent)
+        addNoteRow(getString(R.string.diag_notification_note), rowIndent)
+
+        addSubgroup(R.string.diag_sub_car, primaryColor)
+        addDiagSwitch(Diag.Kind.CAR, subRowIndent)
+        addSubgroup(R.string.diag_sub_calls, primaryColor)
+        addDiagSwitch(Diag.Kind.CALLS, subRowIndent)
+        addDiagSwitch(Diag.Kind.SIM, subRowIndent)
+
+        addSubgroup(R.string.diag_sub_data, primaryColor)
+        // counted off the main thread: reading every file's first line must not slow the page down
+        val stored = addNoteRow(getString(R.string.diag_counting), subRowIndent)
+        ensureBackgroundThread {
+            val summary = Diag.summarize(applicationContext)
+            val text = if (summary.files == 0) {
+                getString(R.string.diag_stored_none)
+            } else {
+                getString(R.string.diag_stored, diagAmount(summary.files, summary.bytes), diagSpan(summary.first, summary.last))
+            }
+            runOnUiThread { stored.text = text }
+        }
+        addKeepDaysRow(subRowIndent)
+        addNoteRow(getString(R.string.diag_keep_note), subRowIndent)
+
+        val lastTree = Diag.getExportTree(this)?.lastPathSegment?.substringAfter(':')?.let { "/sdcard/$it" } ?: "/sdcard/tmp"
+        addActionRow(getString(R.string.diag_export), getString(R.string.diag_export_descr, lastTree), subRowIndent, main = false) {
+            if (Diag.files(this).isEmpty()) {
+                toast(R.string.diag_nothing)
+            } else {
+                // first offered at /sdcard/tmp, afterwards where the last export went
+                val tree = Diag.getExportTree(this)
+                diagExportPicker.launch(
+                    if (tree != null) {
+                        DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
+                    } else {
+                        DocumentsContract.buildDocumentUri("com.android.externalstorage.documents", "primary:tmp")
+                    }
+                )
+            }
+        }
+        addActionRow(getString(R.string.diag_share), getString(R.string.diag_share_descr), subRowIndent, main = false) {
+            Diag.shareIntent(this)?.let(::startActivity) ?: toast(R.string.diag_nothing)
+        }
+        addActionRow(getString(R.string.diag_purge), getString(R.string.diag_purge_descr), subRowIndent, main = false, opens = false) {
+            confirmDiagPurge()
+        }
+    }
+
+    private fun addDiagSwitch(kind: Diag.Kind, indent: Int) {
+        addSwitchRow(kind.titleRes, Diag.isOn(kind), indent, getString(kind.descrRes)) { Diag.set(this, kind, it) }
+    }
+
+    private fun runDiagExport(tree: Uri) {
+        runCatching {
+            contentResolver.takePersistableUriPermission(
+                tree, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+        }
+        ensureBackgroundThread {
+            val name = runCatching { Diag.exportTo(applicationContext, tree) }.getOrNull()
+            runOnUiThread {
+                toast(if (name != null) getString(R.string.diag_export_done, name) else getString(R.string.diag_export_failed))
+                buildRows()
+            }
+        }
+    }
+
+    // The warning says exactly what goes: how many files and how big, per kind, and each day's time span.
+    private fun confirmDiagPurge() {
+        ensureBackgroundThread {
+            val summary = Diag.summarize(applicationContext)
+            runOnUiThread {
+                if (summary.files == 0) {
+                    toast(R.string.diag_nothing)
+                    return@runOnUiThread
+                }
+                val total = diagAmount(summary.files, summary.bytes)
+                val kinds = summary.kinds.map { (kind, k) -> "$kind: ${diagAmount(k[0].toInt(), k[1])}, ${diagSpan(k[2], k[3])}" }
+                val clock = SimpleDateFormat("HH:mm", Locale.US)
+                val days = summary.days.map { (day, span) -> "$day  ${clock.format(Date(span[0]))} – ${clock.format(Date(span[1]))}" }
+                val message = getString(R.string.diag_purge_warning, total, (kinds + "" + days).joinToString("\n"))
+                ConfirmationDialog(
+                    this, message, positive = R.string.diag_purge_do, negative = org.fossify.commons.R.string.cancel, destructive = true,
+                ) {
+                    ensureBackgroundThread {
+                        Diag.purge(applicationContext)
+                        runOnUiThread {
+                            toast(getString(R.string.diag_purged, total))
+                            buildRows()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun diagAmount(files: Int, bytes: Long) =
+        "${resources.getQuantityString(R.plurals.diag_files, files, files)}, ${bytes.formatSize()}"
+
+    private fun diagSpan(first: Long, last: Long): String {
+        val format = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
+        return "${format.format(Date(first))} – ${format.format(Date(last))}"
+    }
+
+    /** A loose explanation that belongs to no single row: dim gold, small, no rule. */
+    private fun addNoteRow(text: String, indent: Int): TextView = TextView(this).apply {
+        this.text = text
+        setTextColor(themeColor(ThemeSlot.SETTINGS_NOTE))
+        setTextSize(TypedValue.COMPLEX_UNIT_SP, NOTE_TEXT_SP)
+        val vertical = (ROW_PADDING_VERTICAL_DP * resources.displayMetrics.density).toInt()
+        setPaddingRelative(indent, vertical, resources.getDimensionPixelSize(org.fossify.commons.R.dimen.activity_margin), vertical)
+        binding.themeHolder.addView(this)
+    }
+
+    // "Keep for N days": a slider from 0 (everything) to Diag.MAX_KEEP_DAYS, its value beside it.
+    private fun addKeepDaysRow(indent: Int) {
+        val accent = getProperPrimaryColor()
+        fun label(days: Int) = if (days == 0) getString(R.string.diag_keep_all) else getString(R.string.diag_keep_days, days)
+        val value = TextView(this).apply {
+            text = label(Diag.getKeepDays(this@ThemeActivity))
+            setTextColor(accent)
+        }
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            addView(TextView(this@ThemeActivity).apply {
+                setText(R.string.diag_keep)
+                setTextColor(getProperTextColor())
+            })
+            addView(
+                SeekBar(this@ThemeActivity).apply {
+                    max = Diag.MAX_KEEP_DAYS
+                    progress = Diag.getKeepDays(this@ThemeActivity)
+                    progressTintList = ColorStateList.valueOf(accent)
+                    thumbTintList = ColorStateList.valueOf(accent)
+                    setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                        override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+                            if (!fromUser) return
+                            Diag.setKeepDays(this@ThemeActivity, progress)
+                            diagCleanupDue = true
+                            value.text = label(progress)
+                        }
+
+                        override fun onStartTrackingTouch(seekBar: SeekBar) {}
+                        override fun onStopTrackingTouch(seekBar: SeekBar) {}
+                    })
+                },
+                LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            )
+            addView(value)
+        }
+        indentRow(row, indent)
+        row.setPaddingRelative(indent, row.paddingTop, resources.getDimensionPixelSize(org.fossify.commons.R.dimen.activity_margin), row.paddingBottom)
+        binding.themeHolder.addView(row)
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -497,7 +690,8 @@ class ThemeActivity : SimpleActivity() {
 
         addSubgroup(R.string.sk_decline_general, primaryColor)
         DeclineMessagesPrefs.global(this).forEachIndexed { index, message ->
-            addValueRow("•  $message", "", indent) {
+            // a message opens its actions (edit, move, delete), so it is a pill with a ›
+            addActionRow(message, null, indent, main = false) {
                 DeclineMessagesEditor.showItemActions(this, null, index, { buildRows() })
             }
         }
@@ -512,10 +706,11 @@ class ThemeActivity : SimpleActivity() {
         for (number in DeclineMessagesPrefs.callersWithOwn(this)) {
             val name = DeclineMessagesPrefs.callerName(this, number)
             val count = DeclineMessagesPrefs.forNumber(this, number).size
-            addValueRow(
+            addActionRow(
                 title = name?.let { "$it ($number)" } ?: number,
-                value = resources.getQuantityString(R.plurals.sk_decline_message_count, count, count),
+                summary = resources.getQuantityString(R.plurals.sk_decline_message_count, count, count),
                 indent = indent,
+                main = false,
             ) { DeclineMessagesEditor.showList(this, number, name) { buildRows() } }
         }
         addActionRow(getString(R.string.sk_decline_settings_add_caller), null, indent, main = false) {
@@ -594,11 +789,13 @@ class ThemeActivity : SimpleActivity() {
         // directory outside Download/ and Documents/. API 30+ only.
         if (isRPlus()) {
             val granted = Environment.isExternalStorageManager()
-            addValueRow(
+            // opens the system's own screen: a pill with a ›, its state beneath (red while missing)
+            addActionRow(
                 title = getString(R.string.all_files_access),
-                value = getString(if (granted) R.string.all_files_access_granted else R.string.all_files_access_needed),
+                summary = getString(if (granted) R.string.all_files_access_granted else R.string.all_files_access_needed),
                 indent = indent,
-                valueColor = if (granted) null else EXPORT_WARN_COLOR,
+                main = false,
+                summaryColor = if (granted) null else EXPORT_WARN_COLOR,
             ) { openAllFilesAccess() }
         }
     }
@@ -610,6 +807,7 @@ class ThemeActivity : SimpleActivity() {
         b.themeTokenLabel.setTextColor(getProperTextColor())
         b.themeTokenValue.text = abbreviateToken(config.automationToken)
         b.themeTokenValue.setTextColor(getProperTextColor())
+        b.themeTokenValue.alpha = 1f // the stock value style dims by alpha; nothing here is faded
         b.themeTokenRegenerate.text = getString(R.string.automation_token_regenerate)
         b.themeTokenRegenerate.setTextColor(getProperPrimaryColor())
         // an action, so a (thin) pill — never a bare clickable word
@@ -622,6 +820,7 @@ class ThemeActivity : SimpleActivity() {
                 message = getString(R.string.automation_token_regenerate_warning),
                 positive = R.string.automation_token_regenerate,
                 negative = org.fossify.commons.R.string.cancel,
+                destructive = true,
             ) {
                 b.themeTokenValue.text = abbreviateToken(config.regenerateAutomationToken())
                 toast(R.string.automation_token_regenerated)
@@ -848,7 +1047,8 @@ class ThemeActivity : SimpleActivity() {
         summaryColor: Int? = null,
         onClick: () -> Unit,
     ) {
-        val accent = getProperPrimaryColor()
+        // a coloured action lends its colour to the frame and the › as well as to the label
+        val accent = labelColor ?: getProperPrimaryColor()
         val row = ItemThemeActionBinding.inflate(layoutInflater, binding.themeHolder, false)
         row.themeActionPill.background = pillDrawable(accent, getProperBackgroundColor(), main)
         row.themeActionLabel.text = title
