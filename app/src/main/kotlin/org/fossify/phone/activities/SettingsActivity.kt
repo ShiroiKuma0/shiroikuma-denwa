@@ -1,5 +1,8 @@
 package org.fossify.phone.activities
 
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
+import org.fossify.commons.extensions.circleDrawable
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -17,7 +20,6 @@ import org.fossify.commons.extensions.addLockedLabelIfNeeded
 import org.fossify.commons.extensions.baseConfig
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getFontSizeText
-import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.isOrWasThankYouInstalled
 import org.fossify.commons.extensions.showErrorToast
 import org.fossify.commons.extensions.toast
@@ -110,7 +112,6 @@ class SettingsActivity : SimpleActivity() {
         super.onResume()
         setupTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow)
 
-        setupCustomizeColors()
         setupShiroikumaUi()
         setupPrimaryColor()
         setupUseEnglish()
@@ -149,7 +150,7 @@ class SettingsActivity : SimpleActivity() {
                 settingsDialpadSectionLabel,
                 settingsMigrationSectionLabel
             ).forEach {
-                it.setTextColor(getProperPrimaryColor())
+                it.setTextColor(themeColor(ThemeSlot.PAGE_HEADING))
             }
 
             // the family's look on the stock page: tight rows, pills for the rows that open something
@@ -157,7 +158,7 @@ class SettingsActivity : SimpleActivity() {
                 holder = settingsHolder,
                 mainRow = settingsShiroikumaUiHolder,
                 navigationRows = listOf(
-                    settingsColorCustomizationHolder, settingsChangeDateTimeFormatHolder, settingsManageTabsHolder,
+                    settingsChangeDateTimeFormatHolder, settingsManageTabsHolder,
                     settingsManageBlockedNumbersHolder, settingsSimRedirectionHolder, settingsManageSpeedDialHolder,
                     settingsExportCallsHolder, settingsImportCallsHolder,
                 ),
@@ -186,12 +187,6 @@ class SettingsActivity : SimpleActivity() {
         }
     }
 
-    private fun setupCustomizeColors() {
-        binding.settingsColorCustomizationHolder.setOnClickListener {
-            startCustomizationActivity()
-        }
-    }
-
     private fun setupShiroikumaUi() {
         binding.settingsShiroikumaUiHolder.setOnClickListener {
             startActivity(Intent(this, ThemeActivity::class.java).putExtra(EXTRA_FROM_SETTINGS, true))
@@ -200,9 +195,9 @@ class SettingsActivity : SimpleActivity() {
 
     private fun setupPrimaryColor() {
         binding.apply {
-            settingsPrimaryColorPreview.background.setTint(getProperPrimaryColor())
+            settingsPrimaryColorPreview.background = circleDrawable(themeColor(ThemeSlot.PRIMARY))
             settingsPrimaryColorHolder.setOnClickListener {
-                AlphaColorPickerDialog(this@SettingsActivity, getProperPrimaryColor()) { wasPositive, color ->
+                AlphaColorPickerDialog(this@SettingsActivity, themeColor(ThemeSlot.PRIMARY)) { wasPositive, color ->
                     if (wasPositive) {
                         applyPrimaryColor(color)
                     }
@@ -212,9 +207,6 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun applyPrimaryColor(color: Int) {
-        // A custom primary color is incompatible with Material You, so leave the system theme –
-        // otherwise getProperPrimaryColor() keeps returning the dynamic color and the pick is ignored.
-        config.isSystemThemeEnabled = false
         config.primaryColor = color
         // re-theme Settings immediately; other screens re-read the color on their next launch
         recreate()

@@ -4,8 +4,8 @@ import android.content.Context
 import android.util.AttributeSet
 import android.widget.RelativeLayout
 import org.fossify.commons.adapters.MyRecyclerViewAdapter
-import org.fossify.commons.extensions.getProperPrimaryColor
-import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.helpers.SORT_BY_FIRST_NAME
 import org.fossify.commons.helpers.SORT_BY_SURNAME
@@ -31,7 +31,8 @@ abstract class MyViewPagerFragment<BINDING : MyViewPagerFragment.InnerBinding>(c
             this.activity = activity
 
             setupFragment()
-            setupColors(activity.getProperTextColor(), activity.getProperPrimaryColor(), activity.getProperPrimaryColor())
+            val accent = activity.themeColor(ThemeSlot.PRIMARY)
+            setupColors(activity.themeColor(ThemeSlot.EMPTY_LIST_TEXT), accent, accent)
         }
     }
 

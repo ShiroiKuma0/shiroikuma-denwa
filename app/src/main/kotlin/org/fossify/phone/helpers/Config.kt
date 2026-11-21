@@ -204,6 +204,20 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(PURE_YELLOW_MIGRATED, false)
         set(value) = prefs.edit().putBoolean(PURE_YELLOW_MIGRATED, value).apply()
 
+    var slotsMovedToRoles: Boolean
+        get() = prefs.getBoolean(SLOTS_MOVED_TO_ROLES, false)
+        set(value) = prefs.edit().putBoolean(SLOTS_MOVED_TO_ROLES, value).apply()
+
+    // The UI page: its sections' order as dragged in the chip index, and which of them are unfolded.
+    // Both are comma-joined section keys under a "theme_" name, so they travel in the Appearance export.
+    var uiSectionOrder: String
+        get() = prefs.getString(UI_SECTION_ORDER, "")!!
+        set(value) = prefs.edit().putString(UI_SECTION_ORDER, value).apply()
+
+    var uiSectionsOpen: Set<String>
+        get() = prefs.getString(UI_SECTIONS_OPEN, "")!!.split(',').filter { it.isNotEmpty() }.toSet()
+        set(value) = prefs.edit().putString(UI_SECTIONS_OPEN, value.joinToString(",")).apply()
+
     var callDividerMigrated: Boolean
         get() = prefs.getBoolean(CALL_DIVIDER_MIGRATED, false)
         set(value) = prefs.edit().putBoolean(CALL_DIVIDER_MIGRATED, value).apply()

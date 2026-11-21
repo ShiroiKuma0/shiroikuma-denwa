@@ -41,6 +41,9 @@ const val CALL_SCREEN_PREFER_NICKNAME = "theme_call_screen_prefer_nickname"
 const val THEME_V1_SEEDED = "theme_v1_seeded"
 const val PURE_YELLOW_MIGRATED = "pure_yellow_migrated"
 const val CALL_DIVIDER_MIGRATED = "call_divider_migrated"
+const val SLOTS_MOVED_TO_ROLES = "slots_moved_to_roles"
+const val UI_SECTION_ORDER = "theme_ui_section_order"
+const val UI_SECTIONS_OPEN = "theme_ui_sections_open"
 const val OPEN_CONTACTS_APP_FOR_TAB = "open_contacts_app_for_tab"
 const val FONT_FAMILY_PREFIX = "font_family_" // String, "" = system/global default
 const val FONT_WEIGHT_PREFIX = "font_weight_" // Int, 0 = default, else 100..900
@@ -68,6 +71,22 @@ const val PALETTE_MESSAGE_BLUE = 0xFF4D94FF.toInt()
 const val PALETTE_CYAN = 0xFF00FFFF.toInt()
 const val PALETTE_ORANGE = 0xFFFF8000.toInt()
 const val PALETTE_MAGENTA = 0xFFFF00FF.toInt()
+// Defaults that used to be read from the commons' material palette (deleted in sk18): an incoming
+// call's arrow — which had a lighter value under the system's dark mode, kept — and the in-call accept
+// and decline rings.
+const val PALETTE_INCOMING_BLUE = 0xFF1E88E5.toInt()
+const val PALETTE_INCOMING_BLUE_NIGHT = 0xFF64B5F6.toInt()
+const val PALETTE_ACCEPT_GREEN = 0xFF88D168.toInt()
+const val PALETTE_DECLINE_RED = 0xFFEF5350.toInt()
+// Something is missing (no backup directory, a refused permission): a red of its own, lighter than delete
+const val PALETTE_WARNING = 0xFFFF5252.toInt()
+// The car call screen's filled discs and the notification's handsets, with the glyph drawn on a disc
+const val PALETTE_DISC_GREEN = 0xFF50A43B.toInt()
+const val PALETTE_DISC_RED = 0xFFD32F2F.toInt()
+const val PALETTE_DISC_GLYPH = 0xFFFFFFFF.toInt()
+const val PALETTE_NOTIFICATION_GREY = 0xFF757575.toInt()
+// The bar of a held call on the call screen: a faint shade over the background
+const val PALETTE_HELD_SHADE = 0x37000000
 // The material yellow PALETTE_YELLOW used to be; persisted colors carrying its RGB are rewritten
 // once at startup (see migrateToPureYellowIfNeeded)
 const val LEGACY_PALETTE_YELLOW = 0xFFFFEB3B.toInt()

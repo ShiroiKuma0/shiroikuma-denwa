@@ -1,5 +1,7 @@
 package org.fossify.phone.extensions
 
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Context
@@ -45,11 +47,12 @@ import org.fossify.phone.helpers.contactsAppPackages
  * selection change, after the adapter has set its own item titles.
  */
 fun Activity.styleContextualActionBar(actionMode: ActionMode?, menu: Menu) {
-    val iconColor = themeColor(ThemeSlot.MENU_ICON)
-    val textColor = themeColor(ThemeSlot.MENU_TEXT)
-    val barColor = themeColor(ThemeSlot.BACKGROUND)
+    // the bar's own three roles; the titles of the items in its overflow popup are the menu's label
+    val iconColor = uiColor(UiRole.ACTION_BAR_ICON)
+    val textColor = uiColor(UiRole.ACTION_BAR_TEXT)
+    val barColor = uiColor(UiRole.ACTION_BAR_GROUND)
 
-    menu.colorItemTitles(textColor)
+    menu.colorItemTitles(themeColor(ThemeSlot.MENU_TEXT))
     for (index in 0 until menu.size()) {
         menu.getItem(index).icon?.applyColorFilter(iconColor)
     }

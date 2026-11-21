@@ -15,7 +15,6 @@
             android:id="@+id/manage_speed_dial_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/color_primary"
             app:title="@string/manage_speed_dial"
             app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
 

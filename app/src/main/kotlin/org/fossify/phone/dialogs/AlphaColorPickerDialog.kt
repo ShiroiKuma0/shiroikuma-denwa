@@ -1,5 +1,6 @@
 package org.fossify.phone.dialogs
 
+import org.fossify.commons.extensions.colorPickerRing
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.graphics.Color
@@ -14,7 +15,8 @@ import java.util.Locale
 import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.getProperBackgroundColor
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.commons.extensions.onGlobalLayout
 import org.fossify.commons.extensions.onTextChangeListener
 import org.fossify.commons.extensions.setFillWithStroke
@@ -48,6 +50,8 @@ class AlphaColorPickerDialog(
     private var ignoreHexChanges = false
 
     init {
+        // The ring on the chosen point is built from the roles (commons sk18), not an XML drawable
+        binding.colorPickerCursor.setImageDrawable(colorPickerRing(activity))
         Color.colorToHSV(color, currentColorHsv)
 
         binding.apply {
@@ -206,7 +210,7 @@ class AlphaColorPickerDialog(
         }
 
         binding.recentColors.beVisible()
-        val backgroundColor = activity.getProperBackgroundColor()
+        val backgroundColor = activity.uiColor(UiRole.DIALOG_GROUND)
         val size = activity.resources.getDimensionPixelSize(org.fossify.commons.R.dimen.colorpicker_hue_width)
         recentColors.take(RECENT_COLORS_NUMBER).forEach { recentColor ->
             val dot = ImageView(activity)

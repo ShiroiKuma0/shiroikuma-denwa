@@ -15,8 +15,7 @@
     <View
         android:id="@+id/dialpad_divider"
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@drawable/divider" />
+        android:layout_height="1dp" />
 
     <LinearLayout
         android:id="@+id/dialpad_line"
@@ -55,7 +54,6 @@
             android:layout_width="@dimen/normal_icon_size"
             android:layout_height="@dimen/normal_icon_size"
             android:layout_marginStart="@dimen/small_margin"
-            android:background="@drawable/circle_button_background_ripple"
             android:contentDescription="@string/call_number"
             android:padding="@dimen/medium_margin"
             android:src="@drawable/ic_phone_vector"
@@ -93,7 +91,6 @@
             android:layout_height="@dimen/dialpad_button_size"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="@dimen/tiny_margin"
-            android:background="@drawable/circle_button_background_ripple"
             android:contentDescription="@string/call_number"
             android:elevation="@dimen/small_margin"
             android:padding="@dimen/normal_margin"

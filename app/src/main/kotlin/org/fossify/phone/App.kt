@@ -13,6 +13,7 @@ import org.fossify.phone.activities.MainActivity
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.colorItemTitles
 import org.fossify.phone.extensions.migrateCallDividerIfNeeded
+import org.fossify.phone.extensions.migrateSlotsToRolesIfNeeded
 import org.fossify.phone.extensions.migrateToPureYellowIfNeeded
 import org.fossify.phone.extensions.seedBlackYellowThemeIfNeeded
 import org.fossify.phone.extensions.syncDialogFrame
@@ -28,7 +29,9 @@ class App : FossifyApp() {
         migrateToPureYellowIfNeeded()
         // Bring back a call divider that was switched off, once.
         migrateCallDividerIfNeeded()
-        // Frame dialogs in the accent, so they are not black-on-black with the screen behind them.
+        // Hand the slots that are commons roles since sk18 over to the roles' keys, once.
+        migrateSlotsToRolesIfNeeded()
+        // Frame dialogs, so they are not black-on-black with the screen behind them.
         syncDialogFrame()
         // Recolor every screen's top-bar foreground from the header slots, so it propagates even to
         // sub-screens we don't own (e.g. the commons Settings → About page).
@@ -44,8 +47,7 @@ class App : FossifyApp() {
 // is skipped — it paints its own search bar + overflow chrome.
 private class TopBarColorizer : Application.ActivityLifecycleCallbacks {
     override fun onActivityResumed(activity: Activity) {
-        // Any screen can open a dialog, and the accent may have changed since the last one — resync
-        // the frame here, before the screen is interactive.
+        // Keep the dialog frame and the pill buttons switched on, before the screen is interactive.
         activity.syncDialogFrame()
 
         // Every switch on every screen — commons' own included — is the theme's outlined pill. Posted,

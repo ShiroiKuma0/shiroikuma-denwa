@@ -1,5 +1,6 @@
 package org.fossify.phone.helpers
 
+import org.fossify.commons.helpers.UI_ROLE_PREFIX
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
@@ -161,7 +162,8 @@ object SettingsExport {
     // Appearance = the granular theme slots and dimensions, the per-element fonts, and the commons
     // colour/theme keys the fork's palette sits on top of. Everything else in the prefs file is a
     // behaviour setting, so no list of "settings keys" has to be kept in step with the settings page.
-    private val APPEARANCE_PREFIXES = listOf("theme_", FONT_FAMILY_PREFIX, FONT_WEIGHT_PREFIX, FONT_SIZE_PREFIX)
+    private val APPEARANCE_PREFIXES =
+        listOf("theme_", UI_ROLE_PREFIX, FONT_FAMILY_PREFIX, FONT_WEIGHT_PREFIX, FONT_SIZE_PREFIX)
     private val APPEARANCE_KEYS = setOf(
         TEXT_COLOR, BACKGROUND_COLOR, PRIMARY_COLOR, ACCENT_COLOR, APP_ICON_COLOR,
         CUSTOM_TEXT_COLOR, CUSTOM_BACKGROUND_COLOR, CUSTOM_PRIMARY_COLOR, CUSTOM_ACCENT_COLOR,

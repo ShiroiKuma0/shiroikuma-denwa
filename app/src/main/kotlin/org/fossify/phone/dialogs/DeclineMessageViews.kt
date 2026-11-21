@@ -12,6 +12,8 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.annotation.DimenRes
 import org.fossify.phone.R
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.themeColor
 
@@ -54,16 +56,18 @@ object DeclineMessageViews {
     fun rowView(
         activity: Activity,
         text: String,
-        color: Int = activity.themeColor(ThemeSlot.PRIMARY),
+        color: Int? = null,
         onClick: () -> Unit,
     ) = TextView(activity).apply {
         this.text = text
-        setTextColor(color)
+        setTextColor(color ?: activity.uiColor(UiRole.BUTTON_TEXT))
         textSize(R.dimen.decline_row_text_size)
         val h = px(activity, R.dimen.decline_row_padding_horizontal)
         val v = px(activity, R.dimen.decline_row_padding_vertical)
         setPadding(h, v, h, v)
-        background = activity.pillDrawable(color, activity.themeColor(ThemeSlot.BACKGROUND), main = false)
+        background = activity.pillDrawable(
+            color ?: activity.uiColor(UiRole.BUTTON_FRAME), activity.uiColor(UiRole.DIALOG_BUTTON_GROUND), main = false,
+        )
         val density = activity.resources.displayMetrics.density
         layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
@@ -87,7 +91,7 @@ object DeclineMessageViews {
 
     fun messageView(activity: Activity, text: String) = TextView(activity).apply {
         this.text = text
-        setTextColor(activity.themeColor(ThemeSlot.TEXT))
+        setTextColor(activity.uiColor(UiRole.DIALOG_TEXT))
         textSize(R.dimen.decline_body_text_size)
         val h = px(activity, R.dimen.decline_row_padding_horizontal)
         val v = px(activity, R.dimen.decline_row_padding_vertical)
@@ -96,8 +100,8 @@ object DeclineMessageViews {
 
     fun messageInput(activity: Activity, minLines: Int = 1) = EditText(activity).apply {
         hint = activity.getString(R.string.sk_decline_hint)
-        setTextColor(activity.themeColor(ThemeSlot.PRIMARY))
-        setHintTextColor(activity.themeColor(ThemeSlot.TEXT_SECONDARY))
+        setTextColor(activity.uiColor(UiRole.FIELD_TEXT))
+        setHintTextColor(activity.uiColor(UiRole.FIELD_HINT))
         textSize(R.dimen.decline_body_text_size)
         inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE or
             InputType.TYPE_TEXT_FLAG_CAP_SENTENCES

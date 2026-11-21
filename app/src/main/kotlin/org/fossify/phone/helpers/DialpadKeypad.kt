@@ -1,5 +1,6 @@
 package org.fossify.phone.helpers
 
+import org.fossify.commons.extensions.listDividerDrawable
 import android.annotation.SuppressLint
 import android.os.Handler
 import android.os.Looper
@@ -38,6 +39,7 @@ internal class DialpadKeypad(
     private var toneGeneratorHelper: ToneGeneratorHelper? = null
 
     fun setup() {
+        binding.dialpadDivider.background = activity.listDividerDrawable()
         toneGeneratorHelper = ToneGeneratorHelper(activity, DIALPAD_TONE_LENGTH_MS)
 
         binding.dialpadWrapper.apply {

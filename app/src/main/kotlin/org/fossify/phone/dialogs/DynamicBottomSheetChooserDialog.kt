@@ -10,8 +10,8 @@ import org.fossify.commons.adapters.SimpleListItemAdapter
 import org.fossify.commons.fragments.BaseBottomSheetDialogFragment
 import org.fossify.commons.models.SimpleListItem
 import org.fossify.phone.databinding.LayoutSimpleRecyclerViewBinding
-import org.fossify.phone.extensions.ThemeSlot
-import org.fossify.phone.extensions.themeColor
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 
 // The accent frame around the sheet, in dp — the dialog frame's counterpart (see syncDialogFrame).
 private const val SHEET_FRAME_WIDTH_DP = 2
@@ -32,8 +32,8 @@ class DynamicBottomSheetChooserDialog : BaseBottomSheetDialogFragment() {
         val sheet = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f)
-            setColor(context.themeColor(ThemeSlot.BACKGROUND))
-            setStroke(strokePx, context.themeColor(ThemeSlot.PRIMARY))
+            setColor(context.uiColor(UiRole.DIALOG_GROUND))
+            setStroke(strokePx, context.uiColor(UiRole.DIALOG_FRAME))
         }
 
         // The sheet sits flush with the bottom of the screen, so push that edge of the frame off it.

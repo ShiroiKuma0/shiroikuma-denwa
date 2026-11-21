@@ -9,6 +9,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import org.fossify.commons.extensions.adjustAlpha
 import org.fossify.commons.extensions.pillDrawable
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 
 private const val PILL_PADDING_HORIZONTAL_DP = 18
 private const val PILL_PADDING_VERTICAL_DP = 9
@@ -17,16 +19,18 @@ private const val RIPPLE_ALPHA = 0.3f
 
 /**
  * Turns a tappable word into the family's pill (black-yellow-theme skill: no bare-text buttons) — an
- * outlined pill as wide as its label, thick and bold when it is the [main] action of its block. The
- * text keeps the colour it has, or takes the accent.
+ * outlined pill as wide as its label, thick and bold when it is the [main] action of its block. Text,
+ * frame and ground are the commons' button roles; a [color] (a destructive red, a warning) replaces
+ * text and frame alike.
  */
-fun TextView.asPill(main: Boolean = false, color: Int = context.themeColor(ThemeSlot.PRIMARY)) {
+fun TextView.asPill(main: Boolean = false, color: Int? = null) {
     val density = resources.displayMetrics.density
     val h = (PILL_PADDING_HORIZONTAL_DP * density).toInt()
     val v = (PILL_PADDING_VERTICAL_DP * density).toInt()
-    setTextColor(color)
+    setTextColor(color ?: context.uiColor(UiRole.BUTTON_TEXT))
     setTypeface(Typeface.create(typeface, if (main) Typeface.BOLD else Typeface.NORMAL))
-    background = context.pillDrawable(color, context.themeColor(ThemeSlot.BACKGROUND), main)
+    val frame = color ?: context.uiColor(UiRole.BUTTON_FRAME)
+    background = context.pillDrawable(frame, context.uiColor(UiRole.BUTTON_GROUND), main)
     setPadding(h, v, h, v)
     layoutParams = layoutParams?.apply { width = ViewGroup.LayoutParams.WRAP_CONTENT }
 }
@@ -42,7 +46,7 @@ fun ImageView.asRingButton(color: Int, strokeDp: Float = RING_STROKE_DP) {
     val density = resources.displayMetrics.density
     val ring = GradientDrawable().apply {
         shape = GradientDrawable.OVAL
-        setColor(context.themeColor(ThemeSlot.BACKGROUND))
+        setColor(context.uiColor(UiRole.BUTTON_GROUND))
         setStroke((strokeDp * density).toInt().coerceAtLeast(1), color)
     }
     background = RippleDrawable(ColorStateList.valueOf(color.adjustAlpha(RIPPLE_ALPHA)), ring, null)

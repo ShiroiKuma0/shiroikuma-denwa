@@ -1,5 +1,7 @@
 package org.fossify.phone.adapters
 
+import org.fossify.phone.extensions.themeColor
+import org.fossify.commons.extensions.circleRippleDrawable
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ShortcutInfo
@@ -405,7 +407,7 @@ class ContactsAdapter(
 
             itemContactImage.apply {
                 if (profileIconClick != null && viewType != VIEW_TYPE_GRID) {
-                    setBackgroundResource(R.drawable.selector_clickable_circle)
+                    background = context.circleRippleDrawable()
 
                     setOnClickListener {
                         if (!actModeCallback.isSelectable) {
@@ -456,7 +458,7 @@ class ContactsAdapter(
             if (enableDrag && textToHighlight.isEmpty()) {
                 dragHandleIcon.apply {
                     beVisibleIf(selectedKeys.isNotEmpty())
-                    applyColorFilter(textColor)
+                    applyColorFilter(activity.themeColor(ThemeSlot.LIST_HANDLE))
                     setOnTouchListener { _, event ->
                         if (event.action == MotionEvent.ACTION_DOWN) {
                             startReorderDragListener?.requestDrag(holder)

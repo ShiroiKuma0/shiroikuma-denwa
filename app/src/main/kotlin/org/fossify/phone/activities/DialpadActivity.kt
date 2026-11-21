@@ -1,5 +1,6 @@
 package org.fossify.phone.activities
 
+import org.fossify.phone.helpers.applyDialpadRoles
 import org.fossify.phone.extensions.asRingButton
 import android.content.Intent
 import android.database.Cursor
@@ -9,10 +10,9 @@ import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getColorStateList
 import org.fossify.commons.extensions.getColoredDrawableWithColor
-import org.fossify.commons.extensions.getContrastColor
 import org.fossify.commons.extensions.getMyContactsCursor
-import org.fossify.commons.extensions.getProperPrimaryColor
-import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.commons.extensions.isDefaultDialer
 import org.fossify.commons.extensions.updateTextColors
 import org.fossify.commons.extensions.viewBinding
@@ -68,7 +68,6 @@ class DialpadActivity : SimpleActivity() {
             gotContacts(contacts)
         }
 
-        val properPrimaryColor = getProperPrimaryColor()
         binding.dialpadPanel.apply {
             // a ring with the handset inside it — never a filled disc
             dialpadCallButton.setImageResource(R.drawable.ic_phone_vector)
@@ -76,18 +75,18 @@ class DialpadActivity : SimpleActivity() {
         }
 
         binding.apply {
-            letterFastscroller.textColor = getProperTextColor().getColorStateList()
-            letterFastscroller.pressedTextColor = properPrimaryColor
+            letterFastscroller.textColor = themeColor(ThemeSlot.FASTSCROLLER_LETTERS).getColorStateList()
+            letterFastscroller.pressedTextColor = uiColor(UiRole.SCROLL_THUMB)
             letterFastscrollerThumb.setupWithFastScroller(letterFastscroller)
-            letterFastscrollerThumb.textColor = properPrimaryColor.getContrastColor()
-            letterFastscrollerThumb.thumbColor = properPrimaryColor.getColorStateList()
+            letterFastscrollerThumb.textColor = uiColor(UiRole.SCROLL_BUBBLE_TEXT)
+            letterFastscrollerThumb.thumbColor = uiColor(UiRole.SCROLL_BUBBLE).getColorStateList()
         }
     }
 
     override fun onResume() {
         super.onResume()
         updateTextColors(binding.dialpadHolder)
-        binding.dialpadPanel.dialpadClearChar.applyColorFilter(getProperTextColor())
+        binding.dialpadPanel.applyDialpadRoles(this)
         setupTopAppBar(binding.dialpadAppbar, NavigationIcon.Arrow)
         dialpadController.refreshSpeedDialValues()
     }

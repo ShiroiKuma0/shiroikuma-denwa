@@ -1,5 +1,9 @@
 package org.fossify.phone.dialogs
 
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
@@ -16,8 +20,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.getProperBackgroundColor
-import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.commons.extensions.adjustAlpha
 import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
 
@@ -35,7 +38,7 @@ private const val PILL_STROKE_DP = 1.5f
  * cannot be dismissed by tapping outside or pressing back, carries the exact counts of what is
  * waiting, and comes back on every single launch until the last held row is in.
  *
- * The frame and heading are [EXPORT_WARN_COLOR] rather than the theme accent for the same reason the
+ * The frame and heading are the warning role rather than the theme accent for the same reason the
  * unset-backup-folder row is: this is a warning about data, and it should not look like the rest of
  * the app until it stops being true.
  */
@@ -47,9 +50,9 @@ class PendingRestoreDialog(
     private val onPrimary: () -> Unit,
     private val onLater: () -> Unit,
 ) {
-    private val warn = EXPORT_WARN_COLOR
-    private val background = activity.getProperBackgroundColor()
-    private val textColor = activity.getProperTextColor()
+    private val warn = activity.themeColor(ThemeSlot.WARNING)
+    private val background = activity.uiColor(UiRole.DIALOG_GROUND)
+    private val textColor = activity.uiColor(UiRole.DIALOG_TEXT)
 
     private var dialog: AlertDialog? = null
 
@@ -120,7 +123,7 @@ class PendingRestoreDialog(
         isAllCaps = false
         setTextColor(warn)
         background = RippleDrawable(
-            ColorStateList.valueOf((warn and 0x00FFFFFF) or 0x33000000),
+            ColorStateList.valueOf(warn.adjustAlpha(PILL_RIPPLE_ALPHA)),
             GradientDrawable().apply {
                 setColor(this@PendingRestoreDialog.background)
                 setStroke((PILL_STROKE_DP * activity.resources.displayMetrics.density).toInt(), warn)
@@ -142,3 +145,5 @@ class PendingRestoreDialog(
 
     private fun dp(value: Int) = (value * activity.resources.displayMetrics.density).toInt()
 }
+
+private const val PILL_RIPPLE_ALPHA = 0.2f

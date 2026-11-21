@@ -1,5 +1,7 @@
 package org.fossify.phone.adapters
 
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.asRingButton
 import android.telecom.Call
 import android.view.Menu
@@ -54,9 +56,10 @@ class ConferenceCallsAdapter(
                 getCallContact(itemView.context, call) { callContact ->
                     root.post {
                         itemConferenceCallName.text = callContact.name.ifEmpty { itemView.context.getString(R.string.unknown_caller) }
-                        itemConferenceCallName.setTextColor(textColor)
+                        val nameColor = activity.themeColor(ThemeSlot.CONFERENCE_NAME)
+                        itemConferenceCallName.setTextColor(nameColor)
                         val contactDrawable = activity.getDrawable(R.drawable.ic_person_vector)
-                        contactDrawable?.applyColorFilter(textColor)
+                        contactDrawable?.applyColorFilter(nameColor)
                         SimpleContactsHelper(activity).loadContactImage(
                             callContact.photoUri,
                             itemConferenceCallImage,
@@ -70,7 +73,8 @@ class ConferenceCallsAdapter(
                 val canDisconnect = call.hasCapability(Call.Details.CAPABILITY_DISCONNECT_FROM_CONFERENCE)
                 itemConferenceCallSplit.isEnabled = canSeparate
                 itemConferenceCallSplit.alpha = if (canSeparate) 1.0f else LOWER_ALPHA
-                itemConferenceCallSplit.asRingButton(textColor, CONFERENCE_RING_DP)
+                val ring = activity.themeColor(ThemeSlot.CALL_CONTROL_ACTIVE)
+                itemConferenceCallSplit.asRingButton(ring, CONFERENCE_RING_DP)
                 itemConferenceCallSplit.setOnClickListener {
                     call.splitFromConference()
                     data.removeAt(position)
@@ -89,7 +93,7 @@ class ConferenceCallsAdapter(
 
                 itemConferenceCallEnd.isEnabled = canDisconnect
                 itemConferenceCallEnd.alpha = if (canDisconnect) 1.0f else LOWER_ALPHA
-                itemConferenceCallEnd.asRingButton(textColor, CONFERENCE_RING_DP)
+                itemConferenceCallEnd.asRingButton(ring, CONFERENCE_RING_DP)
                 itemConferenceCallEnd.setOnClickListener {
                     call.disconnect()
                     data.removeAt(position)

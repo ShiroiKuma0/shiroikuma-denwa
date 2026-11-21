@@ -1,5 +1,7 @@
 package org.fossify.phone.helpers
 
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 import android.annotation.SuppressLint
 import android.content.ContentValues
 import android.content.Context
@@ -11,7 +13,6 @@ import android.telephony.PhoneNumberUtils
 import android.telephony.SubscriptionInfo
 import android.telephony.SubscriptionManager
 import android.telephony.TelephonyManager
-import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.helpers.PERMISSION_READ_CALL_LOG
 import org.fossify.phone.extensions.buildSIMAccountLookupMap
@@ -280,7 +281,7 @@ object CallStamps {
 
     /** The badge fill SIM [digit] has right now. */
     fun badgeColor(context: Context, digit: Int): Int =
-        context.simColorOrSystem(digit, context.getProperPrimaryColor())
+        context.simColorOrSystem(digit, context.themeColor(ThemeSlot.PRIMARY))
 
     // ---- the cards in the phone ----
 

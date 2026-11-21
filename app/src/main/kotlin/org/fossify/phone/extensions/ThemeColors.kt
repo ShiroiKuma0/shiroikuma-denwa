@@ -1,21 +1,36 @@
 package org.fossify.phone.extensions
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Typeface
 import androidx.annotation.StringRes
 import org.fossify.commons.extensions.adjustAlpha
+import org.fossify.commons.extensions.darkenColor
 import org.fossify.commons.extensions.getContrastColor
-import org.fossify.commons.extensions.getProperBackgroundColor
-import org.fossify.commons.extensions.getProperPrimaryColor
-import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.commons.extensions.lightenColor
+import org.fossify.commons.helpers.resetAllUiColors
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.isUiColorSet
+import org.fossify.commons.helpers.resetUiColor
+import org.fossify.commons.helpers.setUiColor
+import org.fossify.commons.helpers.uiColor
 import org.fossify.phone.R
 import org.fossify.phone.helpers.LEGACY_PALETTE_YELLOW
-import org.fossify.phone.helpers.PALETTE_BLACK
+import org.fossify.phone.helpers.PALETTE_ACCEPT_GREEN
 import org.fossify.phone.helpers.PALETTE_BLUE
 import org.fossify.phone.helpers.PALETTE_CYAN
+import org.fossify.phone.helpers.PALETTE_DECLINE_RED
 import org.fossify.phone.helpers.PALETTE_DIM_GOLD
+import org.fossify.phone.helpers.PALETTE_DISC_GLYPH
+import org.fossify.phone.helpers.PALETTE_DISC_GREEN
+import org.fossify.phone.helpers.PALETTE_DISC_RED
+import org.fossify.phone.helpers.PALETTE_HELD_SHADE
+import org.fossify.phone.helpers.PALETTE_NOTIFICATION_GREY
+import org.fossify.phone.helpers.PALETTE_WARNING
 import org.fossify.phone.helpers.PALETTE_DIM_YELLOW
 import org.fossify.phone.helpers.PALETTE_GREEN
+import org.fossify.phone.helpers.PALETTE_INCOMING_BLUE
+import org.fossify.phone.helpers.PALETTE_INCOMING_BLUE_NIGHT
 import org.fossify.phone.helpers.PALETTE_MAGENTA
 import org.fossify.phone.helpers.PALETTE_MESSAGE_BLUE
 import org.fossify.phone.helpers.PALETTE_ORANGE
@@ -35,12 +50,17 @@ import org.fossify.phone.helpers.THEME_UNSET
 
 enum class ThemeGroup(@StringRes val labelRes: Int) {
     FOUNDATION(R.string.theme_group_foundation),
+    // The UI page itself and the stock Settings page: headings, labels, values, chips, explanations
+    PAGE(R.string.theme_group_page),
     SEARCH(R.string.theme_group_search),
     CHROME(R.string.theme_group_chrome),
     TABS(R.string.theme_group_tabs),
     CALL_LOG(R.string.theme_group_call_log),
     DIALPAD(R.string.theme_group_dialpad),
     IN_CALL(R.string.theme_group_in_call),
+    CAR(R.string.theme_group_car),
+    NOTIFICATION(R.string.theme_group_notification),
+    LISTS(R.string.theme_group_lists),
     // The caller block's fields — enumerated by the order box in ThemeActivity, never by group
     CALL_FIELDS(R.string.theme_subgroup_caller_details),
     CONTACTS(R.string.theme_group_contacts),
@@ -55,30 +75,54 @@ enum class ThemeSlot(
     val isFoundation: Boolean = false,
     // hasFont = true for concrete text views (family / weight / size are configurable per element)
     val hasFont: Boolean = false,
+    // A slot with a role IS that commons role (helpers/UiRoles.kt) under our label and in our section:
+    // it is stored in the role's own key and the commons' views read the same colour.
+    val role: UiRole? = null,
 ) {
     // Foundation — reuse the stock commons colors (editing these repaints the whole app)
-    BACKGROUND("theme_background", ThemeGroup.FOUNDATION, R.string.theme_background, isFoundation = true),
-    PRIMARY("theme_primary", ThemeGroup.FOUNDATION, R.string.theme_primary, isFoundation = true),
-    TEXT("theme_text", ThemeGroup.FOUNDATION, R.string.theme_text, isFoundation = true),
+    BACKGROUND(
+        "theme_background", ThemeGroup.FOUNDATION, R.string.theme_background, isFoundation = true,
+        role = UiRole.BACKGROUND,
+    ),
+    PRIMARY("theme_primary", ThemeGroup.FOUNDATION, R.string.theme_primary, isFoundation = true, role = UiRole.ACCENT),
+    TEXT("theme_text", ThemeGroup.FOUNDATION, R.string.theme_text, isFoundation = true, role = UiRole.TEXT),
     TEXT_SECONDARY("theme_text_secondary", ThemeGroup.FOUNDATION, R.string.theme_text_secondary),
-    // The UI page's own explanations and the thin rule beside them — the family's dim gold
-    SETTINGS_NOTE("theme_settings_note", ThemeGroup.FOUNDATION, R.string.theme_settings_note),
+    // Something is missing or was refused: no backup directory, a permission, a restore held back
+    WARNING("theme_warning", ThemeGroup.FOUNDATION, R.string.theme_warning),
+
+    // The UI page and the stock Settings page, item by item. The pills on them are the commons' button roles.
+    // The explanations and the thin rule beside them — the family's dim gold
+    SETTINGS_NOTE("theme_settings_note", ThemeGroup.PAGE, R.string.theme_settings_note),
+    PAGE_HEADING("theme_page_heading", ThemeGroup.PAGE, R.string.theme_page_heading),
+    PAGE_CHEVRON("theme_page_chevron", ThemeGroup.PAGE, R.string.theme_page_chevron),
+    PAGE_SUBHEADING("theme_page_subheading", ThemeGroup.PAGE, R.string.theme_page_subheading),
+    PAGE_LABEL("theme_page_label", ThemeGroup.PAGE, R.string.theme_page_label),
+    PAGE_VALUE("theme_page_value", ThemeGroup.PAGE, R.string.theme_page_value),
+    PAGE_CHIP("theme_page_chip", ThemeGroup.PAGE, R.string.theme_page_chip),
+    PAGE_DIVIDER("theme_page_divider", ThemeGroup.PAGE, R.string.theme_page_divider),
 
     // A switch that is off: the outline and dot in a darker, opaque yellow (the on state is the accent)
-    SWITCH_OFF("theme_switch_off", ThemeGroup.FOUNDATION, R.string.theme_switch_off),
+    SWITCH_OFF("theme_switch_off", ThemeGroup.FOUNDATION, R.string.theme_switch_off, role = UiRole.SWITCH_OFF_OUTLINE),
 
     // Search bar
-    SEARCH_FILL("theme_search_fill", ThemeGroup.SEARCH, R.string.theme_search_fill),
-    SEARCH_TEXT("theme_search_text", ThemeGroup.SEARCH, R.string.theme_search_text, hasFont = true),
-    SEARCH_HINT("theme_search_hint", ThemeGroup.SEARCH, R.string.theme_search_hint),
-    SEARCH_ICON("theme_search_icon", ThemeGroup.SEARCH, R.string.theme_search_icon),
-    SEARCH_BORDER("theme_search_border", ThemeGroup.SEARCH, R.string.theme_search_border),
+    SEARCH_FILL("theme_search_fill", ThemeGroup.SEARCH, R.string.theme_search_fill, role = UiRole.SEARCH_GROUND),
+    SEARCH_TEXT(
+        "theme_search_text", ThemeGroup.SEARCH, R.string.theme_search_text, hasFont = true,
+        role = UiRole.SEARCH_TEXT,
+    ),
+    SEARCH_HINT("theme_search_hint", ThemeGroup.SEARCH, R.string.theme_search_hint, role = UiRole.SEARCH_HINT),
+    SEARCH_ICON("theme_search_icon", ThemeGroup.SEARCH, R.string.theme_search_icon, role = UiRole.SEARCH_ICON),
+    SEARCH_BORDER("theme_search_border", ThemeGroup.SEARCH, R.string.theme_search_border, role = UiRole.SEARCH_FRAME),
 
     // Top bar & overflow ("hamburger") menu
     MENU_ICON("theme_menu_icon", ThemeGroup.CHROME, R.string.theme_menu_icon),
-    MENU_TEXT("theme_menu_text", ThemeGroup.CHROME, R.string.theme_menu_text),
-    HEADER_TITLE("theme_header_title", ThemeGroup.CHROME, R.string.theme_header_title),
-    HEADER_ARROW("theme_header_arrow", ThemeGroup.CHROME, R.string.theme_header_arrow),
+    MENU_TEXT("theme_menu_text", ThemeGroup.CHROME, R.string.theme_menu_text, role = UiRole.MENU_LABEL),
+    HEADER_TITLE("theme_header_title", ThemeGroup.CHROME, R.string.theme_header_title, role = UiRole.TOOLBAR_TITLE),
+    HEADER_ARROW("theme_header_arrow", ThemeGroup.CHROME, R.string.theme_header_arrow, role = UiRole.TOOLBAR_ICON),
+
+    // The bar that asks for "display over other apps": its ground and its words (its action is a pill)
+    SNACKBAR_GROUND("theme_snackbar_ground", ThemeGroup.CHROME, R.string.theme_snackbar_ground),
+    SNACKBAR_TEXT("theme_snackbar_text", ThemeGroup.CHROME, R.string.theme_snackbar_text),
 
     // Menu icon roles: every menu row's icon is coloured by what the row does, while its frame and
     // label stay in the accent (or, for a destructive row, in MENU_ROLE_DELETE — the warning colour).
@@ -92,9 +136,15 @@ enum class ThemeSlot(
     MENU_ROLE_DELETE("theme_menu_role_delete", ThemeGroup.CHROME, R.string.theme_menu_role_delete),
 
     // Tabs
-    TAB_BACKGROUND("theme_tab_background", ThemeGroup.TABS, R.string.theme_tab_background),
-    TAB_SELECTED("theme_tab_selected", ThemeGroup.TABS, R.string.theme_tab_selected),
-    TAB_UNSELECTED("theme_tab_unselected", ThemeGroup.TABS, R.string.theme_tab_unselected),
+    TAB_BACKGROUND(
+        "theme_tab_background", ThemeGroup.TABS, R.string.theme_tab_background,
+        role = UiRole.BOTTOM_BAR_GROUND,
+    ),
+    TAB_SELECTED("theme_tab_selected", ThemeGroup.TABS, R.string.theme_tab_selected, role = UiRole.BOTTOM_TAB_ACTIVE),
+    TAB_UNSELECTED(
+        "theme_tab_unselected", ThemeGroup.TABS, R.string.theme_tab_unselected,
+        role = UiRole.BOTTOM_TAB_IDLE,
+    ),
 
     // Call log (Recents)
     CALL_LOG_NAME("theme_call_log_name", ThemeGroup.CALL_LOG, R.string.theme_call_log_name, hasFont = true),
@@ -136,15 +186,63 @@ enum class ThemeSlot(
     RIN_BADGE("theme_rin_badge", ThemeGroup.CALL_LOG, R.string.theme_rin_badge),
     RIN_BADGE_TEXT("theme_rin_badge_text", ThemeGroup.CALL_LOG, R.string.theme_rin_badge_text),
 
-    // Dialpad
-    DIALPAD_CALL_BUTTON("theme_dialpad_call_button", ThemeGroup.DIALPAD, R.string.theme_dialpad_call_button),
-    DIALPAD_CALL_ICON("theme_dialpad_call_icon", ThemeGroup.DIALPAD, R.string.theme_dialpad_call_icon),
+    // The row's ⋮, and the "Calls with …" banner of a filtered log (its words and its cross)
+    CALL_LOG_OVERFLOW("theme_call_log_overflow", ThemeGroup.CALL_LOG, R.string.theme_call_log_overflow),
+    CALL_LOG_FILTER_BANNER("theme_call_log_filter_banner", ThemeGroup.CALL_LOG, R.string.theme_call_log_filter_banner),
 
-    // In-call
+    // Dialpad — every part of a key and of the line above the keys
+    DIALPAD_GROUND("theme_dialpad_ground", ThemeGroup.DIALPAD, R.string.theme_dialpad_ground),
+    DIALPAD_KEY_RING("theme_dialpad_key_ring", ThemeGroup.DIALPAD, R.string.theme_dialpad_key_ring),
+    DIALPAD_DIGIT("theme_dialpad_digit", ThemeGroup.DIALPAD, R.string.theme_dialpad_digit),
+    DIALPAD_LETTERS("theme_dialpad_letters", ThemeGroup.DIALPAD, R.string.theme_dialpad_letters),
+    DIALPAD_INPUT("theme_dialpad_input", ThemeGroup.DIALPAD, R.string.theme_dialpad_input),
+    DIALPAD_ICON("theme_dialpad_icon", ThemeGroup.DIALPAD, R.string.theme_dialpad_icon),
+    DIALPAD_CALL_BUTTON("theme_dialpad_call_button", ThemeGroup.DIALPAD, R.string.theme_dialpad_call_button),
+
+    // In-call. The ringing screen: the two rings, the handle dragged between them and its arrows, the
+    // three buttons above them. The call itself: the control rings, the status line, the held call's bar.
+    CALL_ACCEPT_RING("theme_call_accept_ring", ThemeGroup.IN_CALL, R.string.theme_call_accept_ring),
+    CALL_END_RING("theme_call_end_ring", ThemeGroup.IN_CALL, R.string.theme_call_end_ring),
     CALL_ACCEPT("theme_call_accept", ThemeGroup.IN_CALL, R.string.theme_call_accept),
     CALL_DECLINE("theme_call_decline", ThemeGroup.IN_CALL, R.string.theme_call_decline),
+    CALL_DRAG_HANDLE("theme_call_drag_handle", ThemeGroup.IN_CALL, R.string.theme_call_drag_handle),
+    CALL_BUTTON_LABEL("theme_call_button_label", ThemeGroup.IN_CALL, R.string.theme_call_button_label),
+    CALL_SILENCE("theme_call_silence", ThemeGroup.IN_CALL, R.string.theme_call_silence),
+    CALL_MESSAGE("theme_call_message", ThemeGroup.IN_CALL, R.string.theme_call_message),
+    CALL_BLOCK("theme_call_block", ThemeGroup.IN_CALL, R.string.theme_call_block),
+    CALL_BLOCK_LABEL("theme_call_block_label", ThemeGroup.IN_CALL, R.string.theme_call_block_label),
+    CALL_UNDO_GROUND("theme_call_undo_ground", ThemeGroup.IN_CALL, R.string.theme_call_undo_ground),
+    CALL_UNDO_FRAME("theme_call_undo_frame", ThemeGroup.IN_CALL, R.string.theme_call_undo_frame),
+    CALL_UNDO_TEXT("theme_call_undo_text", ThemeGroup.IN_CALL, R.string.theme_call_undo_text),
     CALL_CONTROL_ACTIVE("theme_call_control_active", ThemeGroup.IN_CALL, R.string.theme_call_control_active),
     CALL_CONTROL_INACTIVE("theme_call_control_inactive", ThemeGroup.IN_CALL, R.string.theme_call_control_inactive),
+    CALL_STATUS("theme_call_status", ThemeGroup.IN_CALL, R.string.theme_call_status),
+    CALL_ON_HOLD("theme_call_on_hold", ThemeGroup.IN_CALL, R.string.theme_call_on_hold),
+    CALL_HELD_GROUND("theme_call_held_ground", ThemeGroup.IN_CALL, R.string.theme_call_held_ground),
+    CALL_HELD_TEXT("theme_call_held_text", ThemeGroup.IN_CALL, R.string.theme_call_held_text),
+    CALL_AVATAR_GROUND("theme_call_avatar_ground", ThemeGroup.IN_CALL, R.string.theme_call_avatar_ground),
+    CALL_AVATAR_ICON("theme_call_avatar_icon", ThemeGroup.IN_CALL, R.string.theme_call_avatar_icon),
+    CALL_ICON("theme_call_icon", ThemeGroup.IN_CALL, R.string.theme_call_icon),
+    CALL_DIALPAD_GROUND("theme_call_dialpad_ground", ThemeGroup.IN_CALL, R.string.theme_call_dialpad_ground),
+    CALL_SEND("theme_call_send", ThemeGroup.IN_CALL, R.string.theme_call_send),
+
+    // The car call screen — the one place whose two buttons are filled discs (白い熊, 2026-11-19)
+    CAR_GROUND("theme_car_ground", ThemeGroup.CAR, R.string.theme_car_ground),
+    CAR_TEXT("theme_car_text", ThemeGroup.CAR, R.string.theme_car_text),
+    CAR_ACCEPT("theme_car_accept", ThemeGroup.CAR, R.string.theme_car_accept),
+    CAR_END("theme_car_end", ThemeGroup.CAR, R.string.theme_car_end),
+    CAR_BUTTON_ICON("theme_car_button_icon", ThemeGroup.CAR, R.string.theme_car_button_icon),
+
+    // The call notification's three buttons (its ground and its text are the system's)
+    NOTIFICATION_ACCEPT("theme_notification_accept", ThemeGroup.NOTIFICATION, R.string.theme_notification_accept),
+    NOTIFICATION_DECLINE("theme_notification_decline", ThemeGroup.NOTIFICATION, R.string.theme_notification_decline),
+    NOTIFICATION_MESSAGE("theme_notification_message", ThemeGroup.NOTIFICATION, R.string.theme_notification_message),
+
+    // Lists in general: what an empty one says, the letters beside one, the handle that drags a row
+    EMPTY_LIST_TEXT("theme_empty_list_text", ThemeGroup.LISTS, R.string.theme_empty_list_text),
+    FASTSCROLLER_LETTERS("theme_fastscroller_letters", ThemeGroup.LISTS, R.string.theme_fastscroller_letters),
+    LIST_HANDLE("theme_list_handle", ThemeGroup.LISTS, R.string.theme_list_handle),
+    CONFERENCE_NAME("theme_conference_name", ThemeGroup.LISTS, R.string.theme_conference_name),
 
     // The caller block's fields (helpers/CallScreenFields) — one styling slot each, so every line of
     // the block carries its own font, weight, size and colour. Only the ticked ones get a row in the
@@ -232,32 +330,33 @@ fun Context.setThemeDimenDp(dimen: ThemeDimen, dp: Int) = config.setThemeDimen(d
 
 /** The effective color for a slot: the user's override if set, otherwise its inherited default. */
 fun Context.themeColor(slot: ThemeSlot): Int {
+    slot.role?.let { return uiColor(it) }
     val override = config.getThemeOverride(slot.key)
     return if (override != THEME_UNSET) override else themeDefault(slot)
 }
 
+// One arm per slot — the count is inherent to an exhaustive map, not real complexity.
+@Suppress("CyclomaticComplexMethod", "LongMethod")
 private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
-    // Foundation reads the stock commons colors (seeded to black/yellow on first run)
-    ThemeSlot.BACKGROUND -> getProperBackgroundColor()
-    ThemeSlot.PRIMARY -> getProperPrimaryColor()
-    ThemeSlot.TEXT -> getProperTextColor()
+    // A slot that is a commons role never gets here (themeColor returns the role); the arm keeps the map total.
+    ThemeSlot.BACKGROUND, ThemeSlot.PRIMARY, ThemeSlot.TEXT, ThemeSlot.SWITCH_OFF,
+        ThemeSlot.SEARCH_FILL, ThemeSlot.SEARCH_TEXT, ThemeSlot.SEARCH_HINT, ThemeSlot.SEARCH_ICON,
+        ThemeSlot.SEARCH_BORDER, ThemeSlot.MENU_TEXT, ThemeSlot.HEADER_TITLE, ThemeSlot.HEADER_ARROW,
+        ThemeSlot.TAB_BACKGROUND, ThemeSlot.TAB_SELECTED, ThemeSlot.TAB_UNSELECTED -> uiColor(slot.role!!)
+
     ThemeSlot.TEXT_SECONDARY -> themeColor(ThemeSlot.TEXT).adjustAlpha(0.6f)
+    ThemeSlot.WARNING -> PALETTE_WARNING
     ThemeSlot.SETTINGS_NOTE -> PALETTE_DIM_GOLD
-    ThemeSlot.SWITCH_OFF -> PALETTE_DIM_YELLOW
+    ThemeSlot.PAGE_HEADING, ThemeSlot.PAGE_CHEVRON, ThemeSlot.PAGE_SUBHEADING, ThemeSlot.PAGE_CHIP ->
+        themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.PAGE_LABEL, ThemeSlot.PAGE_VALUE -> themeColor(ThemeSlot.TEXT)
+    // an opaque darker accent, as the menus' group divider
+    ThemeSlot.PAGE_DIVIDER -> uiColor(UiRole.MENU_DIVIDER)
+    ThemeSlot.SNACKBAR_GROUND -> themeColor(ThemeSlot.BACKGROUND).darkenColor()
+    ThemeSlot.SNACKBAR_TEXT -> themeColor(ThemeSlot.TEXT)
 
-    // Search bar: black fill, yellow text/icon/border by inheriting foundation
-    ThemeSlot.SEARCH_FILL -> themeColor(ThemeSlot.BACKGROUND)
-    ThemeSlot.SEARCH_TEXT -> themeColor(ThemeSlot.PRIMARY)
-    ThemeSlot.SEARCH_HINT -> themeColor(ThemeSlot.PRIMARY).adjustAlpha(0.5f)
-    ThemeSlot.SEARCH_ICON -> themeColor(ThemeSlot.PRIMARY)
-    ThemeSlot.SEARCH_BORDER -> themeColor(ThemeSlot.PRIMARY)
-
-    // Top bar & overflow menu: icons follow the accent; the Settings header title/arrow contrast the
-    // primary-coloured toolbar (matching commons' default), and the overflow menu text follows the text.
+    // The search bar's own ⋮ and the icons beside it follow the accent
     ThemeSlot.MENU_ICON -> themeColor(ThemeSlot.PRIMARY)
-    ThemeSlot.MENU_TEXT -> themeColor(ThemeSlot.TEXT)
-    ThemeSlot.HEADER_TITLE -> themeColor(ThemeSlot.PRIMARY).getContrastColor()
-    ThemeSlot.HEADER_ARROW -> themeColor(ThemeSlot.PRIMARY).getContrastColor()
 
     ThemeSlot.MENU_ROLE_CALL -> PALETTE_GREEN
     ThemeSlot.MENU_ROLE_MESSAGE -> PALETTE_MESSAGE_BLUE
@@ -267,11 +366,6 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.MENU_ROLE_BLOCK -> PALETTE_MAGENTA
     ThemeSlot.MENU_ROLE_DELETE -> PALETTE_RED
 
-    // Tabs
-    ThemeSlot.TAB_BACKGROUND -> themeColor(ThemeSlot.BACKGROUND)
-    ThemeSlot.TAB_SELECTED -> themeColor(ThemeSlot.PRIMARY)
-    ThemeSlot.TAB_UNSELECTED -> themeColor(ThemeSlot.TEXT).adjustAlpha(0.6f)
-
     // Call log
     ThemeSlot.CALL_LOG_NAME -> themeColor(ThemeSlot.TEXT)
     ThemeSlot.CALL_LOG_SUBTITLE -> themeColor(ThemeSlot.TEXT_SECONDARY)
@@ -279,7 +373,7 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.CALL_LOG_DAY_DATE -> themeColor(ThemeSlot.TEXT_SECONDARY)
     // Semantic call-type colors keep their meaning by default
     ThemeSlot.CALL_LOG_MISSED -> PALETTE_RED
-    ThemeSlot.CALL_LOG_INCOMING -> resources.getColor(R.color.color_incoming_call, theme)
+    ThemeSlot.CALL_LOG_INCOMING -> if (isSystemNight()) PALETTE_INCOMING_BLUE_NIGHT else PALETTE_INCOMING_BLUE
     // A call we placed and that was answered wears the accent, arrow and time alike; one that was not
     // answered wears pure blue
     ThemeSlot.CALL_LOG_OUTGOING -> themeColor(ThemeSlot.PRIMARY)
@@ -300,13 +394,42 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.RIN_BADGE -> PALETTE_YELLOW
     ThemeSlot.RIN_BADGE_TEXT -> PALETTE_BLUE
 
-    // Dialpad
-    ThemeSlot.DIALPAD_CALL_BUTTON -> themeColor(ThemeSlot.PRIMARY)
-    ThemeSlot.DIALPAD_CALL_ICON -> themeColor(ThemeSlot.DIALPAD_CALL_BUTTON).getContrastColor()
+    ThemeSlot.CALL_LOG_OVERFLOW, ThemeSlot.CALL_LOG_FILTER_BANNER -> themeColor(ThemeSlot.TEXT)
 
-    // In-call: accept/decline keep their semantic green/red; controls follow primary/text
-    ThemeSlot.CALL_ACCEPT -> resources.getColor(R.color.md_green_400, theme)
-    ThemeSlot.CALL_DECLINE -> resources.getColor(R.color.md_red_400, theme)
+    // Dialpad: keys ringed in the accent, everything written in the text colour
+    ThemeSlot.DIALPAD_GROUND -> themeColor(ThemeSlot.BACKGROUND)
+    ThemeSlot.DIALPAD_KEY_RING, ThemeSlot.DIALPAD_CALL_BUTTON -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.DIALPAD_DIGIT, ThemeSlot.DIALPAD_LETTERS, ThemeSlot.DIALPAD_INPUT, ThemeSlot.DIALPAD_ICON ->
+        themeColor(ThemeSlot.TEXT)
+
+    // In-call: the rings are pure green and red; the arrows, "on hold" and the block octagon the softer
+    // pair; the rest follows accent, text and background
+    ThemeSlot.CALL_ACCEPT_RING -> PALETTE_GREEN
+    ThemeSlot.CALL_END_RING -> PALETTE_RED
+    ThemeSlot.CALL_ACCEPT -> PALETTE_ACCEPT_GREEN
+    ThemeSlot.CALL_DECLINE -> PALETTE_DECLINE_RED
+    // both wore the decline colour before they had roles of their own, and still follow it
+    ThemeSlot.CALL_ON_HOLD, ThemeSlot.CALL_BLOCK -> themeColor(ThemeSlot.CALL_DECLINE)
+    ThemeSlot.CALL_DRAG_HANDLE, ThemeSlot.CALL_BUTTON_LABEL, ThemeSlot.CALL_STATUS, ThemeSlot.CALL_HELD_TEXT,
+        ThemeSlot.CALL_ICON -> themeColor(ThemeSlot.TEXT)
+    ThemeSlot.CALL_SILENCE, ThemeSlot.CALL_MESSAGE, ThemeSlot.CALL_BLOCK_LABEL, ThemeSlot.CALL_UNDO_FRAME,
+        ThemeSlot.CALL_UNDO_TEXT, ThemeSlot.CALL_AVATAR_GROUND, ThemeSlot.CALL_SEND -> themeColor(ThemeSlot.PRIMARY)
+    ThemeSlot.CALL_UNDO_GROUND -> themeColor(ThemeSlot.BACKGROUND)
+    ThemeSlot.CALL_HELD_GROUND -> PALETTE_HELD_SHADE
+    ThemeSlot.CALL_AVATAR_ICON -> themeColor(ThemeSlot.CALL_AVATAR_GROUND).getContrastColor()
+    ThemeSlot.CALL_DIALPAD_GROUND ->
+        if (isSystemNight()) themeColor(ThemeSlot.BACKGROUND).lightenColor(2) else themeColor(ThemeSlot.BACKGROUND)
+
+    // The car call screen: filled discs in the settled green and red, a white handset on them
+    ThemeSlot.CAR_GROUND -> themeColor(ThemeSlot.BACKGROUND)
+    ThemeSlot.CAR_TEXT -> themeColor(ThemeSlot.TEXT)
+    ThemeSlot.CAR_ACCEPT, ThemeSlot.NOTIFICATION_ACCEPT -> PALETTE_DISC_GREEN
+    ThemeSlot.CAR_END, ThemeSlot.NOTIFICATION_DECLINE -> PALETTE_DISC_RED
+    ThemeSlot.CAR_BUTTON_ICON -> PALETTE_DISC_GLYPH
+    ThemeSlot.NOTIFICATION_MESSAGE -> PALETTE_NOTIFICATION_GREY
+
+    ThemeSlot.EMPTY_LIST_TEXT, ThemeSlot.FASTSCROLLER_LETTERS, ThemeSlot.LIST_HANDLE, ThemeSlot.CONFERENCE_NAME ->
+        themeColor(ThemeSlot.TEXT)
     ThemeSlot.CALL_CONTROL_ACTIVE -> themeColor(ThemeSlot.PRIMARY)
     ThemeSlot.CALL_CONTROL_INACTIVE -> themeColor(ThemeSlot.SWITCH_OFF) // a ring's colour now, not a fill
 
@@ -330,35 +453,35 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.SIM_TEXT -> PALETTE_YELLOW
 }
 
-/** Set an explicit override for a slot. Foundation slots write through to the stock commons colors. */
+private fun Context.isSystemNight() =
+    resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+
+/** Set an explicit colour for a slot — in the commons role's key when the slot is one. */
 fun Context.setThemeColor(slot: ThemeSlot, color: Int) {
-    when (slot) {
-        ThemeSlot.PRIMARY -> {
-            config.isSystemThemeEnabled = false
-            config.primaryColor = color
-        }
-
-        ThemeSlot.BACKGROUND -> {
-            config.isSystemThemeEnabled = false
-            config.backgroundColor = color
-        }
-
-        ThemeSlot.TEXT -> {
-            config.isSystemThemeEnabled = false
-            config.textColor = color
-        }
-
-        else -> config.setThemeOverride(slot.key, color)
-    }
+    val role = slot.role
+    if (role != null) setUiColor(role, color) else config.setThemeOverride(slot.key, color)
 }
 
-/** Revert a slot to its default (palette for the editable foundation colors, inherited otherwise). */
+/** Revert a slot to its default (the role's, or the inherited one). */
 fun Context.resetThemeColor(slot: ThemeSlot) {
-    when (slot) {
-        ThemeSlot.BACKGROUND -> setThemeColor(slot, PALETTE_BLACK)
-        ThemeSlot.PRIMARY, ThemeSlot.TEXT -> setThemeColor(slot, PALETTE_YELLOW)
-        else -> config.clearThemeOverride(slot.key)
-    }
+    val role = slot.role
+    if (role != null) resetUiColor(role) else config.clearThemeOverride(slot.key)
+}
+
+/** The commons roles a slot stands for — the UI page lists every other role by itself. */
+val rolesShownAsSlots: Set<UiRole> by lazy {
+    ThemeSlot.entries.filter { it != ThemeSlot.SWITCH_OFF }.mapNotNull { it.role }.toSet()
+}
+
+/**
+ * Every colour back on its default: the commons roles, this app's own slots and the two SIM fills.
+ * Fonts, sizes and line thicknesses are not colours and stay.
+ */
+fun Context.resetAllThemeColors() {
+    resetAllUiColors()
+    ThemeSlot.entries.forEach { config.clearThemeOverride(it.key) }
+    setSimColor(1, SIM_COLOR_UNSET)
+    setSimColor(2, SIM_COLOR_UNSET)
 }
 
 // -------------------------------------------------------------------------------------------------
@@ -404,11 +527,8 @@ fun Context.seedBlackYellowThemeIfNeeded() {
         return
     }
 
-    config.isSystemThemeEnabled = false
-    config.backgroundColor = PALETTE_BLACK
-    config.textColor = PALETTE_YELLOW
-    config.primaryColor = PALETTE_YELLOW
-    config.accentColor = PALETTE_YELLOW
+    // Black and yellow are the commons' own defaults since sk18 (helpers/UiRoles.kt), so nothing is
+    // written any more: an unset foundation role is the family's colour.
     config.themeV1Seeded = true
 }
 
@@ -416,34 +536,46 @@ fun Context.seedBlackYellowThemeIfNeeded() {
 private const val DIALOG_FRAME_WIDTH_DP = 2
 
 /**
- * Keep commons' dialog frame in step with the accent. Dialogs are drawn on the same black as the app
- * behind them, so without a frame they have no edge at all — commons (sk3+) reads these two values
- * when a dialog is shown, and a 0 width means "no frame", which is what stock apps get.
- *
- * The accent can change at any time (our Theme screen, or commons' own "Customize colors"), so this
- * runs on every activity resume rather than once at startup; it writes only on an actual change.
+ * The two switches of the family's look that are not colours: the dialog frame's width (0 = none, what
+ * a stock consumer gets) and pill dialog buttons. The frame's colour, the destructive button's and a
+ * switch's off colour are commons roles since sk18 (`UiRole.DIALOG_FRAME`, `BUTTON_DESTRUCTIVE`,
+ * `SWITCH_OFF_OUTLINE`), set on the UI page — nothing is mirrored into the commons any more.
  */
 fun Context.syncDialogFrame() {
-    val frameColor = themeColor(ThemeSlot.PRIMARY)
-    if (config.dialogBorderColor != frameColor) {
-        config.dialogBorderColor = frameColor
-    }
-
     if (config.dialogBorderWidth != DIALOG_FRAME_WIDTH_DP) {
         config.dialogBorderWidth = DIALOG_FRAME_WIDTH_DP
     }
 
-    // Dialog buttons are pills (commons sk12): the positive one thick and bold, the others thin —
-    // never the stock bare-text buttons.
     if (!config.pillDialogButtons) {
         config.pillDialogButtons = true
     }
+}
 
-    // …and a button that deletes is a pill in the warning colour (commons sk15).
-    val warning = themeColor(ThemeSlot.MENU_ROLE_DELETE)
-    if (config.dialogWarningColor != warning) {
-        config.dialogWarningColor = warning
+/**
+ * One-time (commons sk18): a slot that is now a commons role hands its stored colour over to the role's
+ * key, so what was picked before the move is kept. The delete colour used to be mirrored into the
+ * commons' destructive dialog button; that button is a role of its own now and starts from the same
+ * value. Foundation slots always lived in the stock keys the roles read.
+ */
+fun Context.migrateSlotsToRolesIfNeeded() {
+    if (config.slotsMovedToRoles) {
+        return
     }
+
+    ThemeSlot.entries.forEach { slot ->
+        val role = slot.role ?: return@forEach
+        if (role.isFoundation) return@forEach
+        val override = config.getThemeOverride(slot.key)
+        if (override != THEME_UNSET) {
+            setUiColor(role, override)
+            config.clearThemeOverride(slot.key)
+        }
+    }
+    val warning = config.getThemeOverride(ThemeSlot.MENU_ROLE_DELETE.key)
+    if (warning != THEME_UNSET && !isUiColorSet(UiRole.BUTTON_DESTRUCTIVE)) {
+        setUiColor(UiRole.BUTTON_DESTRUCTIVE, warning)
+    }
+    config.slotsMovedToRoles = true
 }
 
 /**

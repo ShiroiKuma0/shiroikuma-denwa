@@ -13,6 +13,8 @@ import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.graphics.ColorUtils
 import org.fossify.phone.R
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.themeColor
 
@@ -31,7 +33,6 @@ object MenuPills {
     const val PILL_MARGIN_DP = 3 // above and below a pill
     const val SIDE_MARGIN_DP = 8 // between a pill and the menu's edge
 
-    private const val DIVIDER_BLEND = 0.7f
     private const val SWITCH_OFF_BLEND = 0.55f
     private const val MENU_CHROME_DP = 24
     private const val GROUP_DIVIDER_DP = 9
@@ -87,9 +88,12 @@ object MenuPills {
 
     fun isDestructive(id: Int) = specs[id]?.role == ThemeSlot.MENU_ROLE_DELETE
 
-    /** The frame and label of a row: the warning colour for a destructive one, else accent and menu text. */
-    fun frameColor(context: Context, id: Int): Int =
-        context.themeColor(if (isDestructive(id)) ThemeSlot.MENU_ROLE_DELETE else ThemeSlot.PRIMARY)
+    /** The frame and label of a row: the warning colour for a destructive one, else the row-frame and label roles. */
+    fun frameColor(context: Context, id: Int): Int = if (isDestructive(id)) {
+        context.themeColor(ThemeSlot.MENU_ROLE_DELETE)
+    } else {
+        context.uiColor(UiRole.MENU_ROW_FRAME)
+    }
 
     fun labelColor(context: Context, id: Int): Int =
         context.themeColor(if (isDestructive(id)) ThemeSlot.MENU_ROLE_DELETE else ThemeSlot.MENU_TEXT)
@@ -100,12 +104,7 @@ object MenuPills {
 
     // The line between two groups of a menu: an opaque darker accent, bright enough to be seen on the
     // background, quieter than a pill frame
-    fun dividerColor(context: Context): Int = ColorUtils.blendARGB(
-        context.themeColor(ThemeSlot.BACKGROUND), context.themeColor(ThemeSlot.PRIMARY), DIVIDER_BLEND
-    )
-
-    // A switch that is off: an opaque darker accent, never a faded one
-    fun switchOffColor(context: Context): Int = context.themeColor(ThemeSlot.SWITCH_OFF)
+    fun dividerColor(context: Context): Int = context.uiColor(UiRole.MENU_DIVIDER)
 
     /** The disabled title line a menu opens with. */
     fun isHeader(item: MenuItem) = !item.isEnabled && item.itemId == 0 && !item.hasSubMenu()

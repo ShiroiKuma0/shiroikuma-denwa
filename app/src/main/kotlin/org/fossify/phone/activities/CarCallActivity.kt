@@ -1,5 +1,10 @@
 package org.fossify.phone.activities
 
+import android.content.res.ColorStateList
+import android.graphics.drawable.RippleDrawable
+import android.widget.ImageView
+import org.fossify.commons.extensions.adjustAlpha
+import org.fossify.commons.extensions.circleDrawable
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -10,7 +15,6 @@ import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.beVisibleIf
-import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.toast
 import org.fossify.commons.extensions.updateTextColors
 import org.fossify.commons.extensions.viewBinding
@@ -76,8 +80,13 @@ class CarCallActivity : SimpleActivity() {
         // The fork's own background (pure black by default), not commons' dark grey — and the
         // chronometer by hand, because it is a Chronometer rather than a MyTextView and so is the
         // one view updateTextColors above leaves untouched.
-        binding.carCallHolder.setBackgroundColor(themeColor(ThemeSlot.BACKGROUND))
-        binding.carCallDuration.setTextColor(getProperTextColor())
+        binding.carCallHolder.setBackgroundColor(themeColor(ThemeSlot.CAR_GROUND))
+        binding.carCallDuration.setTextColor(themeColor(ThemeSlot.CAR_TEXT))
+        binding.carCallStatus.setTextColor(themeColor(ThemeSlot.CAR_TEXT))
+        // Filled discs, on purpose (白い熊, 2026-11-19): read at a glance while driving. Built here from
+        // their roles — no colour in the layout.
+        binding.carCallAccept.styleCarDisc(ThemeSlot.CAR_ACCEPT)
+        binding.carCallEnd.styleCarDisc(ThemeSlot.CAR_END)
         addLockScreenFlags()
         initButtons()
         refresh()
@@ -183,4 +192,13 @@ class CarCallActivity : SimpleActivity() {
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
+
+    private fun ImageView.styleCarDisc(slot: ThemeSlot) {
+        val glyph = themeColor(ThemeSlot.CAR_BUTTON_ICON)
+        val ripple = ColorStateList.valueOf(glyph.adjustAlpha(CAR_DISC_RIPPLE_ALPHA))
+        background = RippleDrawable(ripple, circleDrawable(themeColor(slot)), circleDrawable(glyph))
+        applyColorFilter(glyph)
+    }
 }
+
+private const val CAR_DISC_RIPPLE_ALPHA = 0.2f

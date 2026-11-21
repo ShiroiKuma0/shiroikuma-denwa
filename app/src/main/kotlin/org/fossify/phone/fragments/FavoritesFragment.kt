@@ -10,7 +10,8 @@ import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getColorStateList
-import org.fossify.commons.extensions.getContrastColor
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.dropRenrakusakiCopies
 import org.fossify.phone.extensions.themeColor
@@ -60,13 +61,13 @@ class FavoritesFragment(context: Context, attributeSet: AttributeSet) : MyViewPa
 
     override fun setupColors(textColor: Int, primaryColor: Int, properPrimaryColor: Int) {
         binding.apply {
-            fragmentPlaceholder.setTextColor(textColor)
+            fragmentPlaceholder.setTextColor(root.context.themeColor(ThemeSlot.EMPTY_LIST_TEXT))
             (fragmentList.adapter as? MyRecyclerViewAdapter)?.updateTextColor(root.context.themeColor(ThemeSlot.FAVORITE_NAME))
 
-            letterFastscroller.textColor = textColor.getColorStateList()
+            letterFastscroller.textColor = root.context.themeColor(ThemeSlot.FASTSCROLLER_LETTERS).getColorStateList()
             letterFastscroller.pressedTextColor = root.context.themeColor(ThemeSlot.FAVORITE_FASTSCROLLER)
             letterFastscrollerThumb.setupWithFastScroller(letterFastscroller)
-            letterFastscrollerThumb.textColor = root.context.themeColor(ThemeSlot.FAVORITE_FASTSCROLLER).getContrastColor()
+            letterFastscrollerThumb.textColor = root.context.uiColor(UiRole.SCROLL_BUBBLE_TEXT)
             letterFastscrollerThumb.thumbColor = root.context.themeColor(ThemeSlot.FAVORITE_FASTSCROLLER).getColorStateList()
         }
     }

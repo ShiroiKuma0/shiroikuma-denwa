@@ -1,5 +1,8 @@
 package org.fossify.phone.helpers
 
+import android.content.Context
+import android.view.ViewGroup
+import org.fossify.phone.views.applyDialpadKeyTextRoles
 import org.fossify.phone.extensions.asRingButton
 import android.view.View
 import org.fossify.commons.extensions.applyColorFilter
@@ -8,8 +11,6 @@ import org.fossify.commons.extensions.beGoneIf
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.getColoredDrawableWithColor
-import org.fossify.commons.extensions.getProperBackgroundColor
-import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.isVisible
 import org.fossify.commons.extensions.updateTextColors
 import org.fossify.phone.R
@@ -133,7 +134,7 @@ class DialpadPanel(
             contentDescription = activity.getString(
                 if (isCollapsed) R.string.dialpad_show_keypad else R.string.dialpad_hide_keypad
             )
-            applyColorFilter(activity.getProperTextColor())
+            applyColorFilter(activity.themeColor(ThemeSlot.DIALPAD_ICON))
         }
     }
 
@@ -141,18 +142,31 @@ class DialpadPanel(
     // the rest is the theming that screen applies to the same views.
     private fun style() {
         binding.apply {
-            root.setBackgroundColor(activity.getProperBackgroundColor())
             // a ring with the handset inside it — never a filled disc
             listOf(dialpadCallButton, dialpadLineCall).forEach {
                 it.setImageResource(R.drawable.ic_phone_vector)
                 it.asRingButton(activity.themeColor(ThemeSlot.DIALPAD_CALL_BUTTON))
             }
             activity.updateTextColors(root)
-            dialpadClearChar.applyColorFilter(activity.getProperTextColor())
+            applyDialpadRoles(activity)
         }
     }
 
     companion object {
         private const val ANIMATION_MS = 180L
     }
+}
+
+/**
+ * The dialpad's own roles — its ground, the typed number, the clear and keypad icons, each key's digit and letters —
+ * over what `updateTextColors` painted as plain text. Shared by the Dialpad screen and the panel on the
+ * main screen, which lay the same views out.
+ */
+fun DialpadPanelBinding.applyDialpadRoles(context: Context) {
+    root.setBackgroundColor(context.themeColor(ThemeSlot.DIALPAD_GROUND))
+    dialpadInput.setTextColor(context.themeColor(ThemeSlot.DIALPAD_INPUT))
+    val icon = context.themeColor(ThemeSlot.DIALPAD_ICON)
+    dialpadClearChar.applyColorFilter(icon)
+    dialpadKeypadToggle.applyColorFilter(icon)
+    (dialpadWrapper.root as? ViewGroup)?.applyDialpadKeyTextRoles()
 }

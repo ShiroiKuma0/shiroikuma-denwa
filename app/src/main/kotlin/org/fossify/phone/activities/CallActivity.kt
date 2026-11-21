@@ -1,6 +1,12 @@
 package org.fossify.phone.activities
 
-import org.fossify.phone.helpers.PALETTE_GREEN
+import org.fossify.commons.extensions.circleDrawable
+import android.content.res.ColorStateList
+import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.view.ViewGroup
+import androidx.annotation.DrawableRes
+import org.fossify.phone.views.applyDialpadKeyTextRoles
 import org.fossify.phone.extensions.asRingButton
 import org.fossify.phone.extensions.asPill
 import android.annotation.SuppressLint
@@ -49,6 +55,8 @@ import kotlin.math.max
 import kotlin.math.min
 
 private const val CONTROL_RING_DP = 2f
+private const val CALL_RING_DP = 3f
+private const val RING_RIPPLE_ALPHA = 0.3f
 private const val CONTROL_RING_ON_DP = 3.5f
 
 class CallActivity : SimpleActivity() {
@@ -116,6 +124,7 @@ class CallActivity : SimpleActivity() {
         )
 
         updateTextColors(binding.callHolder)
+        applyCallScreenRoles()
         toneGeneratorHelper = ToneGeneratorHelper(this, MIN_DTMF_TONE_LENGTH_MS)
         initButtons()
         setupSilenceButton()
@@ -270,19 +279,12 @@ class CallActivity : SimpleActivity() {
             dialpadClearChar.setOnLongClickListener { clearInput() }
         }
 
-        dialpadWrapper.setBackgroundColor(
-            if (isSystemInDarkMode()) {
-                getProperBackgroundColor().lightenColor(2)
-            } else {
-                getProperBackgroundColor()
-            }
-        )
+        dialpadWrapper.setBackgroundColor(themeColor(ThemeSlot.CALL_DIALPAD_GROUND))
 
         arrayOf(dialpadClose, callSimImage, dialpadClearChar).forEach {
-            it.applyColorFilter(getProperTextColor())
+            it.applyColorFilter(themeColor(ThemeSlot.CALL_ICON))
         }
 
-        val bgColor = getProperBackgroundColor()
         val inactiveColor = getInactiveButtonColor()
         arrayOf(
             callToggleMicrophone, callToggleSpeaker, callDialpad,
@@ -375,8 +377,9 @@ class CallActivity : SimpleActivity() {
             startArrowAnimation(callRightArrow, initialRightArrowX, initialRightArrowScaleX, initialRightArrowScaleY, rightArrowTranslation)
         }
 
-        callDraggable.drawable.mutate().setTint(getProperTextColor())
-        callDraggableBackground.drawable.mutate().setTint(getProperTextColor())
+        callDraggable.drawable.mutate().setTint(themeColor(ThemeSlot.CALL_DRAG_HANDLE))
+        // the pulsing disc behind the handle (the layout fades it to 20 %)
+        callDraggableBackground.setImageDrawable(circleDrawable(themeColor(ThemeSlot.CALL_DRAG_HANDLE)))
 
         var lock = false
         callDraggable.setOnTouchListener { _, event ->
@@ -396,7 +399,7 @@ class CallActivity : SimpleActivity() {
                         callDraggableBackground.animate().alpha(0.2f)
                     }
                     callDraggable.setImageDrawable(getDrawable(R.drawable.ic_phone_down_vector))
-                    callDraggable.drawable.mutate().setTint(getProperTextColor())
+                    callDraggable.drawable.mutate().setTint(themeColor(ThemeSlot.CALL_DRAG_HANDLE))
                     callLeftArrow.animate().alpha(1f)
                     callRightArrow.animate().alpha(1f)
                     stopAnimation = false
@@ -433,22 +436,12 @@ class CallActivity : SimpleActivity() {
 
                         callDraggable.x > initialDraggableX -> {
                             lock = false
-                            val drawableRes = if (isRtl) {
-                                R.drawable.ic_phone_down_red_vector
-                            } else {
-                                R.drawable.ic_phone_green_vector
-                            }
-                            callDraggable.setImageDrawable(getDrawable(drawableRes))
+                            callDraggable.setImageDrawable(dragHandleGlyph(accepting = !isRtl))
                         }
 
                         callDraggable.x <= initialDraggableX -> {
                             lock = false
-                            val drawableRes = if (isRtl) {
-                                R.drawable.ic_phone_green_vector
-                            } else {
-                                R.drawable.ic_phone_down_red_vector
-                            }
-                            callDraggable.setImageDrawable(getDrawable(drawableRes))
+                            callDraggable.setImageDrawable(dragHandleGlyph(accepting = isRtl))
                         }
                     }
                 }
@@ -641,6 +634,7 @@ class CallActivity : SimpleActivity() {
         val isOnHold = CallManager.toggleHold()
         toggleButtonColor(binding.callToggleHold, isOnHold)
         binding.callToggleHold.contentDescription = getString(if (isOnHold) R.string.resume_call else R.string.hold_call)
+        binding.holdStatusLabel.setTextColor(themeColor(ThemeSlot.CALL_ON_HOLD))
         binding.holdStatusLabel.beInvisibleIf(!isOnHold)
     }
 
@@ -668,12 +662,10 @@ class CallActivity : SimpleActivity() {
                     setPadding(0)
                     setImageResource(R.drawable.ic_unknown_contact)
                 } else if (avatarUri.isNullOrEmpty()) {
-                    val bgColor = getProperPrimaryColor()
-                    setBackgroundResource(R.drawable.circle_background)
                     setImageResource(R.drawable.ic_person_vector)
                     setPadding(resources.getDimensionPixelSize(R.dimen.activity_margin))
-                    applyColorFilter(bgColor.getContrastColor())
-                    background.applyColorFilter(bgColor)
+                    applyColorFilter(themeColor(ThemeSlot.CALL_AVATAR_ICON))
+                    background = circleDrawable(themeColor(ThemeSlot.CALL_AVATAR_GROUND))
                 } else {
                     if (!isFinishing && !isDestroyed) {
                         Glide.with(this)
@@ -716,12 +708,9 @@ class CallActivity : SimpleActivity() {
                             else -> R.drawable.ic_phone_vector
                         }
 
-                        val rippleBg = resources.getDrawable(R.drawable.ic_call_accept, theme) as RippleDrawable
-                        val layerDrawable = rippleBg.findDrawableByLayerId(R.id.accept_call_background_holder) as LayerDrawable
-                        // the 1 / 2 handset in the ring's own green, as the plain one is
-                        val glyph = getDrawable(acceptDrawableId)?.mutate()?.apply { setTint(PALETTE_GREEN) }
-                        layerDrawable.setDrawableByLayerId(R.id.accept_call_icon, glyph)
-                        binding.callAccept.setImageDrawable(rippleBg)
+                        // the 1 / 2 handset in the ring's own colour, as the plain one is
+                        val ringColor = themeColor(ThemeSlot.CALL_ACCEPT_RING)
+                        binding.callAccept.setImageDrawable(callRing(ringColor, acceptDrawableId))
                     }
                 }
             }
@@ -817,21 +806,14 @@ class CallActivity : SimpleActivity() {
             silenceRinger()
         }
 
-        styleRingButton(callSilenceRinger, callSilenceRingerLabel)
+        styleRingButton(callSilenceRinger, callSilenceRingerLabel, ThemeSlot.CALL_SILENCE)
     }
 
-    private fun styleRingButton(button: ImageView, label: android.widget.TextView) {
-        val ringColor = themeColor(ThemeSlot.PRIMARY)
-        val strokeWidth = resources.getDimensionPixelSize(R.dimen.silence_call_stroke_width)
-        button.applyColorFilter(ringColor)
-        (button.background?.mutate() as? RippleDrawable)
-            ?.findDrawableByLayerId(R.id.silence_call_background)
-            ?.let { it as? GradientDrawable }
-            ?.apply {
-                setColor(getProperBackgroundColor())
-                setStroke(strokeWidth, ringColor)
-            }
-
+    // A ring, its glyph and the label under it, all three in the button's own role
+    private fun styleRingButton(button: ImageView, label: android.widget.TextView, slot: ThemeSlot) {
+        val ringColor = themeColor(slot)
+        val strokeDp = resources.getDimension(R.dimen.silence_call_stroke_width) / resources.displayMetrics.density
+        button.asRingButton(ringColor, strokeDp)
         label.setTextColor(ringColor)
     }
 
@@ -841,7 +823,7 @@ class CallActivity : SimpleActivity() {
             openDeclinePicker()
         }
 
-        styleRingButton(callDeclineMessage, callDeclineMessageLabel)
+        styleRingButton(callDeclineMessage, callDeclineMessageLabel, ThemeSlot.CALL_MESSAGE)
     }
 
     private fun takeDeclinePickerRequest(intent: Intent?) {
@@ -939,7 +921,7 @@ class CallActivity : SimpleActivity() {
 
         val send = ImageView(this).apply {
             setImageResource(R.drawable.ic_send_vector)
-            applyColorFilter(themeColor(ThemeSlot.PRIMARY))
+            applyColorFilter(themeColor(ThemeSlot.CALL_SEND))
             contentDescription = getString(R.string.sk_decline_send)
             setPadding(resources.getDimensionPixelSize(R.dimen.decline_send_padding))
             setOnClickListener {
@@ -1054,13 +1036,15 @@ class CallActivity : SimpleActivity() {
             blockCaller()
         }
 
-        val blockColor = themeColor(ThemeSlot.CALL_DECLINE)
-        (callBlock.background as? RippleDrawable)
-            ?.findDrawableByLayerId(R.id.block_call_background)
-            ?.applyColorFilter(blockColor)
-
-        callBlock.applyColorFilter(blockColor) // an outlined octagon with the glyph in its own colour
-        callBlockLabel.setTextColor(themeColor(ThemeSlot.PRIMARY))
+        // an outlined octagon with the glyph in its own colour, the ripple clipped to the same octagon
+        val blockColor = themeColor(ThemeSlot.CALL_BLOCK)
+        callBlock.background = RippleDrawable(
+            ColorStateList.valueOf(blockColor.adjustAlpha(RING_RIPPLE_ALPHA)),
+            resources.getColoredDrawableWithColor(R.drawable.ic_octagon_outline_vector, blockColor),
+            getDrawable(R.drawable.ic_octagon_vector),
+        )
+        callBlock.applyColorFilter(blockColor)
+        callBlockLabel.setTextColor(themeColor(ThemeSlot.CALL_BLOCK_LABEL))
     }
 
     private fun setupBlockUndoBar() = binding.apply {
@@ -1068,14 +1052,17 @@ class CallActivity : SimpleActivity() {
             undoBlock()
         }
 
-        val frameColor = themeColor(ThemeSlot.PRIMARY)
-        (blockUndoBar.background as? GradientDrawable)?.apply {
-            setColor(getProperBackgroundColor())
-            setStroke(resources.getDimensionPixelSize(R.dimen.block_undo_stroke_width), frameColor)
+        // the fork's toast idiom: its own ground inside its own frame, built here from their roles
+        blockUndoBar.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = resources.getDimension(R.dimen.block_undo_corner_radius)
+            setColor(themeColor(ThemeSlot.CALL_UNDO_GROUND))
+            val stroke = resources.getDimensionPixelSize(R.dimen.block_undo_stroke_width)
+            setStroke(stroke, themeColor(ThemeSlot.CALL_UNDO_FRAME))
         }
 
-        blockUndoLabel.setTextColor(frameColor)
-        blockUndoAction.asPill(color = frameColor) // an action, so a pill — never a bare word
+        blockUndoLabel.setTextColor(themeColor(ThemeSlot.CALL_UNDO_TEXT))
+        blockUndoAction.asPill() // an action, so a pill — never a bare word
     }
 
     /**
@@ -1385,6 +1372,56 @@ class CallActivity : SimpleActivity() {
     private fun getActiveButtonColor() = themeColor(ThemeSlot.CALL_CONTROL_ACTIVE)
 
     private fun getInactiveButtonColor() = themeColor(ThemeSlot.CALL_CONTROL_INACTIVE)
+
+    /**
+     * The call screen's own roles, over what `updateTextColors` painted as plain text: the two rings of
+     * the ringing screen and the end ring, the labels under them, the status line, the held call's bar,
+     * and the in-call dialpad's typed number, digits and letters. No colour is in the layout.
+     */
+    private fun applyCallScreenRoles() = binding.apply {
+        callAccept.setImageDrawable(callRing(themeColor(ThemeSlot.CALL_ACCEPT_RING), R.drawable.ic_phone_vector))
+        val endColor = themeColor(ThemeSlot.CALL_END_RING)
+        callDecline.setImageDrawable(callRing(endColor, R.drawable.ic_phone_down_vector))
+        callEnd.setImageDrawable(callRing(endColor, R.drawable.ic_phone_down_vector))
+
+        val label = themeColor(ThemeSlot.CALL_BUTTON_LABEL)
+        callDeclineLabel.setTextColor(label)
+        callAcceptLabel.setTextColor(label)
+        callStatusLabel.setTextColor(themeColor(ThemeSlot.CALL_STATUS))
+
+        onHoldStatusHolder.setBackgroundColor(themeColor(ThemeSlot.CALL_HELD_GROUND))
+        val held = themeColor(ThemeSlot.CALL_HELD_TEXT)
+        onHoldCallerName.setTextColor(held)
+        onHoldLabel.setTextColor(held)
+        imageView.applyColorFilter(held)
+
+        dialpadInput.setTextColor(themeColor(ThemeSlot.DIALPAD_INPUT))
+        (dialpadInclude.root as? ViewGroup)?.applyDialpadKeyTextRoles()
+    }
+
+    /**
+     * Accept, decline and end: a ring in [color] with the handset [glyphRes] inside it in the same colour —
+     * outlined like every control of the theme, never a filled disc. The ripple is clipped to the ring.
+     */
+    private fun callRing(color: Int, @DrawableRes glyphRes: Int): Drawable {
+        val ring = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(Color.TRANSPARENT)
+            setStroke((CALL_RING_DP * resources.displayMetrics.density).toInt(), color)
+        }
+        val inset = resources.getDimensionPixelSize(R.dimen.medium_margin)
+        val layers = LayerDrawable(arrayOf(ring, resources.getColoredDrawableWithColor(glyphRes, color))).apply {
+            setLayerInset(1, inset, inset, inset, inset)
+        }
+        val ripple = ColorStateList.valueOf(color.adjustAlpha(RING_RIPPLE_ALPHA))
+        return RippleDrawable(ripple, layers, circleDrawable(color))
+    }
+
+    // The handle while it is dragged toward a side: the handset of that side, in its arrow's colour
+    private fun dragHandleGlyph(accepting: Boolean) = resources.getColoredDrawableWithColor(
+        if (accepting) R.drawable.ic_phone_vector else R.drawable.ic_phone_down_vector,
+        themeColor(if (accepting) ThemeSlot.CALL_ACCEPT else ThemeSlot.CALL_DECLINE),
+    )
 
     private fun toggleButtonColor(view: ImageView, enabled: Boolean) {
         // on: a thick ring in the accent; off: a thinner one in the darker yellow — as the switches do

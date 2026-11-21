@@ -9,9 +9,8 @@ import android.widget.ImageView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import org.fossify.commons.extensions.applyColorFilter
-import org.fossify.commons.extensions.getProperBackgroundColor
-import org.fossify.commons.extensions.getProperPrimaryColor
-import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.databinding.ItemCallScreenFieldBinding
 import org.fossify.phone.helpers.CallFieldEntry
@@ -27,9 +26,7 @@ class CallScreenFieldsAdapter(
     private val onChanged: () -> Unit,
 ) : RecyclerView.Adapter<CallScreenFieldsAdapter.ViewHolder>() {
 
-    private val textColor = activity.getProperTextColor()
-    private val accentColor = activity.getProperPrimaryColor()
-    private val backgroundColor = activity.getProperBackgroundColor()
+    private val handleColor = activity.themeColor(ThemeSlot.LIST_HANDLE)
     private val touchHelper = ItemTouchHelper(DragCallback())
 
     private companion object {
@@ -59,7 +56,7 @@ class CallScreenFieldsAdapter(
         holder.binding.root.outlineAllToggles()
         holder.binding.apply {
             fieldCheckbox.text = activity.getString(entry.field.labelRes)
-            fieldCheckbox.setColors(textColor, accentColor, backgroundColor)
+            fieldCheckbox.applyRoles()
             fieldCheckbox.setOnCheckedChangeListener(null)
             fieldCheckbox.isChecked = entry.checked
             fieldCheckbox.setOnCheckedChangeListener { _, isChecked ->
@@ -79,7 +76,7 @@ class CallScreenFieldsAdapter(
                 persist()
             }
 
-            fieldDragHandle.applyColorFilter(textColor)
+            fieldDragHandle.applyColorFilter(handleColor)
             fieldDragHandle.setOnTouchListener { _, event ->
                 if (event.actionMasked == MotionEvent.ACTION_DOWN) {
                     touchHelper.startDrag(holder)
@@ -90,7 +87,7 @@ class CallScreenFieldsAdapter(
     }
 
     private fun setupButton(button: ImageView, enabled: Boolean, action: () -> Unit) {
-        button.applyColorFilter(textColor)
+        button.applyColorFilter(handleColor)
         button.alpha = if (enabled) 1f else DISABLED_ALPHA
         button.isEnabled = enabled
         button.setOnClickListener { if (enabled) action() }

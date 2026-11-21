@@ -27,7 +27,6 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/fragment_placeholder"
             android:layout_centerHorizontal="true"
-            android:background="@drawable/ripple_all_corners"
             android:gravity="center"
             android:padding="@dimen/activity_margin"
             android:text="@string/create_new_contact"

@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.children
-import org.fossify.commons.extensions.getProperBackgroundColor
-import org.fossify.commons.extensions.getProperPrimaryColor
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.commons.extensions.pillDrawable
 import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
@@ -41,6 +41,7 @@ fun SimpleActivity.restyleSettingsPage(holder: ViewGroup, mainRow: ViewGroup, na
     holder.children.forEach { child ->
         when {
             child is TextView -> {
+                child.setTextColor(themeColor(ThemeSlot.PAGE_HEADING))
                 child.setTypeface(child.typeface, Typeface.BOLD)
                 child.paintFlags = child.paintFlags or Paint.UNDERLINE_TEXT_FLAG
                 child.setPadding(child.paddingLeft, dp(HEADING_PADDING_TOP_DP), child.paddingRight, dp(HEADING_PADDING_BOTTOM_DP))
@@ -50,13 +51,17 @@ fun SimpleActivity.restyleSettingsPage(holder: ViewGroup, mainRow: ViewGroup, na
                 val vertical = dp(if (child == mainRow || child in navigationRows) PILL_ROW_PADDING_DP else ROW_PADDING_DP)
                 child.setPadding(child.paddingLeft, vertical, child.paddingRight, vertical)
                 child.minimumHeight = 0
-                child.children.filterIsInstance<TextView>().forEach { it.alpha = 1f }
+                child.children.filterIsInstance<TextView>().forEachIndexed { index, text ->
+                    text.alpha = 1f
+                    // a row's label, then (where it has one) its value
+                    text.setTextColor(themeColor(if (index == 0) ThemeSlot.PAGE_LABEL else ThemeSlot.PAGE_VALUE))
+                }
             }
         }
     }
 
-    val accent = getProperPrimaryColor()
-    val background = getProperBackgroundColor()
+    val frame = uiColor(UiRole.BUTTON_FRAME)
+    val background = uiColor(UiRole.BUTTON_GROUND)
     (navigationRows + mainRow).forEach { row ->
         val label = row.children.filterIsInstance<TextView>().firstOrNull() ?: return@forEach
         val main = row == mainRow
@@ -65,7 +70,8 @@ fun SimpleActivity.restyleSettingsPage(holder: ViewGroup, mainRow: ViewGroup, na
         }
         label.text = "$own$CHEVRON"
         label.setTypeface(Typeface.create(label.typeface, if (main) Typeface.BOLD else Typeface.NORMAL))
-        label.background = pillDrawable(accent, background, main)
+        label.setTextColor(uiColor(UiRole.BUTTON_TEXT))
+        label.background = pillDrawable(frame, background, main)
         label.setPadding(dp(PILL_PADDING_HORIZONTAL_DP), dp(PILL_PADDING_VERTICAL_DP), dp(PILL_PADDING_HORIZONTAL_DP), dp(PILL_PADDING_VERTICAL_DP))
         label.layoutParams = label.layoutParams.apply { width = ViewGroup.LayoutParams.WRAP_CONTENT }
         label.setOnClickListener { row.callOnClick() }

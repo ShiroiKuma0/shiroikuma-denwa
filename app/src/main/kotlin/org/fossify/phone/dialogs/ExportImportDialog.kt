@@ -1,5 +1,7 @@
 package org.fossify.phone.dialogs
 
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.helpers.MenuPills
@@ -23,9 +25,6 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.getProperBackgroundColor
-import org.fossify.commons.extensions.getProperPrimaryColor
-import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.phone.R
 import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.helpers.SettingsExport
@@ -41,7 +40,6 @@ private const val PILL_STROKE_DP = 1.5f
 
 // Unset folder / no backup yet is a warning, not a value: it reads red until 白い熊 fixes it, and the
 // same red is used for the matching row on the UI page.
-const val EXPORT_WARN_COLOR = 0xFFFF5252.toInt()
 
 /**
  * The Export / Import panel — the single place this app is backed up and restored from.
@@ -70,9 +68,12 @@ class ExportImportDialog(
     private val onExport: () -> Unit,
     private val onImport: () -> Unit,
 ) {
-    private val accent = activity.getProperPrimaryColor()
-    private val background = activity.getProperBackgroundColor()
-    private val textColor = activity.getProperTextColor()
+    // A dialog of our own, so the dialog roles: its ground and frame, its title and text, its buttons
+    private val frame = activity.uiColor(UiRole.DIALOG_FRAME)
+    private val background = activity.uiColor(UiRole.DIALOG_GROUND)
+    private val titleColor = activity.uiColor(UiRole.DIALOG_TITLE)
+    private val textColor = activity.uiColor(UiRole.DIALOG_TEXT)
+    private val warnColor = activity.themeColor(ThemeSlot.WARNING)
 
     private var dialog: AlertDialog? = null
     private var folderValue: TextView? = null
@@ -98,7 +99,7 @@ class ExportImportDialog(
     fun refresh() {
         val dir = SettingsExport.configuredDir(activity)
         folderValue?.text = dir?.name ?: activity.getString(R.string.eim_dir_unset)
-        folderValue?.setTextColor(if (dir == null) EXPORT_WARN_COLOR else accent)
+        folderValue?.setTextColor(if (dir == null) warnColor else textColor)
 
         val last = if (dir == null) null else SettingsExport.lastExportTime(activity)
         val warn = last == null
@@ -108,7 +109,7 @@ class ExportImportDialog(
             else -> activity.getString(R.string.eim_last_at, formatTimestamp(last))
         }
         statusLine?.text = message
-        statusLine?.setTextColor(if (warn) EXPORT_WARN_COLOR else textColor)
+        statusLine?.setTextColor(if (warn) warnColor else textColor)
     }
 
     private fun formatTimestamp(time: Long): String {
@@ -159,7 +160,8 @@ class ExportImportDialog(
         setPadding(dp(12), dp(10), dp(12), dp(10))
         background = borderedBox(cornerDp = 10)
         setOnClickListener { onPickFolder() }
-        addView(caption(activity.getString(R.string.eim_dir), sizeSp = 12f, color = accent))
+        val label = activity.uiColor(UiRole.FIELD_LABEL)
+        addView(caption(activity.getString(R.string.eim_dir), sizeSp = 12f, color = label))
         folderValue = TextView(activity).apply {
             setTypeface(typeface, Typeface.BOLD)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
@@ -229,7 +231,7 @@ class ExportImportDialog(
             background = borderedBox(BOX_CORNER_DP)
         }
         box.addView(heading(title).apply { gravity = Gravity.START })
-        box.addView(caption(message, sizeSp = 14f, color = accent).apply { setPadding(0, dp(10), 0, 0) })
+        box.addView(caption(message, sizeSp = 14f).apply { setPadding(0, dp(10), 0, 0) })
 
         val result = activity.getAlertDialogBuilder()
             .setView(ScrollView(activity).apply { setPadding(dp(10), dp(10), dp(10), dp(10)); addView(box) })
@@ -257,13 +259,13 @@ class ExportImportDialog(
 
     private fun borderedBox(cornerDp: Int) = GradientDrawable().apply {
         setColor(background)
-        setStroke(dp(BOX_STROKE_DP), accent)
+        setStroke(dp(BOX_STROKE_DP), frame)
         cornerRadius = dp(cornerDp).toFloat()
     }
 
     private fun heading(text: String) = TextView(activity).apply {
         this.text = text
-        setTextColor(accent)
+        setTextColor(titleColor)
         setTypeface(typeface, Typeface.BOLD)
         setTextSize(TypedValue.COMPLEX_UNIT_SP, 18f)
         gravity = Gravity.CENTER
@@ -292,16 +294,18 @@ class ExportImportDialog(
     private fun divider(topGap: Int = 0) = View(activity).apply {
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1))
             .apply { topMargin = dp(topGap) }
-        setBackgroundColor(MenuPills.dividerColor(activity)) // an opaque darker accent, not a faded line
+        setBackgroundColor(activity.uiColor(UiRole.LIST_DIVIDER)) // opaque, never a faded line
     }
 
     /** The family's pill: outlined, never filled — thick and bold for the [main] action, thin otherwise. */
     private fun pill(label: String, main: Boolean = false, onClick: () -> Unit) = Button(activity).apply {
         text = label
         isAllCaps = false
-        setTextColor(accent)
+        setTextColor(activity.uiColor(UiRole.DIALOG_BUTTON_TEXT))
         setTypeface(typeface, if (main) Typeface.BOLD else Typeface.NORMAL)
-        background = activity.pillDrawable(accent, this@ExportImportDialog.background, main)
+        background = activity.pillDrawable(
+            activity.uiColor(UiRole.DIALOG_BUTTON_FRAME), activity.uiColor(UiRole.DIALOG_BUTTON_GROUND), main,
+        )
         // Explicit padding and zeroed minimums so the rounded stroke is never clipped at the view edge.
         minHeight = 0
         minimumHeight = 0
