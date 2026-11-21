@@ -3,6 +3,20 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+127 — 2026-11-21
+Built on Fossify Phone 1.11.1, on shiroikuma-commons 6.1.6-sk18.
+
+### Changed
+- **A selection mark is a mark again, not a switch.** Until now every check box was drawn as the
+  outlined switch, also where it does not switch anything but says which entries of a list are chosen.
+  Those are check boxes once more, in the colours of their own roles (UI page → Marks: check box on,
+  off and label): the tabs to show (“Manage shown tabs”), the contact sources to show, the caller's
+  fields on the in‑call screen (UI page → In‑call screen), and the items of an export or import,
+  “Select all” included.
+- **What stays a switch:** a setting that is on or off by itself — every switch of the settings pages,
+  “Always use this SIM for this number” in the SIM picker, and the checkable row of a menu. Radio
+  buttons were never redrawn and are unchanged.
+
 ## 白い熊 電話 1.11.1+126 — 2026-11-21
 Built on Fossify Phone 1.11.1, on shiroikuma-commons 6.1.6-sk18.
 
