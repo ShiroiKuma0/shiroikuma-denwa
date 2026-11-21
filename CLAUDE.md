@@ -109,7 +109,7 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
 - **Source:** the `shiroikuma-commons` fork (`~/git/shiroikuma-commons`, branch `custom`), which strips
   Commons' anti-tamper "fake version" / sideloading checks out entirely **and** carries fork-package
   fixes for spots where Commons hard-codes `org.fossify.*` (documented in that repo's CLAUDE.md).
-- **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk16"` in
+- **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk18"` in
   `gradle/libs.versions.toml` (`mavenLocal()` is already a repository in `settings.gradle.kts`).
 - Because Commons itself no longer nags, this app carries **no** anti-tamper workaround — no
   `getPackageName` spoof, no `SIDELOADING_FALSE`, no `res/raw/keep.xml`.
@@ -139,7 +139,8 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
   the commons fork, published as the next `-skN`, and both apps move their pin. `-sk14` (per-side swipe
   marks, renrakusaki's) changes nothing for us; **`-sk15` and `-sk16` are ours**: red destructive dialog buttons, the
   family's look on commons' own Compose screens and dialogs, and tight rows on Customize colors, all behind
-  `pillDialogButtons`. All are pure
+  `pillDialogButtons`. `-sk17` adds the outlined switch and floating button under that opt-in.
+  **`-sk18` is not a pure addition** — see “Colours — commons roles” below. The others are pure
   additions — a bump that drops them shows up as edgeless dialogs, grey menus, white toasts and
   nameless private contacts, not as a build failure.
 
@@ -172,7 +173,7 @@ git checkout <new-commons-tag>     # then re-apply all patches (anti-tamper stri
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :commons:publishToMavenLocal -PVERSION=<ver>-skN
 ```
 
-Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk16`; `-skN` is our patch
+Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk18`; `-skN` is our patch
 revision — see the commons fork's CLAUDE.md). The patched AAR lives only in `~/.m2`, not in the repo.
 
 ## Contacts/Favorites tabs hand off to our Contacts fork (renrakusaki)
@@ -314,6 +315,70 @@ drawn from it alone.
   `roam_iso`, `route`, `dbm`, `lvl`, `cid`; an absent key means “not known”). **Renaming or re-meaning
   one breaks the readers and old backups alike.**
 
+## Colours — commons roles (commons sk18, 2026-11-21)
+
+Since sk18 the commons names no colour in XML: its `colors.xml`, the `md_` palette, the stock per-colour
+themes, *Customize colors* (`CustomizationActivity`) and the drawables that carried a colour
+(`circle_background`, `ripple_background`, `ripple_all_corners`, `selector`, `divider`,
+`color_picker_circle`, `top_popup_menu_bg_dark`) are deleted. Every colour it draws is a
+`org.fossify.commons.helpers.UiRole`, stored under `ui_role_<key>` in our prefs (absent = default;
+`#FFFF00` / `#000000` are written once, in the commons).
+
+- **A `ThemeSlot` with `role = UiRole.X` IS that role** under our label: `themeColor()` returns
+  `uiColor(role)`, `setThemeColor` / `resetThemeColor` write the role's key. Mapped: the three foundation
+  slots, `SWITCH_OFF` → `SWITCH_OFF_OUTLINE`, the five `SEARCH_*`, `MENU_TEXT` → `MENU_LABEL`,
+  `HEADER_TITLE` → `TOOLBAR_TITLE`, `HEADER_ARROW` → `TOOLBAR_ICON`, the three `TAB_*` →
+  `BOTTOM_BAR_GROUND` / `BOTTOM_TAB_ACTIVE` / `BOTTOM_TAB_IDLE`. Overrides stored before the move were
+  handed over once (`migrateSlotsToRolesIfNeeded`), and a set `MENU_ROLE_DELETE` seeded
+  `BUTTON_DESTRUCTIVE`.
+- **Nothing is mirrored into the commons any more.** `syncDialogFrame()` only keeps the frame width (2 dp)
+  and `pillDialogButtons` on; the dialog frame, the destructive button and the off switch are the roles
+  `DIALOG_FRAME`, `BUTTON_DESTRUCTIVE`, `SWITCH_OFF_OUTLINE`. The delete *menu icon* stays
+  `MENU_ROLE_DELETE`, a slot of ours — the two are no longer kept equal.
+- **The Theme page lists every role no slot stands for**, in the section of its item
+  (`ThemeActivity.addRoleRows`); a new commons role appears there by itself. `ui_role_*` keys
+  travel in the Appearance part of the export.
+- **Shapes the commons used to ship are built in code** (commons `extensions/UiRoleViews.kt`:
+  `circleDrawable`, `circleRippleDrawable`, `listDividerDrawable`, `colorPickerRing`,
+  `menuPanelDrawable`, …). A swatch has no background in its layout — set `circleDrawable(color)`, never
+  `background.setTint`. The popup menu's panel is painted by `PillMenuItemView` on attach.
+- **A slot that reads a commons role in code** (no row of its own): pills take `BUTTON_TEXT` / `BUTTON_FRAME` /
+  `BUTTON_GROUND` (`asPill()`), the app's own dialogs and the bottom sheet `DIALOG_*`, the main screen's dialpad
+  button `FAB_*`, the selection bar `ACTION_BAR_*`, the outlined switch the four `SWITCH_*` roles, a menu row
+  `MENU_ROW_FRAME` and `MENU_DIVIDER`, fast-scroller thumbs `SCROLL_BUBBLE` / `SCROLL_BUBBLE_TEXT`.
+
+## Colours — the app's own full rebuild (1.11.1+126, 2026-11-21)
+
+白い熊: “Apply full black-yellow skill.” Section G of the skill is in force here: **no colour in XML, every item a
+role of its own, set in the section of its item.**
+
+- **The role table is `ThemeSlot`** (`extensions/ThemeColors.kt`); defaults are in `themeDefault()` and name only
+  `PALETTE_*` constants (`helpers/Constants.kt`) or another role. A new widget gets a new slot, a label string
+  and a line in `themeDefault()` in the same commit — never `getProperPrimaryColor()` / `getProperTextColor()` /
+  `getProperBackgroundColor()`, which no file of the app calls any more, and never a literal.
+- **Nothing coloured is inflated.** The accept, decline and end rings (`CallActivity.callRing`), the silence,
+  message and block buttons, the undo bar, the car screen's two discs (`CarCallActivity.styleCarDisc` — still
+  filled, by 白い熊's decision of 2026-11-19), the launcher shortcut's disc and the notification's three buttons
+  (masks in the layout, `setColorFilter` from `NOTIFICATION_*`) are built or tinted in code. `res/values/colors.xml`
+  is gone. Left in XML, and only these: the launcher icon's grounds and foreground (the platform draws them), the
+  white placeholder fill of vector icons (masks, tinted in code), `?attr/selectableItemBackground` (a shape).
+  The notification's ground and text are the system's.
+- **`updateTextColors()` paints every text view as plain text**, so a screen's own roles are applied *after* it:
+  `CallActivity.applyCallScreenRoles()`, `DialpadPanelBinding.applyDialpadRoles()` (which also colours each key's
+  digit and letters through `applyDialpadKeyTextRoles()`), the fragments' `setupColors`.
+- **Reset** is per role (the picker's Default) and for all at once: Maintenance → “Reset all colours”
+  (`resetAllThemeColors()`: commons roles, our slots, the two SIM fills).
+
+### The UI page is a folding accordion with a chip index
+
+`ThemeActivity.buildRows()` registers the sections (`UiSection`, key + title + what fills it); `addSectionIndex()`
+draws one chip per section (tap = unfold and scroll, long-press = drag, the chips reorder live and the sections
+follow on drop), `addSection()` the folding block. Every section is folded until opened and its rows are built
+only then. Order and fold state are `config.uiSectionOrder` / `uiSectionsOpen`, stored under `theme_ui_…` so they
+travel in the Appearance export. **The section keys are stored — never rename one.** Row builders add to `body`
+(the section being filled), not to `binding.themeHolder`. Every row takes a `RowIcon`, coloured by the menu icon
+roles. Commons roles are listed by `addRoleRows(UiRoleSection, indent)` in the section of their item.
+
 ## Diagnostics — behind switches, in `diag/`, never “.log”
 
 EMUI's logcat keeps error-level lines only, so what the app did can only be read from files it writes
@@ -353,7 +418,7 @@ new screen gets the look without doing anything — and the things to keep when 
   added to the list passed from `SettingsActivity.onResume`**.
 - **Tappable words are pills**: `TextView.asPill()` / `asPlaceholderPill()`, and round buttons are rings,
   never filled discs: `ImageView.asRingButton()` (`extensions/Pills.kt`). The dialpad's call button is a
-  ring in `DIALPAD_CALL_BUTTON`; `DIALPAD_CALL_ICON` is no longer read.
+  ring in `DIALPAD_CALL_BUTTON`; the `DIALPAD_CALL_ICON` slot is gone.
 - **The in-call screen is outlined too** (白い熊, 2026-11-19): accept and decline / end are a green and a
   red ring with the handset in the same colour (`ic_call_accept.xml`, `ic_call_end.xml`). **The car call
   screen is the one exception and stays filled** (`ic_car_call_accept.xml`, `ic_car_call_end.xml`): it is
@@ -363,7 +428,7 @@ new screen gets the look without doing anything — and the things to keep when 
   are thin rings; the dialpad keys are ringed with no tint fill; the snackbar's action is a pill.
 - **A button that deletes is a red pill** (commons sk15): `ConfirmationDialog(…, destructive = true)` or
   `setupDialogStuff(…, destructiveButton = AlertDialog.BUTTON_*)`; the colour is
-  `BaseConfig.dialogWarningColor`, kept equal to `MENU_ROLE_DELETE` by `syncDialogFrame()`. **A new
+  the commons role `UiRole.BUTTON_DESTRUCTIVE` (Theme page → Buttons). **A new
   delete / purge / reset confirmation must pass it.**
 - **Commons' own screens** (About, Manage blocked numbers, its Compose dialogs) take the look from the
   same `pillDialogButtons` opt-in since sk15; `outlineAllSwitches()` runs from the app's lifecycle

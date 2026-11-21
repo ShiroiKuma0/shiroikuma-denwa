@@ -14,7 +14,6 @@
             android:id="@+id/theme_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/color_primary"
             app:title="@string/shiroikuma_ui_category"
             app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
 

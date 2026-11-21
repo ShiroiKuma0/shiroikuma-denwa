@@ -1,5 +1,7 @@
 package org.fossify.phone.activities
 
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.phone.extensions.asPill
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -134,9 +136,8 @@ class MainActivity : SimpleActivity() {
                     startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
                 }
 
-                snackbar.setBackgroundTint(getProperBackgroundColor().darkenColor())
-                snackbar.setTextColor(getProperTextColor())
-                snackbar.setActionTextColor(getProperTextColor())
+                snackbar.setBackgroundTint(themeColor(ThemeSlot.SNACKBAR_GROUND))
+                snackbar.setTextColor(themeColor(ThemeSlot.SNACKBAR_TEXT))
                 // its action is a pill like every other, not a bare word
                 snackbar.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_action)?.asPill(main = true)
                 snackbar.show()
@@ -179,7 +180,7 @@ class MainActivity : SimpleActivity() {
         setupTabColors()
 
         getAllFragments().forEach {
-            it?.setupColors(getProperTextColor(), getProperPrimaryColor(), getProperPrimaryColor())
+            it?.setupColors(themeColor(ThemeSlot.TEXT), themeColor(ThemeSlot.PRIMARY), themeColor(ThemeSlot.PRIMARY))
         }
 
         val configStartNameWithSurname = config.startNameWithSurname
@@ -512,8 +513,12 @@ class MainActivity : SimpleActivity() {
     @SuppressLint("NewApi")
     private fun getLaunchDialpadShortcut(appIconColor: Int): ShortcutInfo {
         val newEvent = getString(R.string.dialpad)
-        val drawable = resources.getDrawable(R.drawable.shortcut_dialpad)
-        (drawable as LayerDrawable).findDrawableByLayerId(R.id.shortcut_dialpad_background).applyColorFilter(appIconColor)
+        // a disc in the app icon's colour with the dialpad glyph on it, built here: the launcher draws the bitmap
+        val inset = resources.getDimensionPixelSize(R.dimen.medium_margin)
+        val glyph = resources.getDrawable(R.drawable.ic_dialpad_vector, theme)
+        val drawable = LayerDrawable(arrayOf(circleDrawable(appIconColor), glyph)).apply {
+            setLayerInset(1, inset, inset, inset, inset)
+        }
         val bmp = drawable.convertToBitmap()
 
         val intent = Intent(this, DialpadActivity::class.java)
@@ -545,15 +550,15 @@ class MainActivity : SimpleActivity() {
         }
     }
 
-    // The dialpad button is traced, not filled: a rounded square outlined in the accent with the glyph
-    // in the same colour, over the page's own background so the list never shows through it.
+    // The dialpad button is traced, not filled: a rounded square with its frame, glyph and ground from
+    // the floating-button roles — a ground of its own, so the list never shows through it.
     private fun styleDialpadButton() {
-        val accent = themeColor(ThemeSlot.PRIMARY)
+        val accent = uiColor(UiRole.FAB_FRAME)
         val density = resources.displayMetrics.density
         val shape = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             cornerRadius = DIALPAD_BUTTON_CORNER_DP * density
-            setColor(themeColor(ThemeSlot.BACKGROUND))
+            setColor(uiColor(UiRole.FAB_GROUND))
             setStroke((DIALPAD_BUTTON_STROKE_DP * density).toInt(), accent)
         }
         val mask = GradientDrawable().apply {
@@ -563,7 +568,8 @@ class MainActivity : SimpleActivity() {
 
         binding.mainDialpadButton.apply {
             background = RippleDrawable(ColorStateList.valueOf(accent.adjustAlpha(DIALPAD_BUTTON_RIPPLE_ALPHA)), shape, mask)
-            setImageDrawable(resources.getColoredDrawableWithColor(R.drawable.ic_dialpad_vector, accent))
+            val glyph = uiColor(UiRole.FAB_ICON)
+            setImageDrawable(resources.getColoredDrawableWithColor(R.drawable.ic_dialpad_vector, glyph))
         }
     }
 
@@ -716,7 +722,7 @@ class MainActivity : SimpleActivity() {
             else -> R.drawable.ic_simple_phone_vector
         }
 
-        return resources.getColoredDrawableWithColor(drawableId, getProperTextColor())
+        return resources.getColoredDrawableWithColor(drawableId, themeColor(ThemeSlot.TAB_UNSELECTED))
     }
 
     // The last two are named for the apps, exactly so, in every language: 電話 is our own call history

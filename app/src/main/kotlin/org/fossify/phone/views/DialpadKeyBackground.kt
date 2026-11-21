@@ -1,5 +1,7 @@
 package org.fossify.phone.views
 
+import android.view.ViewGroup
+import android.widget.TextView
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Canvas
@@ -68,12 +70,12 @@ class DialpadKeyBackground(
 }
 
 /**
- * One circular key background, ringed in the theme's primary color and otherwise empty, with
+ * One circular key background, ringed in the key-ring role and otherwise empty, with
  * the touch ripple clipped to the same circle. Each key needs its own instance — the drawable sizes
  * itself from its own bounds.
  */
 fun Context.dialpadKeyBackground(): Drawable {
-    val accentColor = themeColor(ThemeSlot.PRIMARY)
+    val accentColor = themeColor(ThemeSlot.DIALPAD_KEY_RING)
     val strokeWidthPx = resources.getDimension(R.dimen.dialpad_key_border_width)
     val content = DialpadKeyBackground(
         fillColor = Color.TRANSPARENT, // ringed only: the background shows through, no tint fill
@@ -91,3 +93,21 @@ fun Context.applyDialpadKeyBackgrounds(keys: Array<View>) {
 }
 
 private const val RIPPLE_ALPHA_INT = 80
+
+/**
+ * The digit and the letters of every key of a keypad (the root of layout/dialpad), each from its own
+ * role. Run after `updateTextColors`, which paints every text view under a screen as plain text.
+ */
+fun ViewGroup.applyDialpadKeyTextRoles() {
+    val digit = context.themeColor(ThemeSlot.DIALPAD_DIGIT)
+    val letters = context.themeColor(ThemeSlot.DIALPAD_LETTERS)
+    for (i in 0 until childCount) {
+        val key = getChildAt(i) as? ViewGroup ?: continue
+        var first = true
+        for (j in 0 until key.childCount) {
+            val text = key.getChildAt(j) as? TextView ?: continue
+            text.setTextColor(if (first) digit else letters)
+            first = false
+        }
+    }
+}

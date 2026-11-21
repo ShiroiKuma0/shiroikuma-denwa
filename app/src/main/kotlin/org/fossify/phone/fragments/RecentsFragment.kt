@@ -1,5 +1,11 @@
 package org.fossify.phone.fragments
 
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
+import org.fossify.commons.extensions.applyColorFilter
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
+import org.fossify.commons.extensions.circleRippleDrawable
 import org.fossify.phone.extensions.asPlaceholderPill
 import android.content.Context
 import android.telephony.PhoneNumberUtils
@@ -75,14 +81,18 @@ class RecentsFragment(
             }
         }
 
+        binding.filterBannerClose.background = context.circleRippleDrawable()
         binding.filterBannerClose.setOnClickListener {
             clearPhoneNumberFilter()
         }
     }
 
     override fun setupColors(textColor: Int, primaryColor: Int, properPrimaryColor: Int) {
-        binding.recentsPlaceholder.setTextColor(textColor)
-        binding.recentsPlaceholder2.setTextColor(properPrimaryColor)
+        binding.recentsPlaceholder.setTextColor(context.themeColor(ThemeSlot.EMPTY_LIST_TEXT))
+        binding.recentsPlaceholder2.setTextColor(context.uiColor(UiRole.BUTTON_TEXT)) // a pill
+        val banner = context.themeColor(ThemeSlot.CALL_LOG_FILTER_BANNER)
+        binding.filterBannerLabel.setTextColor(banner)
+        binding.filterBannerClose.applyColorFilter(banner)
 
         recentsAdapter?.apply {
             updateTextColor(textColor)

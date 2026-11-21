@@ -1,5 +1,6 @@
 package org.fossify.phone.adapters
 
+import org.fossify.commons.extensions.circleRippleDrawable
 import android.annotation.SuppressLint
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -39,7 +40,6 @@ import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.copyToClipboard
 import org.fossify.commons.extensions.formatDateOrTime
 import org.fossify.commons.extensions.getColoredDrawableWithColor
-import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.getPhoneNumberTypeText
 import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.extensions.highlightTextPart
@@ -117,7 +117,6 @@ class RecentCallsAdapter(
     var fontSize: Float = activity.getTextSize()
     private val areMultipleSIMsAvailable = activity.areMultipleSIMsAvailable()
     private var missedCallColor = activity.themeColor(ThemeSlot.CALL_LOG_MISSED)
-    private var secondaryTextColor = textColor.adjustAlpha(0.6f)
     private var nameColor = activity.themeColor(ThemeSlot.CALL_LOG_NAME)
     private var subtitleColor = activity.themeColor(ThemeSlot.CALL_LOG_SUBTITLE)
     private var numberColor = activity.themeColor(ThemeSlot.CALL_LOG_NUMBER)
@@ -340,7 +339,6 @@ class RecentCallsAdapter(
         // Re-read every themed colour/thickness so a change in the UI page shows on the next bind
         // (setupColors → initDrawables runs when we return from settings, before the list re-binds).
         missedCallColor = activity.themeColor(ThemeSlot.CALL_LOG_MISSED)
-        secondaryTextColor = textColor.adjustAlpha(0.6f)
         nameColor = activity.themeColor(ThemeSlot.CALL_LOG_NAME)
         subtitleColor = activity.themeColor(ThemeSlot.CALL_LOG_SUBTITLE)
         numberColor = activity.themeColor(ThemeSlot.CALL_LOG_NUMBER)
@@ -899,7 +897,7 @@ class RecentCallsAdapter(
 
                 itemRecentsImage.apply {
                     if (profileIconClick != null) {
-                        setBackgroundResource(R.drawable.selector_clickable_circle)
+                        background = context.circleRippleDrawable()
 
                         setOnClickListener {
                             if (!actModeCallback.isSelectable) {
@@ -926,7 +924,7 @@ class RecentCallsAdapter(
                 overflowMenuIcon.beVisibleIf(showOverflowMenu)
                 overflowMenuIcon.drawable.apply {
                     mutate()
-                    setTint(activity.getProperTextColor())
+                    setTint(activity.themeColor(ThemeSlot.CALL_LOG_OVERFLOW))
                 }
 
                 overflowMenuIcon.setOnClickListener {

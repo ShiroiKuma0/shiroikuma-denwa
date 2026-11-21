@@ -4,9 +4,6 @@ import org.fossify.phone.views.outlineAllToggles
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import org.fossify.commons.extensions.getProperBackgroundColor
-import org.fossify.commons.extensions.getProperPrimaryColor
-import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.helpers.SMT_PRIVATE
 import org.fossify.commons.models.contacts.ContactSource
 import org.fossify.phone.activities.SimpleActivity
@@ -61,7 +58,7 @@ class FilterContactSourcesAdapter(
             val isSelected = selectedKeys.contains(contactSource.hashCode())
             ItemFilterContactSourceBinding.bind(itemView).apply {
                 filterContactSourceCheckbox.isChecked = isSelected
-                filterContactSourceCheckbox.setColors(activity.getProperTextColor(), activity.getProperPrimaryColor(), activity.getProperBackgroundColor())
+                filterContactSourceCheckbox.applyRoles()
                 val countText = if (contactSource.count >= 0) " (${contactSource.count})" else ""
                 val displayName = "${contactSource.publicName}$countText"
                 filterContactSourceCheckbox.text = displayName

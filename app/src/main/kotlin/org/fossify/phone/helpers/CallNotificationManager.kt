@@ -1,5 +1,7 @@
 package org.fossify.phone.helpers
 
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
@@ -26,7 +28,6 @@ class CallNotificationManager(private val context: Context) {
         private const val DECLINE_MESSAGE_CODE = 2
 
         // the SMS glyph is drawn white; a mid grey reads on both light and dark notification shades
-        private const val DECLINE_MESSAGE_TINT = 0xFF757575.toInt()
     }
 
     private val notificationManager = context.notificationManager
@@ -85,6 +86,11 @@ class CallNotificationManager(private val context: Context) {
                 setVisibleIf(R.id.notification_accept_call, callState == Call.STATE_RINGING)
                 setupDeclineMessageAction(callState)
 
+                // the three buttons are masks in the layout, coloured here from their roles
+                val decline = context.themeColor(ThemeSlot.NOTIFICATION_DECLINE)
+                val accept = context.themeColor(ThemeSlot.NOTIFICATION_ACCEPT)
+                setInt(R.id.notification_decline_call, "setColorFilter", decline)
+                setInt(R.id.notification_accept_call, "setColorFilter", accept)
                 setOnClickPendingIntent(R.id.notification_decline_call, declinePendingIntent)
                 setOnClickPendingIntent(R.id.notification_accept_call, acceptPendingIntent)
 
@@ -136,7 +142,7 @@ class CallNotificationManager(private val context: Context) {
 
         val canDecline = callState == Call.STATE_RINGING && CallManager.getPrimaryCall().getRawNumber().isNotEmpty()
         setVisibleIf(R.id.notification_decline_message, canDecline)
-        setInt(R.id.notification_decline_message, "setColorFilter", DECLINE_MESSAGE_TINT)
+        setInt(R.id.notification_decline_message, "setColorFilter", context.themeColor(ThemeSlot.NOTIFICATION_MESSAGE))
         setOnClickPendingIntent(R.id.notification_decline_message, pendingIntent)
     }
 

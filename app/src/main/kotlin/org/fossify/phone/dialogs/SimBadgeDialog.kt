@@ -1,5 +1,7 @@
 package org.fossify.phone.dialogs
 
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import android.graphics.Canvas
 import android.graphics.ColorFilter
 import android.graphics.Paint
@@ -23,8 +25,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import org.fossify.commons.extensions.copyToClipboard
 import org.fossify.commons.extensions.formatDateOrTime
 import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.getProperBackgroundColor
-import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.pillDrawable
 import org.fossify.commons.extensions.setupDialogStuff
 import org.fossify.commons.extensions.toImperialDateString
@@ -48,7 +48,6 @@ private const val CAPTION_WIDTH_DP = 96
 private const val NUMBER_MAX_SP = 22
 private const val NUMBER_MIN_SP = 12
 private const val MILLIS = 1000L
-private const val DIVIDER_BLEND = 0.7f
 private const val GROUP = 3
 
 /**
@@ -65,8 +64,10 @@ private const val GROUP = 3
 @Suppress("MagicNumber", "TooManyFunctions") // one surface built in code, a small builder per part
 class SimBadgeDialog(private val activity: BaseSimpleActivity, private val call: RecentCall) {
     private val stamp = call.stamp ?: CallStamp()
-    private val accent = activity.getProperPrimaryColor()
-    private val background = activity.getProperBackgroundColor()
+    // A dialog of our own: its text and ground are the dialog roles, its plain icons the view role
+    private val accent = activity.uiColor(UiRole.DIALOG_TEXT)
+    private val background = activity.uiColor(UiRole.DIALOG_GROUND)
+    private val plainIcon = activity.themeColor(ThemeSlot.MENU_ROLE_VIEW)
     private val noteColor = activity.themeColor(ThemeSlot.SETTINGS_NOTE)
     private val valueColor = activity.themeColor(ThemeSlot.CALL_LOG_NUMBER)
     private var dialog: AlertDialog? = null
@@ -133,7 +134,7 @@ class SimBadgeDialog(private val activity: BaseSimpleActivity, private val call:
 
     // The menus' divider: an opaque darker accent, 70 % of the way from the background to the accent.
     private fun divider(): View = View(activity).apply {
-        setBackgroundColor(blend(this@SimBadgeDialog.background, accent, DIVIDER_BLEND))
+        setBackgroundColor(activity.uiColor(UiRole.LIST_DIVIDER))
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, dp(1)).apply { bottomMargin = dp(8) }
     }
 
@@ -150,7 +151,7 @@ class SimBadgeDialog(private val activity: BaseSimpleActivity, private val call:
                 call.type == Calls.OUTGOING_TYPE -> activity.getString(R.string.sim_dialog_rang_unanswered, rang)
                 else -> rang
             }
-            box.addView(row(icon(org.fossify.commons.R.drawable.ic_clock_vector), accent, R.string.sim_dialog_rang, text))
+            box.addView(row(icon(org.fossify.commons.R.drawable.ic_clock_vector), plainIcon, R.string.sim_dialog_rang, text))
         }
         if (answered) {
             val green = activity.themeColor(ThemeSlot.MENU_ROLE_CALL)
@@ -182,7 +183,7 @@ class SimBadgeDialog(private val activity: BaseSimpleActivity, private val call:
         }
         callerIdLabel()?.let {
             val hidden = stamp.callerId == CallStamp.CALLER_ID_HIDDEN
-            val color = if (hidden) activity.themeColor(ThemeSlot.MENU_ROLE_BLOCK) else accent
+            val color = if (hidden) activity.themeColor(ThemeSlot.MENU_ROLE_BLOCK) else plainIcon
             val glyph = if (hidden) org.fossify.commons.R.drawable.ic_hide_vector else R.drawable.ic_sim_dialog_caller_id
             box.addView(row(icon(glyph), color, R.string.sim_dialog_caller_id, it))
         }
@@ -312,10 +313,12 @@ class SimBadgeDialog(private val activity: BaseSimpleActivity, private val call:
 
     private fun pill(labelRes: Int, main: Boolean, onClick: () -> Unit) = TextView(activity).apply {
         setText(labelRes)
-        setTextColor(accent)
+        setTextColor(activity.uiColor(UiRole.DIALOG_BUTTON_TEXT))
         setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
         if (main) setTypeface(typeface, Typeface.BOLD)
-        background = activity.pillDrawable(accent, this@SimBadgeDialog.background, main)
+        background = activity.pillDrawable(
+            activity.uiColor(UiRole.DIALOG_BUTTON_FRAME), activity.uiColor(UiRole.DIALOG_BUTTON_GROUND), main,
+        )
         setPadding(dp(18), dp(9), dp(18), dp(9))
         setOnClickListener { onClick() }
         layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)

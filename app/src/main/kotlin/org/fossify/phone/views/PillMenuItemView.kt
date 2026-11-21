@@ -1,5 +1,6 @@
 package org.fossify.phone.views
 
+import org.fossify.commons.extensions.menuPanelDrawable
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.ColorStateList
@@ -26,8 +27,8 @@ import androidx.appcompat.view.menu.MenuItemImpl
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.ColorUtils
 import org.fossify.phone.R
-import org.fossify.phone.extensions.ThemeSlot
-import org.fossify.phone.extensions.themeColor
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.phone.helpers.MenuPills
 import kotlin.math.roundToInt
 
@@ -101,6 +102,16 @@ class PillMenuItemView @JvmOverloads constructor(
         val list = parent as? AbsListView ?: return
         if (content != null && list.selector !is ColorDrawable) {
             list.selector = ColorDrawable(Color.TRANSPARENT)
+            // The popup's own panel: the outermost ancestor that carries a ground (the theme's popup
+            // background) is given the menu ground inside the menu frame, built from their roles — no
+            // colour in styles.xml.
+            var panel: View? = null
+            var v: View? = list
+            while (v != null) {
+                if (v.background != null) panel = v
+                v = v.parent as? View
+            }
+            panel?.background = context.menuPanelDrawable()
         }
     }
 
@@ -182,8 +193,10 @@ class PillMenuItemView @JvmOverloads constructor(
     private fun styleSwitch(box: CheckBox) {
         if (box.tag != null) return
         box.buttonDrawable = SwitchDrawable(
-            on = context.themeColor(ThemeSlot.PRIMARY),
-            off = MenuPills.switchOffColor(context),
+            on = context.uiColor(UiRole.SWITCH_ON_OUTLINE),
+            off = context.uiColor(UiRole.SWITCH_OFF_OUTLINE),
+            onDot = context.uiColor(UiRole.SWITCH_ON_DOT),
+            offDot = context.uiColor(UiRole.SWITCH_OFF_DOT),
             width = dp(SWITCH_WIDTH_DP),
             height = dp(SWITCH_HEIGHT_DP),
             strokeWidth = dp(2).toFloat(),
@@ -221,6 +234,8 @@ class PillMenuItemView @JvmOverloads constructor(
     private class SwitchDrawable(
         private val on: Int,
         private val off: Int,
+        private val onDot: Int,
+        private val offDot: Int,
         private val width: Int,
         private val height: Int,
         strokeWidth: Float,
@@ -239,7 +254,7 @@ class PillMenuItemView @JvmOverloads constructor(
             rect.set(bounds.left + inset, bounds.top + inset, bounds.right - inset, bounds.bottom - inset)
             stroke.color = color
             canvas.drawRoundRect(rect, rect.height() / 2f, rect.height() / 2f, stroke)
-            fill.color = color
+            fill.color = if (checked) onDot else offDot
             val half = bounds.height() / 2f
             val centerX = if (checked) bounds.right - half else bounds.left + half
             canvas.drawCircle(centerX, bounds.exactCenterY(), bounds.height() * DOT_RADIUS, fill)

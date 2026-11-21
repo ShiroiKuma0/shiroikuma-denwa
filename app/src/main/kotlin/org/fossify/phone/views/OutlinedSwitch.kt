@@ -20,13 +20,13 @@ import android.widget.CompoundButton
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.graphics.ColorUtils
 import com.google.android.material.materialswitch.MaterialSwitch
-import org.fossify.phone.extensions.ThemeSlot
-import org.fossify.phone.extensions.themeColor
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import kotlin.math.roundToInt
 
 /**
  * The theme's switch: an outlined pill with the background showing through and a solid dot inside it —
- * right and in the accent when on, left and in the darker, opaque SWITCH_OFF yellow when off. Nothing is
+ * right when on, left when off, outline and dot each in its own role (the commons' four switch roles). Nothing is
  * ever filled, not even the on state, and the dot travels between the two ends.
  *
  * It reads the checked state from the view it is drawn for, so it serves as a SwitchCompat's track and
@@ -36,6 +36,8 @@ import kotlin.math.roundToInt
 class OutlinedSwitchDrawable(
     private val on: Int,
     private val off: Int,
+    private val onDot: Int,
+    private val offDot: Int,
     private val width: Int,
     private val height: Int,
     strokeWidth: Float,
@@ -59,7 +61,7 @@ class OutlinedSwitchDrawable(
         stroke.color = color
         canvas.drawRoundRect(rect, rect.height() / 2f, rect.height() / 2f, stroke)
 
-        fill.color = color
+        fill.color = ColorUtils.blendARGB(offDot, onDot, progress)
         val half = h / 2f
         val startX = bounds.left + half
         val endX = bounds.right - half
@@ -123,8 +125,10 @@ class OutlinedSwitchDrawable(
             val w = if (small) SMALL_WIDTH_DP else WIDTH_DP
             val h = if (small) SMALL_HEIGHT_DP else HEIGHT_DP
             return OutlinedSwitchDrawable(
-                on = context.themeColor(ThemeSlot.PRIMARY),
-                off = context.themeColor(ThemeSlot.SWITCH_OFF),
+                on = context.uiColor(UiRole.SWITCH_ON_OUTLINE),
+                off = context.uiColor(UiRole.SWITCH_OFF_OUTLINE),
+                onDot = context.uiColor(UiRole.SWITCH_ON_DOT),
+                offDot = context.uiColor(UiRole.SWITCH_OFF_DOT),
                 width = (w * density).roundToInt(),
                 height = (h * density).roundToInt(),
                 strokeWidth = STROKE_DP * density,

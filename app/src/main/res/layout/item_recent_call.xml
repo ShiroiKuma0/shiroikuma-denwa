@@ -91,7 +91,6 @@
         android:layout_height="0dp"
         android:gravity="center"
         android:includeFontPadding="false"
-        android:textColor="@color/md_grey_black"
         android:textSize="@dimen/small_text_size"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/item_recents_sim_image"
@@ -111,8 +110,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/item_recents_date_time"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintStart_toEndOf="@+id/item_recents_sim_image"
-        app:layout_constraintTop_toTopOf="@+id/item_recents_date_time"
-        tools:tint="@color/color_missed_call" />
+        app:layout_constraintTop_toTopOf="@+id/item_recents_date_time" />
 
     <TextView
         android:id="@+id/item_recents_date_time"
@@ -124,8 +122,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/item_recents_type"
         app:layout_constraintTop_toBottomOf="@id/item_recents_number"
-        tools:text="午後五時二分"
-        tools:textColor="@color/color_missed_call" />
+        tools:text="午後五時二分" />
 
     <TextView
         android:id="@+id/item_recents_date_time_duration_separator"

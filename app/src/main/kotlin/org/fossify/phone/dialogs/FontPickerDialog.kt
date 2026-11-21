@@ -4,8 +4,8 @@ import org.fossify.phone.extensions.asPill
 import android.app.Activity
 import androidx.appcompat.app.AlertDialog
 import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.getProperPrimaryColor
-import org.fossify.commons.extensions.getProperTextColor
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.commons.extensions.setupDialogStuff
 import org.fossify.phone.R
 import org.fossify.phone.databinding.DialogFontPickerBinding
@@ -23,8 +23,7 @@ class FontPickerDialog(
     private val binding = DialogFontPickerBinding.inflate(activity.layoutInflater)
 
     init {
-        val textColor = activity.getProperTextColor()
-        val primaryColor = activity.getProperPrimaryColor()
+        val textColor = activity.uiColor(UiRole.DIALOG_TEXT)
 
         activity.availableFontOptions().forEach { option ->
             val row = ItemFontOptionBinding.inflate(activity.layoutInflater, binding.fontPickerHolder, false)
@@ -41,7 +40,7 @@ class FontPickerDialog(
         val addRow = ItemFontOptionBinding.inflate(activity.layoutInflater, binding.fontPickerHolder, false)
         // opens the file picker: a pill with a ›, not a word in a list of fonts
         addRow.fontOptionLabel.text = activity.getString(R.string.theme_add_font) + "  ›"
-        addRow.fontOptionLabel.asPill(color = primaryColor)
+        addRow.fontOptionLabel.asPill()
         addRow.fontOptionLabel.setOnClickListener {
             dialog?.dismiss()
             onAddFont()

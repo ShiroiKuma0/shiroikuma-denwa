@@ -13,6 +13,10 @@ import org.fossify.phone.activities.SimpleActivity
 import org.fossify.phone.adapters.ContactsAdapter
 import org.fossify.phone.databinding.DialogSelectContactBinding
 import org.fossify.phone.extensions.setupWithContacts
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
+import org.fossify.phone.extensions.ThemeSlot
+import org.fossify.phone.extensions.themeColor
 
 class SelectContactDialog(val activity: SimpleActivity, val contacts: List<Contact>, val callback: (selectedContact: Contact) -> Unit) {
     private val binding by activity.viewBinding(DialogSelectContactBinding::inflate)
@@ -21,10 +25,10 @@ class SelectContactDialog(val activity: SimpleActivity, val contacts: List<Conta
 
     init {
         binding.apply {
-            letterFastscroller.textColor = activity.getProperTextColor().getColorStateList()
+            letterFastscroller.textColor = activity.themeColor(ThemeSlot.FASTSCROLLER_LETTERS).getColorStateList()
             letterFastscrollerThumb.setupWithFastScroller(letterFastscroller)
-            letterFastscrollerThumb.textColor = activity.getProperPrimaryColor().getContrastColor()
-            letterFastscrollerThumb.thumbColor = activity.getProperPrimaryColor().getColorStateList()
+            letterFastscrollerThumb.textColor = activity.uiColor(UiRole.SCROLL_BUBBLE_TEXT)
+            letterFastscrollerThumb.thumbColor = activity.uiColor(UiRole.SCROLL_BUBBLE).getColorStateList()
 
             setupLetterFastScroller(contacts)
             configureSearchView()

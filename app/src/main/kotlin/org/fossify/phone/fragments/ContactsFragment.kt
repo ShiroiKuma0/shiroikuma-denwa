@@ -10,7 +10,8 @@ import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.beVisible
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getColorStateList
-import org.fossify.commons.extensions.getContrastColor
+import org.fossify.commons.helpers.UiRole
+import org.fossify.commons.helpers.uiColor
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.extensions.dropRenrakusakiCopies
 import org.fossify.phone.extensions.themeColor
@@ -78,13 +79,13 @@ class ContactsFragment(context: Context, attributeSet: AttributeSet) : MyViewPag
     override fun setupColors(textColor: Int, primaryColor: Int, properPrimaryColor: Int) {
         binding.apply {
             (fragmentList.adapter as? MyRecyclerViewAdapter)?.updateTextColor(root.context.themeColor(ThemeSlot.CONTACT_NAME))
-            fragmentPlaceholder.setTextColor(textColor)
-            fragmentPlaceholder2.setTextColor(properPrimaryColor)
+            fragmentPlaceholder.setTextColor(root.context.themeColor(ThemeSlot.EMPTY_LIST_TEXT))
+            fragmentPlaceholder2.setTextColor(root.context.uiColor(UiRole.BUTTON_TEXT)) // a pill
 
-            letterFastscroller.textColor = textColor.getColorStateList()
+            letterFastscroller.textColor = root.context.themeColor(ThemeSlot.FASTSCROLLER_LETTERS).getColorStateList()
             letterFastscroller.pressedTextColor = root.context.themeColor(ThemeSlot.CONTACT_FASTSCROLLER)
             letterFastscrollerThumb.setupWithFastScroller(letterFastscroller)
-            letterFastscrollerThumb.textColor = root.context.themeColor(ThemeSlot.CONTACT_FASTSCROLLER).getContrastColor()
+            letterFastscrollerThumb.textColor = root.context.uiColor(UiRole.SCROLL_BUBBLE_TEXT)
             letterFastscrollerThumb.thumbColor = root.context.themeColor(ThemeSlot.CONTACT_FASTSCROLLER).getColorStateList()
         }
     }

@@ -73,8 +73,7 @@
                 android:layout_height="@dimen/activity_margin"
                 android:adjustViewBounds="true"
                 android:importantForAccessibility="no"
-                android:scaleType="fitCenter"
-                android:src="@drawable/color_picker_circle" />
+                android:scaleType="fitCenter" />
         </RelativeLayout>
 
         <RelativeLayout
