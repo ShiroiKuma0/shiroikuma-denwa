@@ -5,7 +5,7 @@ import org.fossify.commons.helpers.uiColor
 import org.fossify.phone.extensions.themeColor
 import org.fossify.phone.extensions.ThemeSlot
 import org.fossify.phone.helpers.MenuPills
-import org.fossify.phone.views.applyOutlinedSwitch
+import org.fossify.commons.views.MyAppCompatCheckbox
 import org.fossify.commons.extensions.pillDrawable
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -281,13 +281,12 @@ class ExportImportDialog(
         )
     }
 
-    private fun checkbox(label: String, bold: Boolean = false) = CheckBox(activity).apply {
+    private fun checkbox(label: String, bold: Boolean = false): CheckBox = MyAppCompatCheckbox(activity).apply {
         text = label
-        setTextColor(textColor)
+        // which items travel is a choice among the entries of a list: a selection mark in its own roles
+        applyRoles()
         if (bold) setTypeface(typeface, Typeface.BOLD)
         setTextSize(TypedValue.COMPLEX_UNIT_SP, 15f)
-        // a toggle is the theme's outlined switch, never a filled tick box
-        applyOutlinedSwitch(small = true)
         setPadding(dp(8), dp(4), 0, dp(4))
     }
 

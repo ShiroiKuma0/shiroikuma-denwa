@@ -138,7 +138,9 @@ class OutlinedSwitchDrawable(
 }
 
 /**
- * Gives this switch or checkbox the theme's outlined look. A SwitchCompat (MaterialSwitch included)
+ * Gives this switch the theme's outlined look — or a check box that is a lone on/off setting. A check
+ * box that marks which entries of a list are chosen is a selection mark and never comes here; nor does
+ * a radio button. A SwitchCompat (MaterialSwitch included)
  * keeps its own thumb logic but draws nothing for it: a transparent thumb half the track wide sets the
  * width, and the track drawable draws the frame and the travelling dot. Safe to call repeatedly.
  */
@@ -186,16 +188,3 @@ fun View.outlineAllSwitches() {
 }
 
 private val TAG_KEY = org.fossify.phone.R.id.outlined_switch_tag
-
-/**
- * Every toggle under this view — switches and tick boxes alike — as the outlined switch. For the lists
- * of toggles a dialog shows (which tabs, which sources): a filled tick box has no place in the theme.
- * Radio buttons are choices, not toggles, and stay as they are.
- */
-fun View.outlineAllToggles() {
-    when (this) {
-        is android.widget.RadioButton -> Unit
-        is CompoundButton -> applyOutlinedSwitch(small = this is CheckBox)
-        is ViewGroup -> for (i in 0 until childCount) getChildAt(i).outlineAllToggles()
-    }
-}

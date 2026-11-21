@@ -410,8 +410,13 @@ new screen gets the look without doing anything — and the things to keep when 
   resume — positive thick and bold, the others thin. Commons knows no destructive button, so a
   “Delete” confirm is still an accent pill, not a red one.
 - **Every switch is the outlined switch** (`views/OutlinedSwitch.kt`, the same as 予定表's):
-  the lifecycle callback in `App.kt` runs `outlineAllSwitches()` over every screen on resume; dialogs and adapters with
-  tick-box toggles call `outlineAllToggles()` themselves. Off colour: `ThemeSlot.SWITCH_OFF`.
+  the lifecycle callback in `App.kt` runs `outlineAllSwitches()` over every screen on resume. Off colour:
+  `ThemeSlot.SWITCH_OFF`.
+- **A selection mark is not a switch** (白い熊, 2026-11-21): the check boxes that say which entries of a list
+  are chosen — visible tabs, contact sources, call-screen fields, export items — and every radio button stay
+  marks, coloured by `UiRole.CHECK_*` / `RADIO_*` (`MyAppCompatCheckbox.applyRoles()`). Only a lone on/off
+  check box is a setting and takes `applyOutlinedSwitch(small = true)` — today just “always use this SIM” in
+  `SelectSIMDialog` — as does the checkable row of a menu (`PillMenuItemView`). `outlineAllToggles()` is gone.
 - **The stock Settings page** keeps upstream's layout and is restyled in code by
   `restyleSettingsPage()` (`extensions/SettingsPage.kt`): tight rows, bold underlined headings, nothing
   faded, and a pill with › around the label of each row that opens something — **a new such row must be
