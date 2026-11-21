@@ -3,6 +3,55 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+126 — 2026-11-21
+Built on Fossify Phone 1.11.1, on shiroikuma-commons 6.1.6-sk18.
+
+### Added
+- **Every item has a colour of its own.** About 50 new colours join the UI page, so that nothing shares
+  “the accent” any more: the dialpad's ground, key ring, digit, letters, typed number and icons; on the
+  ringing screen the accept ring, the decline / end ring, the drag handle, the labels under the buttons,
+  the Silence, Message and Block buttons and Block's label; on the call screen the status line, the
+  “On hold” label, the held call's bar and its text, the caller placeholder's ground and icon, the small
+  icons, the in‑call dialpad's ground, the undo bar's ground, frame and text, the send icon of a reply;
+  the car call screen's ground, text, two discs and the handset on them; the call notification's accept,
+  decline and message buttons; the call row's ⋮ and the “Calls with …” banner; the text of an empty
+  list, the letters beside a list, drag handles, a name in a conference list; the permission bar's
+  ground and text; a warning colour for something that is missing.
+- **The settings pages are settable too:** section heading, fold mark, sub‑heading, row label, row
+  value, index chip, the line between sections, and the explanations' dim gold.
+- **Everything the shared library draws is settable,** each in the section of its item: Buttons, Text,
+  Fields, Dialogs (the date and time pickers included), Switches (outline and dot, on and off), Marks
+  (check boxes and radio buttons), Menus (ground, frame, row frame, divider), Lists, Bars (status,
+  navigation, top bar, selection bar) and Toasts.
+- **“Reset all colours”** in a new Maintenance section, behind a red confirmation; each colour still
+  resets by itself from its picker's Default button.
+- **The UI page folds.** Every section is folded until you open it, with › when folded and ⌄ when open,
+  and remembers its state. On top sits an **index of chips**, one per section: a tap unfolds the section
+  and scrolls to it, a long‑press drags the chip — the chips reorder under the finger and the sections
+  follow. **“Reset section order”** is in Maintenance. Order and fold state travel in the Appearance
+  part of an export.
+- **Every row of the UI page has an icon,** coloured by what the row does, with the menu icon colours.
+
+### Changed
+- **No colour is written in the app's resources any more.** The rings of accept, decline and end, the
+  Silence, Message and Block buttons, the undo bar, the car screen's discs, the launcher shortcut's disc
+  and the notification's buttons are drawn in code from their colours, so a colour set on the UI page
+  reaches every one of them. The accept and end rings used to be fixed at pure green and pure red
+  whatever was set.
+- **Top bar & menu, Menus, Lists, Car call screen, Call notification and Settings pages** are sections
+  of their own on the UI page; the menu icon colours moved from “Top bar & menu” to “Menus”.
+- **The dialog frame, the red button of a deleting dialog and the off switch** are colours of their own
+  (Dialogs, Buttons, Switches) instead of following other settings; a delete colour that was set seeds
+  the red button once.
+- **The “On hold” label and the Block octagon** follow the decline arrow's colour until given their own.
+- **The handle dragged toward accept or decline** takes the arrows' green and red.
+- **A pop‑up menu's panel** is the shared library's own shape, without the 8 dp above and below its rows.
+- **The letter bubble of a fast scroller** has black text instead of dark grey.
+
+### Removed
+- **“Customize colors”** in Settings, with the stock colour themes: the UI page sets every colour.
+- **“Call button icon”** on the UI page: the dialpad's call button is a ring, and the colour did nothing.
+
 ## 白い熊 電話 1.11.1+124 — 2026-11-19
 Built on Fossify Phone 1.11.1.
 
