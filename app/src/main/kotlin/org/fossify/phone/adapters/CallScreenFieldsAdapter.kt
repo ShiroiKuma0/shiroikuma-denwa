@@ -1,6 +1,5 @@
 package org.fossify.phone.adapters
 
-import org.fossify.phone.views.outlineAllToggles
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -53,7 +52,6 @@ class CallScreenFieldsAdapter(
         val canMoveRight = entry.checked && hasShownBefore && !entry.sameLine
         val canMoveLeft = entry.checked && entry.sameLine
 
-        holder.binding.root.outlineAllToggles()
         holder.binding.apply {
             fieldCheckbox.text = activity.getString(entry.field.labelRes)
             fieldCheckbox.applyRoles()

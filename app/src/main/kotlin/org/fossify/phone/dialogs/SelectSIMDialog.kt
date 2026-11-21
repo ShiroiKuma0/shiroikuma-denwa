@@ -1,6 +1,6 @@
 package org.fossify.phone.dialogs
 
-import org.fossify.phone.views.outlineAllToggles
+import org.fossify.phone.views.applyOutlinedSwitch
 import android.annotation.SuppressLint
 import android.telecom.PhoneAccountHandle
 import android.view.ViewGroup
@@ -27,7 +27,8 @@ class SelectSIMDialog(
     private val binding by activity.viewBinding(DialogSelectSimBinding::inflate)
 
     init {
-        binding.selectSimRemember.outlineAllToggles()
+        // a lone on/off setting, not a mark in a list: it takes the switch
+        binding.selectSimRemember.applyOutlinedSwitch(small = true)
         binding.selectSimRememberHolder.setOnClickListener {
             binding.selectSimRemember.toggle()
         }

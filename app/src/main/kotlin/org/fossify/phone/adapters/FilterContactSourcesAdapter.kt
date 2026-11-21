@@ -1,6 +1,5 @@
 package org.fossify.phone.adapters
 
-import org.fossify.phone.views.outlineAllToggles
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -62,7 +61,6 @@ class FilterContactSourcesAdapter(
                 val countText = if (contactSource.count >= 0) " (${contactSource.count})" else ""
                 val displayName = "${contactSource.publicName}$countText"
                 filterContactSourceCheckbox.text = displayName
-                filterContactSourceCheckbox.outlineAllToggles()
                 filterContactSourceHolder.setOnClickListener { viewClicked(!isSelected, contactSource) }
 
                 return root
