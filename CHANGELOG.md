@@ -3,6 +3,29 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+128 — 2026-11-22
+Built on Fossify Phone 1.11.1, on shiroikuma-commons 7.1.3-sk1.
+
+### Changed
+- **The shared library moves to Commons 7.** The app now builds on shiroikuma-commons 7.1.3-sk1 — every
+  fork patch of the 6.1.6 line (sk1 – sk19) replayed onto upstream Fossify Commons 7.1.3 — instead of
+  6.1.6-sk18. The app side follows upstream Phone's own migration to Commons 7.
+- **No “thank you” locks any more.** Upstream removed its feature locks, and with them the code that
+  asked for them here: “Manage blocked numbers” in the settings, “Block contact” / “Unblock contact”
+  and “Create shortcut” on a contact, and “Block number” on a call (the selection bar and the row's ⋮
+  menu alike) are plain actions with plain labels. Nothing was locked in this fork before either; the
+  check is simply gone.
+- **No support prompt.** Commons 7 brings a timed donation / rating prompt; in the fork's library it
+  does nothing, so the app never raises it.
+- **From the library's sk19**, which the old pin did not have yet: its date and time dialogs are the
+  family's own (a time picker of our own, a settable week start, month‑only and year‑only forms of the
+  date picker).
+
+### Packaging
+- The flavour switch `hide_google_relations` became `is_google_play_build`, with the opposite meaning
+  (false for `foss`, true for `gplay`); `pretend_thank_you_installed` is dropped.
+- The unused `core` flavour is removed, as upstream did. `foss` and `gplay` are unchanged.
+
 ## 白い熊 電話 1.11.1+127 — 2026-11-21
 Built on Fossify Phone 1.11.1, on shiroikuma-commons 6.1.6-sk18.
 
