@@ -25,12 +25,12 @@ badge views carry no dimming `android:alpha`.
 ```bash
 ./gradlew assembleDebug          # Build debug APK
 ./gradlew assembleRelease        # Build release APK (requires signing config)
-./gradlew assembleCoreDebug      # Build specific flavor+type combo
+./gradlew assembleFossDebug      # Build specific flavor+type combo
 ./gradlew detekt                 # Run static analysis (detekt)
 ./gradlew lintDebug              # Run Android lint checks
 ```
 
-**Product flavors:** `core` (F-Droid), `foss`, `gplay` (Google Play). Debug builds get `.debug` app ID suffix.
+**Product flavors:** `foss`, `gplay` (Google Play). Debug builds get `.debug` app ID suffix.
 
 There are no unit or instrumented tests in this repository. CI runs build checks via shared workflows in FossifyOrg/.github.
 
