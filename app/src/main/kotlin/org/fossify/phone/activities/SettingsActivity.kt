@@ -13,14 +13,11 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.fossify.commons.activities.ManageBlockedNumbersActivity
 import org.fossify.commons.dialogs.ChangeDateTimeFormatDialog
-import org.fossify.commons.dialogs.FeatureLockedDialog
 import org.fossify.commons.dialogs.RadioGroupDialog
 import org.fossify.phone.dialogs.AlphaColorPickerDialog
-import org.fossify.commons.extensions.addLockedLabelIfNeeded
 import org.fossify.commons.extensions.baseConfig
 import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getFontSizeText
-import org.fossify.commons.extensions.isOrWasThankYouInstalled
 import org.fossify.commons.extensions.showErrorToast
 import org.fossify.commons.extensions.toast
 import org.fossify.commons.extensions.updateTextColors
@@ -236,15 +233,11 @@ class SettingsActivity : SimpleActivity() {
 
     private fun setupManageBlockedNumbers() {
         binding.apply {
-            settingsManageBlockedNumbersLabel.text = addLockedLabelIfNeeded(R.string.manage_blocked_numbers)
+            settingsManageBlockedNumbersLabel.text = getString(R.string.manage_blocked_numbers)
             settingsManageBlockedNumbersHolder.beVisibleIf(isNougatPlus())
             settingsManageBlockedNumbersHolder.setOnClickListener {
-                if (isOrWasThankYouInstalled()) {
-                    Intent(this@SettingsActivity, ManageBlockedNumbersActivity::class.java).apply {
-                        startActivity(this)
-                    }
-                } else {
-                    FeatureLockedDialog(this@SettingsActivity) { }
+                Intent(this@SettingsActivity, ManageBlockedNumbersActivity::class.java).apply {
+                    startActivity(this)
                 }
             }
         }
