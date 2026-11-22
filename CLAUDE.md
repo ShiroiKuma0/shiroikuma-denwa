@@ -109,7 +109,7 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
 - **Source:** the `shiroikuma-commons` fork (`~/git/shiroikuma-commons`, branch `custom`), which strips
   Commons' anti-tamper "fake version" / sideloading checks out entirely **and** carries fork-package
   fixes for spots where Commons hard-codes `org.fossify.*` (documented in that repo's CLAUDE.md).
-- **Delivery:** published to the local Maven repo, consumed as `commons = "6.1.6-sk18"` in
+- **Delivery:** published to the local Maven repo, consumed as `commons = "7.1.3-sk1"` in
   `gradle/libs.versions.toml` (`mavenLocal()` is already a repository in `settings.gradle.kts`).
 - Because Commons itself no longer nags, this app carries **no** anti-tamper workaround — no
   `getPackageName` spoof, no `SIDELOADING_FALSE`, no `res/raw/keep.xml`.
@@ -165,6 +165,22 @@ dropped.
   were similarly tied to `org.fossify.phone`. Both are fixed **in the commons fork** (not here) and
   documented there; denwa benefits from both — as a private-contacts reader and as the dialer.
 
+### Commons 7 (`7.1.3-sk1`, from 1.11.1+128, 2026-11-22)
+
+The pin moved from `6.1.6-sk18` to `7.1.3-sk1`: every fork patch of `6.1.6-sk1` – `sk19` replayed onto
+upstream Commons 7.1.3 (the `-skN` revisions named above are those of the 6.1.6 line; all of them are in
+`7.1.3-sk1`, and its own counter starts again at 1). The app side follows upstream Phone's own
+“migrate to commons 7.1.0” commit (`1121f4eb`):
+
+- The “thank you” feature locks are gone upstream — `FeatureLockedDialog`, `addLockedLabelIfNeeded`,
+  `isOrWasThankYouInstalled`. Manage blocked numbers, block / unblock and create shortcut are plain
+  actions with plain labels.
+- The flavour bool `hide_google_relations` became `is_google_play_build` with the opposite meaning
+  (false for `foss`, true for `gplay`; the commons default is false); `pretend_thank_you_installed` is
+  dropped.
+- Commons 7's timed donation / rating prompt is a no-op in the fork.
+- sk19 came along: commons' own time picker, a settable week start, month-only / year-only date picker.
+
 **On a fresh machine, or after an upstream bump changes the Commons version — republish before building:**
 
 ```bash
@@ -173,7 +189,7 @@ git checkout <new-commons-tag>     # then re-apply all patches (anti-tamper stri
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :commons:publishToMavenLocal -PVERSION=<ver>-skN
 ```
 
-Then set this app's `commons` pin to the same `<ver>-skN` (currently `6.1.6-sk18`; `-skN` is our patch
+Then set this app's `commons` pin to the same `<ver>-skN` (currently `7.1.3-sk1`; `-skN` is our patch
 revision — see the commons fork's CLAUDE.md). The patched AAR lives only in `~/.m2`, not in the repo.
 
 ## Contacts/Favorites tabs hand off to our Contacts fork (renrakusaki)
