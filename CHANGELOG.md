@@ -3,6 +3,25 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+129 — 2026-11-22
+Built on Fossify Phone 1.11.1 plus upstream's unreleased commits up to `b41e524c` (2026-11-18), on
+shiroikuma-commons 7.1.3-sk1.
+
+### Changed
+- **Rebased onto upstream's current main.** Upstream has cut no release since 1.11.1, but 69 commits
+  have landed there since the fork last synced; the fork now sits on top of all of them. The app behaves
+  as +128 did — upstream's one code change in that range, the migration to Commons 7, is the one +128
+  already carried.
+- **Translations from upstream:** Belarusian, Breton, Chinese (Traditional, and Traditional Hong Kong),
+  Hungarian, Italian, Korean, Norwegian Nynorsk, Persian, Slovenian and Spanish are refreshed.
+
+### Packaging
+- Built with Kotlin 2.4.20 (was 2.3.21), the Android Gradle plugin 9.4.1 (was 9.2.0) and Gradle 9.8.2.
+- libphonenumber 9.0.40 (was 9.0.29) and its geocoder 3.40 (was 3.29): newer number formats and
+  place names for a caller's number.
+- Upstream's refreshed lint baseline; `RecentCallsAdapter.kt` ends in a newline, so its detekt baseline
+  entry is gone.
+
 ## 白い熊 電話 1.11.1+128 — 2026-11-22
 Built on Fossify Phone 1.11.1, on shiroikuma-commons 7.1.3-sk1.
 
