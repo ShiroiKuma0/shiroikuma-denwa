@@ -3,6 +3,41 @@
 This file carries two histories. The **白い熊 電話 fork's** releases come first, newest first; the
 **upstream Fossify Phone** changelog follows below, exactly as upstream maintains it.
 
+## 白い熊 電話 1.11.1+132 — 2026-11-26
+Built on Fossify Phone 1.11.1 plus upstream's unreleased commits up to `b41e524c` (2026-11-18), on
+shiroikuma-commons 7.1.3-sk4. Covers builds +130 to +132.
+
+### Added
+- **The blocked-numbers screen can be opened by the sister apps.** Only the default dialer may read or
+  write Android's blocked list, so 連絡先 keeps no screen of its own: its ⋮ row “Blocked numbers ›”
+  (連絡先 1.6.0+140 or later) opens this app's screen, and Back returns to 連絡先. The screen answers the
+  action `shiroikuma.denwa.action.MANAGE_BLOCKED_NUMBERS`. It is exported without a permission — 臨電話
+  is signed with another key, and the screen takes no instruction from its caller: it only lets the
+  person at the phone edit their own list.
+- **Nine new colours on the UI page**, from the library: under Lists the list text, the secondary list
+  text, the tint of every second row, and the frame and heading of a boxed list; under Menus the icon
+  colours for view, share and block and the colour of a destructive row (see “Changed”).
+
+### Changed
+- **The blocked-numbers screen is restyled** (library sk3 and sk4): the numbers sit in an outlined box
+  headed “Blocked numbers (N)” and scroll inside it; rows are as tall as their text, every second one
+  faintly tinted, with a 1 px line between them; two columns from 520 dp of screen width; numbers are
+  shown as +420-222-292-055 (copying still copies the stored number); the two switch rows carry an icon
+  and are as tall as their content instead of 56 dp.
+- **Its two ⋮ menus are pill menus**: copy and unblock on a number, and add, import and export in the
+  top bar, are full-width outlined pills with an icon and a ›, on the menu's own ground and frame.
+- **Four menu colours are now shared with the library.** The menu icon colours for share, view and
+  block and the colour of a delete row are the library's roles, so each is set in one place and the
+  library's own menus draw the same colour. They keep their rows under “Menu icon colors”, and a
+  colour picked before is carried over once.
+- **Two defaults changed with that:** the block icon is rose `#FF3D7F` instead of magenta, and a delete
+  row whose colour was never set follows the destructive button's colour instead of always being pure
+  red.
+- **Japanese:** the 16 strings Commons 7 added are translated (library sk2).
+
+### Packaging
+- shiroikuma-commons 7.1.3-sk4 (was 7.1.3-sk1).
+
 ## 白い熊 電話 1.11.1+129 — 2026-11-22
 Built on Fossify Phone 1.11.1 plus upstream's unreleased commits up to `b41e524c` (2026-11-18), on
 shiroikuma-commons 7.1.3-sk1.
