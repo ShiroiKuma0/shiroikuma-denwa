@@ -291,6 +291,25 @@ sync with the renrakusaki repo:
   provider is missing, so neither app has to be released first. **Renaming or re-meaning a key, or
   reordering the format enums, breaks renrakusaki's rows silently — bump `version` and tell that repo.**
 
+### Blocked numbers for the sister apps
+
+Only the default dialer may read or write Android's blocked list, so 連絡先 keeps no screen of its own:
+its ⋮ row “Blocked numbers ›” opens ours (from renrakusaki 1.6.0+140 and our 1.11.1+130, 2026-11-26).
+
+- **The contract:** an implicit intent with the action `shiroikuma.denwa.action.MANAGE_BLOCKED_NUMBERS`
+  (the same literal for the debug build), `setPackage` to `shiroikuma.denwa` or `shiroikuma.denwa.debug`,
+  plain `startActivity`, no extras. Renrakusaki's side is `DENWA_BLOCKED_NUMBERS_ACTION` in its
+  `extensions/Activity.kt`; it shows the row only while `resolveActivity` answers the intent.
+  **Renaming the action hides that row silently — tell that repo.**
+- **Our side is the manifest only:** commons' `ManageBlockedNumbersActivity` is exported with that
+  intent filter (category `DEFAULT`). It starts in the caller's task and its arrow is `finish`, so Back
+  returns to the caller.
+- **No permission, on purpose:** 臨電話 is signed with another key (a signature permission would shut it
+  out), a plain `startActivity` does not name its caller, and the screen reads no extra that changes
+  what it does (`APP_ICON_IDS` / `APP_LAUNCHER_NAME` are About-page leftovers) — it only lets the
+  person at the phone edit their own list. **Keep it that way: never let an extra of this activity
+  add, remove, import or export a number without a tap.**
+
 ## Call stamps — a call keeps the SIM it was made through
 
 The system call log records only the slot a call used, so the SIM badge used to be worked out on every

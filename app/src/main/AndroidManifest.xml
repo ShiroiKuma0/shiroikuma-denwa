@@ -112,13 +112,25 @@
             android:label="@string/about"
             android:parentActivityName=".activities.MainActivity" />
 
+        <!-- Exported for the sister apps: 連絡先's ⋮ row "Blocked numbers ›" starts it with the action
+             below (CLAUDE.md, "Blocked numbers for the sister apps"). Only the default dialer may touch
+             Android's blocked list, so they keep no screen of their own. Deliberately no
+             android:permission: 臨電話 is signed with another key, the caller of a plain startActivity
+             cannot be identified, and the screen reads no extra that changes what it does — it only lets
+             the person at the phone edit their own list. The action is the same literal in the debug
+             build; the caller picks the package. -->
         <activity
             android:name="org.fossify.commons.activities.ManageBlockedNumbersActivity"
             android:configChanges="orientation"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/blocked_numbers"
             android:parentActivityName=".activities.SettingsActivity"
-            tools:replace="android:label" />
+            tools:replace="android:label,android:exported">
+            <intent-filter>
+                <action android:name="shiroikuma.denwa.action.MANAGE_BLOCKED_NUMBERS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".activities.ManageSpeedDialActivity"
