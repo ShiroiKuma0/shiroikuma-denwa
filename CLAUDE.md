@@ -109,7 +109,7 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
 - **Source:** the `shiroikuma-commons` fork (`~/git/shiroikuma-commons`, branch `custom`), which strips
   Commons' anti-tamper "fake version" / sideloading checks out entirely **and** carries fork-package
   fixes for spots where Commons hard-codes `org.fossify.*` (documented in that repo's CLAUDE.md).
-- **Delivery:** published to the local Maven repo, consumed as `commons = "7.1.3-sk3"` in
+- **Delivery:** published to the local Maven repo, consumed as `commons = "7.1.3-sk4"` in
   `gradle/libs.versions.toml` (`mavenLocal()` is already a repository in `settings.gradle.kts`).
 - Because Commons itself no longer nags, this app carries **no** anti-tamper workaround — no
   `getPackageName` spoof, no `SIDELOADING_FALSE`, no `res/raw/keep.xml`.
@@ -188,7 +188,9 @@ numbers (N)”, tight striped rows, two columns from 520 dp, numbers shown as +4
 `MENU_DESTRUCTIVE` (Menus), `LIST_TEXT`, `LIST_TEXT_SECONDARY`, `LIST_ROW_ALT`, `LIST_BOX_FRAME`,
 `LIST_BOX_HEADING` (Lists) — and contains sk2 (the 16 Japanese strings of Commons 7). The four menu
 roles are our `MENU_ROLE_*` slots (see “Colours — commons roles”); the five list roles get their rows
-on the UI page by themselves, under Lists.
+on the UI page by themselves, under Lists. **`7.1.3-sk4` (from 1.11.1+132, the same day)** is sk3 plus
+one change: under the family's look `SettingsSwitchComponent` is a plain row as tall as its content with
+2 dp above and below, not a 56 dp list item — the two switch rows of that screen.
 
 **On a fresh machine, or after an upstream bump changes the Commons version — republish before building:**
 
@@ -198,7 +200,7 @@ git checkout <new-commons-tag>     # then re-apply all patches (anti-tamper stri
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :commons:publishToMavenLocal -PVERSION=<ver>-skN
 ```
 
-Then set this app's `commons` pin to the same `<ver>-skN` (currently `7.1.3-sk3`; `-skN` is our patch
+Then set this app's `commons` pin to the same `<ver>-skN` (currently `7.1.3-sk4`; `-skN` is our patch
 revision — see the commons fork's CLAUDE.md). The patched AAR lives only in `~/.m2`, not in the repo.
 
 ## Contacts/Favorites tabs hand off to our Contacts fork (renrakusaki)
