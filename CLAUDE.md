@@ -109,7 +109,7 @@ colors") whenever the installed app id is not `org.fossify.*` — always the cas
 - **Source:** the `shiroikuma-commons` fork (`~/git/shiroikuma-commons`, branch `custom`), which strips
   Commons' anti-tamper "fake version" / sideloading checks out entirely **and** carries fork-package
   fixes for spots where Commons hard-codes `org.fossify.*` (documented in that repo's CLAUDE.md).
-- **Delivery:** published to the local Maven repo, consumed as `commons = "7.1.3-sk1"` in
+- **Delivery:** published to the local Maven repo, consumed as `commons = "7.1.3-sk3"` in
   `gradle/libs.versions.toml` (`mavenLocal()` is already a repository in `settings.gradle.kts`).
 - Because Commons itself no longer nags, this app carries **no** anti-tamper workaround — no
   `getPackageName` spoof, no `SIDELOADING_FALSE`, no `res/raw/keep.xml`.
@@ -181,6 +181,15 @@ upstream Commons 7.1.3 (the `-skN` revisions named above are those of the 6.1.6 
 - Commons 7's timed donation / rating prompt is a no-op in the fork.
 - sk19 came along: commons' own time picker, a settable week start, month-only / year-only date picker.
 
+**`7.1.3-sk3` (from 1.11.1+131, 2026-11-26)** restyles the commons' Compose blocked-numbers screen
+(`ManageBlockedNumbersScreen`, under `pillDialogButtons`): the list in an outlined box headed “Blocked
+numbers (N)”, tight striped rows, two columns from 520 dp, numbers shown as +420-222-292-055, and both
+⋮ menus as full-width icon pills. It adds nine roles — `MENU_ICON_VIEW` / `_SHARE` / `_BLOCK` and
+`MENU_DESTRUCTIVE` (Menus), `LIST_TEXT`, `LIST_TEXT_SECONDARY`, `LIST_ROW_ALT`, `LIST_BOX_FRAME`,
+`LIST_BOX_HEADING` (Lists) — and contains sk2 (the 16 Japanese strings of Commons 7). The four menu
+roles are our `MENU_ROLE_*` slots (see “Colours — commons roles”); the five list roles get their rows
+on the UI page by themselves, under Lists.
+
 **On a fresh machine, or after an upstream bump changes the Commons version — republish before building:**
 
 ```bash
@@ -189,7 +198,7 @@ git checkout <new-commons-tag>     # then re-apply all patches (anti-tamper stri
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 ./gradlew :commons:publishToMavenLocal -PVERSION=<ver>-skN
 ```
 
-Then set this app's `commons` pin to the same `<ver>-skN` (currently `7.1.3-sk1`; `-skN` is our patch
+Then set this app's `commons` pin to the same `<ver>-skN` (currently `7.1.3-sk3`; `-skN` is our patch
 revision — see the commons fork's CLAUDE.md). The patched AAR lives only in `~/.m2`, not in the repo.
 
 ## Contacts/Favorites tabs hand off to our Contacts fork (renrakusaki)
@@ -363,13 +372,18 @@ themes, *Customize colors* (`CustomizationActivity`) and the drawables that carr
   `uiColor(role)`, `setThemeColor` / `resetThemeColor` write the role's key. Mapped: the three foundation
   slots, `SWITCH_OFF` → `SWITCH_OFF_OUTLINE`, the five `SEARCH_*`, `MENU_TEXT` → `MENU_LABEL`,
   `HEADER_TITLE` → `TOOLBAR_TITLE`, `HEADER_ARROW` → `TOOLBAR_ICON`, the three `TAB_*` →
-  `BOTTOM_BAR_GROUND` / `BOTTOM_TAB_ACTIVE` / `BOTTOM_TAB_IDLE`. Overrides stored before the move were
-  handed over once (`migrateSlotsToRolesIfNeeded`), and a set `MENU_ROLE_DELETE` seeded
-  `BUTTON_DESTRUCTIVE`.
+  `BOTTOM_BAR_GROUND` / `BOTTOM_TAB_ACTIVE` / `BOTTOM_TAB_IDLE`, and since commons 7.1.3-sk3
+  `MENU_ROLE_SHARE` / `_VIEW` / `_BLOCK` → `MENU_ICON_SHARE` / `_VIEW` / `_BLOCK` and `MENU_ROLE_DELETE` →
+  `MENU_DESTRUCTIVE` (`MENU_ROLE_CALL` / `_MESSAGE` / `_CONTACT` stay ours alone). Overrides stored
+  before a move are handed over once per hand-over (`migrateSlotsToRolesIfNeeded`, flags
+  `slotsMovedToRoles` and `menuSlotsMovedToRoles`), and at sk18 a set `MENU_ROLE_DELETE` seeded
+  `BUTTON_DESTRUCTIVE`. **Their defaults are the commons' now**: block is rose `#FF3D7F` (it was
+  magenta here), and an unset delete follows `BUTTON_DESTRUCTIVE`.
 - **Nothing is mirrored into the commons any more.** `syncDialogFrame()` only keeps the frame width (2 dp)
   and `pillDialogButtons` on; the dialog frame, the destructive button and the off switch are the roles
-  `DIALOG_FRAME`, `BUTTON_DESTRUCTIVE`, `SWITCH_OFF_OUTLINE`. The delete *menu icon* stays
-  `MENU_ROLE_DELETE`, a slot of ours — the two are no longer kept equal.
+  `DIALOG_FRAME`, `BUTTON_DESTRUCTIVE`, `SWITCH_OFF_OUTLINE`. The delete *menu icon* is
+  `MENU_ROLE_DELETE`, which is the role `MENU_DESTRUCTIVE`: it starts from `BUTTON_DESTRUCTIVE` and can be
+  set apart from it.
 - **The Theme page lists every role no slot stands for**, in the section of its item
   (`ThemeActivity.addRoleRows`); a new commons role appears there by itself. `ui_role_*` keys
   travel in the Appearance part of the export.
@@ -483,7 +497,7 @@ view changed — **diff them against the library when AppCompat is bumped**). Ro
 pills per the black-yellow-theme skill; frame and label stay in the accent (the warning colour for a
 destructive row) while the **icon takes the colour of what the row does** — `ThemeSlot.MENU_ROLE_*`,
 settable under “Menu icon colors” on the Theme screen: call green, message blue, contact cyan,
-copy/share orange, view/open/settings yellow, block magenta, delete red. `helpers/MenuPills` maps each
+copy/share orange, view/open/settings yellow, block rose, delete red (the last four are commons roles). `helpers/MenuPills` maps each
 menu item id to its icon, role and whether it ends in a › — **a new menu item needs a line there**, or it
 shows as a view-coloured pill with whatever icon it brought. `MenuPills.show()` opens a `PopupMenu`
 shifted up so it never scrolls while the screen has room.

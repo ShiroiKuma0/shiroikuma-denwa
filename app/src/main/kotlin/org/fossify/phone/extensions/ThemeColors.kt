@@ -31,9 +31,7 @@ import org.fossify.phone.helpers.PALETTE_DIM_YELLOW
 import org.fossify.phone.helpers.PALETTE_GREEN
 import org.fossify.phone.helpers.PALETTE_INCOMING_BLUE
 import org.fossify.phone.helpers.PALETTE_INCOMING_BLUE_NIGHT
-import org.fossify.phone.helpers.PALETTE_MAGENTA
 import org.fossify.phone.helpers.PALETTE_MESSAGE_BLUE
-import org.fossify.phone.helpers.PALETTE_ORANGE
 import org.fossify.phone.helpers.PALETTE_PALE_YELLOW
 import org.fossify.phone.helpers.PALETTE_RED
 import org.fossify.phone.helpers.PALETTE_YELLOW
@@ -127,13 +125,27 @@ enum class ThemeSlot(
     // Menu icon roles: every menu row's icon is coloured by what the row does, while its frame and
     // label stay in the accent (or, for a destructive row, in MENU_ROLE_DELETE — the warning colour).
     // Served to the sister apps as color.role.* so all three menus speak one colour language.
+    // Share, view, block and delete are commons roles since 7.1.3-sk3 (the commons' own menus draw
+    // them too), so each is set in one place; call, message and contact are ours alone.
     MENU_ROLE_CALL("theme_menu_role_call", ThemeGroup.CHROME, R.string.theme_menu_role_call),
     MENU_ROLE_MESSAGE("theme_menu_role_message", ThemeGroup.CHROME, R.string.theme_menu_role_message),
     MENU_ROLE_CONTACT("theme_menu_role_contact", ThemeGroup.CHROME, R.string.theme_menu_role_contact),
-    MENU_ROLE_SHARE("theme_menu_role_share", ThemeGroup.CHROME, R.string.theme_menu_role_share),
-    MENU_ROLE_VIEW("theme_menu_role_view", ThemeGroup.CHROME, R.string.theme_menu_role_view),
-    MENU_ROLE_BLOCK("theme_menu_role_block", ThemeGroup.CHROME, R.string.theme_menu_role_block),
-    MENU_ROLE_DELETE("theme_menu_role_delete", ThemeGroup.CHROME, R.string.theme_menu_role_delete),
+    MENU_ROLE_SHARE(
+        "theme_menu_role_share", ThemeGroup.CHROME, R.string.theme_menu_role_share,
+        role = UiRole.MENU_ICON_SHARE,
+    ),
+    MENU_ROLE_VIEW(
+        "theme_menu_role_view", ThemeGroup.CHROME, R.string.theme_menu_role_view,
+        role = UiRole.MENU_ICON_VIEW,
+    ),
+    MENU_ROLE_BLOCK(
+        "theme_menu_role_block", ThemeGroup.CHROME, R.string.theme_menu_role_block,
+        role = UiRole.MENU_ICON_BLOCK,
+    ),
+    MENU_ROLE_DELETE(
+        "theme_menu_role_delete", ThemeGroup.CHROME, R.string.theme_menu_role_delete,
+        role = UiRole.MENU_DESTRUCTIVE,
+    ),
 
     // Tabs
     TAB_BACKGROUND(
@@ -342,7 +354,9 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.BACKGROUND, ThemeSlot.PRIMARY, ThemeSlot.TEXT, ThemeSlot.SWITCH_OFF,
         ThemeSlot.SEARCH_FILL, ThemeSlot.SEARCH_TEXT, ThemeSlot.SEARCH_HINT, ThemeSlot.SEARCH_ICON,
         ThemeSlot.SEARCH_BORDER, ThemeSlot.MENU_TEXT, ThemeSlot.HEADER_TITLE, ThemeSlot.HEADER_ARROW,
-        ThemeSlot.TAB_BACKGROUND, ThemeSlot.TAB_SELECTED, ThemeSlot.TAB_UNSELECTED -> uiColor(slot.role!!)
+        ThemeSlot.TAB_BACKGROUND, ThemeSlot.TAB_SELECTED, ThemeSlot.TAB_UNSELECTED,
+        ThemeSlot.MENU_ROLE_SHARE, ThemeSlot.MENU_ROLE_VIEW, ThemeSlot.MENU_ROLE_BLOCK,
+        ThemeSlot.MENU_ROLE_DELETE -> uiColor(slot.role!!)
 
     ThemeSlot.TEXT_SECONDARY -> themeColor(ThemeSlot.TEXT).adjustAlpha(0.6f)
     ThemeSlot.WARNING -> PALETTE_WARNING
@@ -361,10 +375,6 @@ private fun Context.themeDefault(slot: ThemeSlot): Int = when (slot) {
     ThemeSlot.MENU_ROLE_CALL -> PALETTE_GREEN
     ThemeSlot.MENU_ROLE_MESSAGE -> PALETTE_MESSAGE_BLUE
     ThemeSlot.MENU_ROLE_CONTACT -> PALETTE_CYAN
-    ThemeSlot.MENU_ROLE_SHARE -> PALETTE_ORANGE
-    ThemeSlot.MENU_ROLE_VIEW -> themeColor(ThemeSlot.PRIMARY)
-    ThemeSlot.MENU_ROLE_BLOCK -> PALETTE_MAGENTA
-    ThemeSlot.MENU_ROLE_DELETE -> PALETTE_RED
 
     // Call log
     ThemeSlot.CALL_LOG_NAME -> themeColor(ThemeSlot.TEXT)
@@ -552,14 +562,25 @@ fun Context.syncDialogFrame() {
 }
 
 /**
- * One-time (commons sk18): a slot that is now a commons role hands its stored colour over to the role's
- * key, so what was picked before the move is kept. The delete colour used to be mirrored into the
- * commons' destructive dialog button; that button is a role of its own now and starts from the same
- * value. Foundation slots always lived in the stock keys the roles read.
+ * One-time per hand-over: a slot that is now a commons role hands its stored colour over to the role's
+ * key, so what was picked before the move is kept. Two hand-overs so far — commons 6.1.6-sk18 (the
+ * search, bar, header and tab slots) and 7.1.3-sk3 (the menu icons for share, view and block, and the
+ * destructive menu row). The loop is the same for both: a slot handed over earlier has no stored
+ * colour left. Foundation slots always lived in the stock keys the roles read.
+ *
+ * At sk18 the delete colour, until then mirrored into the commons' destructive dialog button, also
+ * seeded that button's own role.
  */
 fun Context.migrateSlotsToRolesIfNeeded() {
-    if (config.slotsMovedToRoles) {
+    if (config.slotsMovedToRoles && config.menuSlotsMovedToRoles) {
         return
+    }
+
+    if (!config.slotsMovedToRoles) {
+        val warning = config.getThemeOverride(ThemeSlot.MENU_ROLE_DELETE.key)
+        if (warning != THEME_UNSET && !isUiColorSet(UiRole.BUTTON_DESTRUCTIVE)) {
+            setUiColor(UiRole.BUTTON_DESTRUCTIVE, warning)
+        }
     }
 
     ThemeSlot.entries.forEach { slot ->
@@ -571,11 +592,8 @@ fun Context.migrateSlotsToRolesIfNeeded() {
             config.clearThemeOverride(slot.key)
         }
     }
-    val warning = config.getThemeOverride(ThemeSlot.MENU_ROLE_DELETE.key)
-    if (warning != THEME_UNSET && !isUiColorSet(UiRole.BUTTON_DESTRUCTIVE)) {
-        setUiColor(UiRole.BUTTON_DESTRUCTIVE, warning)
-    }
     config.slotsMovedToRoles = true
+    config.menuSlotsMovedToRoles = true
 }
 
 /**

@@ -208,6 +208,10 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(SLOTS_MOVED_TO_ROLES, false)
         set(value) = prefs.edit().putBoolean(SLOTS_MOVED_TO_ROLES, value).apply()
 
+    var menuSlotsMovedToRoles: Boolean
+        get() = prefs.getBoolean(MENU_SLOTS_MOVED_TO_ROLES, false)
+        set(value) = prefs.edit().putBoolean(MENU_SLOTS_MOVED_TO_ROLES, value).apply()
+
     // The UI page: its sections' order as dragged in the chip index, and which of them are unfolded.
     // Both are comma-joined section keys under a "theme_" name, so they travel in the Appearance export.
     var uiSectionOrder: String

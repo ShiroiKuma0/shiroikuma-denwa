@@ -42,6 +42,7 @@ const val THEME_V1_SEEDED = "theme_v1_seeded"
 const val PURE_YELLOW_MIGRATED = "pure_yellow_migrated"
 const val CALL_DIVIDER_MIGRATED = "call_divider_migrated"
 const val SLOTS_MOVED_TO_ROLES = "slots_moved_to_roles"
+const val MENU_SLOTS_MOVED_TO_ROLES = "menu_slots_moved_to_roles"
 const val UI_SECTION_ORDER = "theme_ui_section_order"
 const val UI_SECTIONS_OPEN = "theme_ui_sections_open"
 const val OPEN_CONTACTS_APP_FOR_TAB = "open_contacts_app_for_tab"
@@ -61,16 +62,14 @@ const val PALETTE_BLUE = 0xFF0000FF.toInt()
 const val PALETTE_DIM_GOLD = 0xFFC8C800.toInt()
 // The family's darker opaque yellow: the thin line between two calls of one day (and an off switch)
 const val PALETTE_DIM_YELLOW = 0xFF8C8C00.toInt()
-// Menu icon roles (ThemeSlot.MENU_ROLE_*): what an icon's colour says its row does. Yellow (view /
-// open / settings) is the accent and red (delete) is PALETTE_RED; the message blue is lighter than
+// Menu icon roles (ThemeSlot.MENU_ROLE_*): what an icon's colour says its row does. Share, view, block
+// and delete are commons roles and take their defaults there; the message blue is lighter than
 // PALETTE_BLUE because a thin glyph in pure blue all but vanishes on black.
 // The call log's number line: the accent, a shade paler, so it sits behind the name above it
 const val PALETTE_PALE_YELLOW = 0xFFFFFFB0.toInt()
 const val PALETTE_GREEN = 0xFF00FF00.toInt()
 const val PALETTE_MESSAGE_BLUE = 0xFF4D94FF.toInt()
 const val PALETTE_CYAN = 0xFF00FFFF.toInt()
-const val PALETTE_ORANGE = 0xFFFF8000.toInt()
-const val PALETTE_MAGENTA = 0xFFFF00FF.toInt()
 // Defaults that used to be read from the commons' material palette (deleted in sk18): an incoming
 // call's arrow — which had a lighter value under the system's dark mode, kept — and the in-call accept
 // and decline rings.

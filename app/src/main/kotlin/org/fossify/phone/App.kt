@@ -29,7 +29,7 @@ class App : FossifyApp() {
         migrateToPureYellowIfNeeded()
         // Bring back a call divider that was switched off, once.
         migrateCallDividerIfNeeded()
-        // Hand the slots that are commons roles since sk18 over to the roles' keys, once.
+        // Hand the slots that have become commons roles over to the roles' keys, once per hand-over.
         migrateSlotsToRolesIfNeeded()
         // Frame dialogs, so they are not black-on-black with the screen behind them.
         syncDialogFrame()
